@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"D:\\\\Users\\\\issue\\\\Toxic\\\\src\" -Recurse -Force | ForEach-Object { $_.FullName })"
+    ]
+  }
+}
