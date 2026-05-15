@@ -1,241 +1,401 @@
 import { useNavigate } from 'react-router-dom';
 
-const relationCards = [
-  { emoji: '💔', label: '연인 / 전 연인', desc: '왜 그렇게 터졌는지' },
-  { emoji: '😤', label: '직장 상사', desc: '왜 저 사람이랑만 안맞는지' },
-  { emoji: '👥', label: '친구', desc: '왜 멀어졌는지 모르겠는' },
-  { emoji: '👨‍👩‍👧', label: '가족', desc: '사랑하는데 왜 항상 상처받는지' },
-  { emoji: '🌀', label: '그냥 싫은 사람', desc: '이유도 모르게 불편한 그 사람' },
-];
-
-const testimonials = [
-  { quote: '전 남친이랑 왜 그렇게 싸웠는지 사주 보고 처음으로 이해됐어요', role: '20대 여성' },
-  { quote: '팀장이랑 항상 부딪히는 이유가 인사형(刑) 충돌이었다는거 소름...', role: '직장인' },
-  { quote: '엄마랑 나 오행이 정반대라고 나와서 오히려 마음이 편해졌어요', role: '30대 여성' },
-];
-
 export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-bg min-h-screen">
-      {/* NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-bg/90 backdrop-blur-md">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <img src="/logo.svg" alt="TOXIC" className="h-14 object-contain" />
+    <div className="bg-[#0A0A0A] min-h-screen overflow-x-hidden">
+
+      {/* ── NAV ── */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/5">
+        <div className="max-w-2xl mx-auto px-5 py-3 flex items-center justify-between">
+          <img src="/logo.svg" alt="TOXIC" className="h-10 object-contain" />
           <button
             onClick={() => navigate('/app')}
-            className="text-sm text-text-secondary hover:text-white transition-colors border border-border px-4 py-2 rounded-sm hover:border-accent-red/50"
+            className="text-xs text-[#8E8E93] border border-[#2C2C2E] px-4 py-2 hover:border-[#FF2D55]/50 hover:text-white transition-all"
           >
             분석 시작하기
           </button>
         </div>
       </nav>
 
-      {/* HERO */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-10 overflow-hidden">
-        <div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
-          aria-hidden
-        >
-          <span
-            className="font-serif-kr font-black text-[22vw] leading-none"
-            style={{ color: 'rgba(255,255,255,0.03)' }}
-          >
-            TOXIC
+      {/* ════════════════════════════════
+          HOOK — 지금 딱 한 명 떠오르는 사람
+      ════════════════════════════════ */}
+      <section className="min-h-screen flex flex-col justify-center px-5 pt-20 pb-16 max-w-2xl mx-auto">
+        <div className="mb-6">
+          <span className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-[#FF2D55] mb-8 block">
+            <span className="w-1 h-1 rounded-full bg-[#FF2D55] animate-pulse inline-block" />
+            사주로 보는 관계의 본질
           </span>
-        </div>
 
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(255,45,85,0.06) 0%, transparent 70%)' }} />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full"
-            style={{ background: 'radial-gradient(circle, rgba(191,90,242,0.06) 0%, transparent 70%)' }} />
-        </div>
-
-        <div className="relative z-10 text-center max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 border border-accent-red/30 bg-accent-red/5 rounded-sm px-4 py-2 mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-accent-red animate-pulse" />
-            <span className="text-accent-red text-xs uppercase tracking-widest">사주 기반 관계 충돌 분석</span>
-          </div>
-
-          <h1 className="font-serif-kr font-black text-4xl md:text-6xl text-white leading-tight mb-4">
-            잘 맞는 사람이 아니라,
-            <br />
-            <span className="gradient-text">왜 안맞는지를</span>
-            <br />
-            알려드립니다
+          <h1 className="font-serif-kr font-black text-[clamp(2.6rem,10vw,4.5rem)] leading-[1.1] text-white mb-6">
+            지금 이 순간,<br />
+            딱 한 명<br />
+            <span className="text-[#FF2D55]">떠오르는 사람</span><br />
+            있죠?
           </h1>
 
-          <p className="text-text-secondary text-lg md:text-xl mb-10 max-w-lg mx-auto leading-relaxed">
-            당신을 힘들게 하는 그 사람.<br className="md:hidden" /> 사주에 이미 답이 있었습니다.
+          <div className="w-24 h-0.5 bg-[#FF2D55] mb-6" />
+
+          <p className="text-[#8E8E93] text-lg leading-relaxed mb-2">
+            그 사람이랑 왜 이렇게 안 맞는지.
           </p>
-
-          <button
-            onClick={() => navigate('/app')}
-            className="gradient-red glow-red px-10 py-5 text-white font-bold text-lg rounded-sm hover:opacity-90 transition-all w-full sm:w-auto"
-          >
-            내 사주 분석하기 →
-          </button>
-
-          <p className="text-text-secondary text-xs mt-4">무료 · 1분 소요 · 전 연인, 친구, 직장, 가족 모두 가능</p>
+          <p className="text-white text-lg leading-relaxed mb-10">
+            사주에 <span className="text-[#FF2D55]">이미 답이 있었습니다.</span>
+          </p>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-px h-8 bg-gradient-to-b from-text-secondary to-transparent mx-auto" />
+        <button
+          onClick={() => navigate('/app')}
+          className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-[#FF2D55] text-white font-bold text-lg px-10 py-5 hover:bg-[#FF2D55]/90 transition-all"
+          style={{ boxShadow: '0 0 40px rgba(255,45,85,0.25)' }}
+        >
+          그 사람 생일 넣어보기
+          <span className="text-xl">→</span>
+        </button>
+
+        <p className="text-[#8E8E93] text-xs mt-4">
+          무료 · 1분 · 전 연인 · 친구 · 직장 · 가족 다 가능
+        </p>
+
+        <div className="mt-16 pt-8 border-t border-[#2C2C2E]">
+          <p className="text-[#8E8E93] text-xs uppercase tracking-widest mb-4">분석 가능한 관계</p>
+          <div className="flex flex-wrap gap-2">
+            {['💔 전 연인', '😤 직장 상사', '👥 친구', '👨‍👩‍👧 가족', '🌀 그냥 싫은 사람'].map(r => (
+              <span key={r} className="text-sm text-[#8E8E93] border border-[#2C2C2E] px-3 py-1.5">{r}</span>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* PROBLEM — 핵심 차별성 */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-text-secondary text-xs uppercase tracking-widest mb-3">차별점</p>
-            <h2 className="font-serif-kr font-bold text-3xl md:text-4xl text-white">기존 사주 앱과 다릅니다</h2>
-          </div>
+      {/* ════════════════════════════════
+          STORY 1 — 기존 앱과 다릅니다
+      ════════════════════════════════ */}
+      <section className="px-5 py-20 border-t border-[#2C2C2E]">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-[#8E8E93] text-xs uppercase tracking-widest mb-3">왜 TOXIC인가</p>
+          <h2 className="font-serif-kr font-black text-[clamp(1.8rem,7vw,3rem)] text-white leading-tight mb-2">
+            잘 맞는 사람 말고
+          </h2>
+          <h2 className="font-serif-kr font-black text-[clamp(1.8rem,7vw,3rem)] leading-tight mb-3">
+            <span className="text-[#FF2D55]">안 맞는 이유</span>를 봐요
+          </h2>
+          <div className="w-20 h-0.5 bg-[#FF2D55] mb-8" />
+          <p className="text-[#8E8E93] leading-relaxed mb-10">
+            다른 사주앱은 궁합을 찾고,<br />
+            TOXIC은 이미 힘든 관계를 해석해요.
+          </p>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {/* 기존 */}
-            <div className="bg-card-bg border border-border rounded-sm p-6 opacity-70">
-              <div className="inline-block bg-border text-text-secondary text-xs px-3 py-1 rounded-sm mb-5">
-                기존 사주 궁합 서비스
+            <div className="bg-[#111] border border-[#2C2C2E] p-5">
+              <div className="text-[10px] uppercase tracking-widest text-[#8E8E93] border border-[#2C2C2E] inline-block px-2 py-1 mb-4">
+                기존 사주앱
               </div>
-              <div className="space-y-3">
-                {['우리 잘 맞을까?', '나의 이상형 찾기', '좋은 궁합 분석', '잘 될 사람 예측'].map(item => (
-                  <div key={item} className="flex items-center gap-3 text-text-secondary">
-                    <span className="w-4 h-4 rounded-full border border-border flex-shrink-0" />
-                    <span className="text-sm">{item}</span>
-                  </div>
+              <div className="text-4xl mb-4 opacity-30">🤍</div>
+              <p className="text-[#555] text-xs mb-3 font-medium">궁합 중심</p>
+              <div className="space-y-2">
+                {['우리 잘 맞을까요?', '더 잘 맞는 사람은?'].map(t => (
+                  <div key={t} className="bg-[#1C1C1E] text-[#555] text-xs px-3 py-2">{t}</div>
                 ))}
               </div>
             </div>
 
             {/* TOXIC */}
-            <div className="bg-card-bg border border-accent-red rounded-sm p-6 glow-red relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 pointer-events-none"
-                style={{ background: 'radial-gradient(circle at top right, rgba(255,45,85,0.15) 0%, transparent 70%)' }} />
-              <div className="inline-block gradient-red text-white text-xs px-3 py-1 rounded-sm mb-5 font-bold tracking-widest">
+            <div className="bg-[#111] border border-[#FF2D55] p-5 relative" style={{ boxShadow: '0 0 30px rgba(255,45,85,0.1)' }}>
+              <div className="text-[10px] uppercase tracking-widest text-white bg-[#FF2D55] inline-block px-2 py-1 mb-4 font-bold">
                 TOXIC
               </div>
-              <div className="space-y-3">
-                {['왜 우리 이렇게 안맞지?', '나를 힘들게 하는 사람 분석', '관계가 틀어진 이유 해석', '사주로 보는 충돌의 원인'].map(item => (
-                  <div key={item} className="flex items-center gap-3 text-white">
-                    <span className="w-4 h-4 rounded-full bg-accent-red/20 border border-accent-red flex items-center justify-center flex-shrink-0">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent-red" />
-                    </span>
-                    <span className="text-sm">{item}</span>
+              <div className="text-4xl mb-4">💔</div>
+              <p className="text-white text-xs mb-3 font-medium">관계 분석</p>
+              <div className="space-y-1.5">
+                {['어긋나는 이유', '반복되는 패턴', '관계 회복 / 정리 인사이트'].map(t => (
+                  <div key={t} className="flex items-center gap-1.5 text-xs text-white">
+                    <span className="text-[#FF2D55]">✓</span> {t}
                   </div>
                 ))}
               </div>
+              <div className="mt-4 border border-[#FF2D55]/30 text-center py-1">
+                <span className="text-[#FF2D55] text-[10px] uppercase tracking-widest font-bold">CASE FILE</span>
+              </div>
             </div>
           </div>
+
+          <p className="text-center text-[#8E8E93] text-sm mt-6">
+            힘든 관계의 <span className="text-white">이유</span>와 <span className="text-[#FF2D55]">해결 포인트</span> 분석
+          </p>
         </div>
       </section>
 
-      {/* RELATION TYPES */}
-      <section className="py-20 px-4 border-t border-border">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-text-secondary text-xs uppercase tracking-widest mb-3">대상</p>
-            <h2 className="font-serif-kr font-bold text-3xl md:text-4xl text-white">모든 관계에 적용됩니다</h2>
-          </div>
+      {/* ════════════════════════════════
+          STORY 2 — 시나리오: 전 연인
+      ════════════════════════════════ */}
+      <section className="px-5 py-20 border-t border-[#2C2C2E]">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-[#FF2D55] text-xs uppercase tracking-widest mb-6">연인 / 전 연인</p>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {relationCards.map(({ emoji, label, desc }) => (
-              <button
-                key={label}
-                onClick={() => navigate('/app')}
-                className="bg-card-bg border border-border rounded-sm p-4 text-left hover:border-accent-red/50 hover:bg-accent-red/5 transition-all group"
-              >
-                <div className="text-2xl mb-3">{emoji}</div>
-                <div className="font-medium text-white text-sm mb-1 group-hover:text-accent-red transition-colors">{label}</div>
-                <div className="text-text-secondary text-xs leading-snug">{desc}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="py-20 px-4 border-t border-border">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-text-secondary text-xs uppercase tracking-widest mb-3">작동 원리</p>
-            <h2 className="font-serif-kr font-bold text-3xl md:text-4xl text-white">어떻게 작동하나요</h2>
-          </div>
-
-          <div className="space-y-0">
-            {[
-              {
-                num: '01',
-                title: '내 생년월일 입력',
-                desc: '사주팔자 & 일주 추출 — 갑을병정 천간, 자축인묘 지지를 계산합니다',
-                icon: '📅',
-              },
-              {
-                num: '02',
-                title: '상대 생년월일 입력',
-                desc: '충(沖) / 형(刑) / 극(剋) 관계를 계산합니다',
-                icon: '🔍',
-              },
-              {
-                num: '03',
-                title: '충돌 분석 결과',
-                desc: '왜 안맞는지 관계 유형별 언어로 해석합니다',
-                icon: '⚡',
-              },
-            ].map(({ num, title, desc, icon }, idx) => (
-              <div key={num} className="flex gap-5 relative">
-                {idx < 2 && (
-                  <div className="absolute left-6 top-14 bottom-0 w-px bg-border" />
-                )}
-                <div className="w-12 h-12 rounded-full bg-card-bg border border-border flex items-center justify-center flex-shrink-0 text-lg z-10">
-                  {icon}
-                </div>
-                <div className="pb-8 flex-1">
-                  <p className="text-text-secondary text-xs mb-1 font-sans">{num}</p>
-                  <h3 className="text-white font-semibold mb-1">{title}</h3>
-                  <p className="text-text-secondary text-sm leading-relaxed">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SOCIAL PROOF */}
-      <section className="py-20 px-4 border-t border-border">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-text-secondary text-xs uppercase tracking-widest mb-3">후기</p>
-            <h2 className="font-serif-kr font-bold text-3xl md:text-4xl text-white">이런 분들이 씁니다</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            {testimonials.map(({ quote, role }) => (
-              <div key={role} className="bg-card-bg border border-border rounded-sm p-5">
-                <div className="text-accent-red text-2xl mb-3 font-serif-kr">"</div>
-                <p className="text-white text-sm leading-relaxed mb-4">{quote}</p>
-                <p className="text-text-secondary text-xs">— {role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FINAL CTA */}
-      <section className="py-20 px-4 border-t border-border">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="font-serif-kr font-black text-3xl md:text-5xl text-white mb-4">
-            지금 바로<br />
-            <span className="gradient-text">분석해보세요</span>
+          <h2 className="font-serif-kr font-black text-[clamp(2rem,8vw,3.5rem)] text-white leading-[1.15] mb-2">
+            헤어진 이유를
           </h2>
-          <p className="text-text-secondary mb-10 leading-relaxed">
-            당신을 힘들게 한 그 사람,<br />사주에 이미 답이 있었습니다
+          <h2 className="font-serif-kr font-black text-[clamp(2rem,8vw,3.5rem)] leading-[1.15] mb-6">
+            <span className="text-[#FF2D55]">이제야 알았다</span>
+          </h2>
+          <div className="w-16 h-0.5 bg-[#FF2D55] mb-8" />
+
+          <div className="border-l-2 border-[#FF2D55]/40 pl-4 mb-8">
+            <p className="text-white text-base leading-relaxed">
+              좋아했는데 자꾸 다쳤다면.
+            </p>
+            <p className="text-white text-base leading-relaxed">
+              사주에선 <span className="text-[#FF2D55] font-semibold">충(沖)</span>일 수 있어요.
+            </p>
+          </div>
+
+          <div className="bg-[#1C1C1E] border border-[#2C2C2E] p-5 mb-8">
+            <div className="flex items-start gap-4">
+              <div className="border-2 border-[#FF2D55] text-[#FF2D55] font-serif-kr font-bold px-3 py-2 text-sm flex-shrink-0">
+                충(沖)
+              </div>
+              <div>
+                <p className="text-white text-sm font-semibold mb-1">자오충(子午沖) — 강한 에너지 충돌</p>
+                <p className="text-[#8E8E93] text-xs leading-relaxed">
+                  서로 끌리지만 결국 폭발하는 구조. 처음엔 운명처럼 느껴지지만 근본적인 방향성이 반대입니다.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-[#555] text-sm mb-6">끝났는데도 자꾸 생각나는 그 관계</p>
+
+          <button
+            onClick={() => navigate('/app')}
+            className="flex items-center gap-2 text-white font-semibold text-sm group"
+          >
+            <span>전연인 분석하기</span>
+            <span className="text-[#FF2D55] group-hover:translate-x-1 transition-transform">→</span>
+            <div className="absolute mt-6 w-24 h-px bg-[#BF5AF2]" style={{ position: 'relative', marginTop: 0 }} />
+          </button>
+          <div className="w-28 h-px bg-[#BF5AF2] mt-1" />
+        </div>
+      </section>
+
+      {/* ════════════════════════════════
+          STORY 3 — 시나리오: 직장
+      ════════════════════════════════ */}
+      <section className="px-5 py-20 border-t border-[#2C2C2E]">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-[#FF2D55] text-xs uppercase tracking-widest mb-6">직장 상사 / 동료</p>
+
+          <h2 className="font-serif-kr font-black text-[clamp(2rem,8vw,3.5rem)] text-white leading-[1.15] mb-2">
+            저 팀장이랑
+          </h2>
+          <h2 className="font-serif-kr font-black text-[clamp(2rem,8vw,3.5rem)] leading-[1.15] mb-6">
+            왜 이렇게 <span className="text-[#FF2D55]">안 맞지?</span>
+          </h2>
+          <div className="w-16 h-0.5 bg-[#FF2D55] mb-8" />
+
+          <div className="border-l-2 border-[#FF2D55]/40 pl-4 mb-8">
+            <p className="text-white text-base leading-relaxed">말투도 기준도 매번 어긋난다면.</p>
+            <p className="text-white text-base leading-relaxed">성격보다 <span className="text-[#FF2D55] font-semibold">구조 문제</span>일 수 있어요.</p>
+          </div>
+
+          <div className="bg-[#1C1C1E] border border-[#2C2C2E] p-5 mb-8">
+            <div className="flex items-start gap-4">
+              <div className="border-2 border-[#BF5AF2] text-[#BF5AF2] font-serif-kr font-bold px-3 py-2 text-sm flex-shrink-0">
+                형(刑)
+              </div>
+              <div>
+                <p className="text-white text-sm font-semibold mb-1">인사신형(寅巳申刑) — 누적 충돌</p>
+                <p className="text-[#8E8E93] text-xs leading-relaxed">
+                  갑자기 폭발하지 않아요. 서서히, 조용히, 그러나 확실하게 쌓이는 불편함. 이유를 말하기 어려운 게 형의 특징입니다.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-[#555] text-sm mb-6">월요일 아침만 되면 숨 막힌다면</p>
+
+          <button
+            onClick={() => navigate('/app')}
+            className="flex items-center gap-2 text-white font-semibold text-sm group"
+          >
+            <span>직장 관계 보기</span>
+            <span className="text-[#FF2D55] group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+          <div className="w-24 h-px bg-[#BF5AF2] mt-1" />
+        </div>
+      </section>
+
+      {/* ════════════════════════════════
+          STORY 4 — 시나리오: 가족
+      ════════════════════════════════ */}
+      <section className="px-5 py-20 border-t border-[#2C2C2E]">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-[#FF2D55] text-xs uppercase tracking-widest mb-6">가족</p>
+
+          <h2 className="font-serif-kr font-black text-[clamp(2rem,8vw,3.5rem)] text-white leading-[1.15] mb-2">
+            엄마랑 나는
+          </h2>
+          <h2 className="font-serif-kr font-black text-[clamp(2rem,8vw,3.5rem)] leading-[1.15] mb-6">
+            왜 맨날 <span className="text-[#FF2D55]">부딪힐까</span>
+          </h2>
+          <div className="w-16 h-0.5 bg-[#FF2D55] mb-8" />
+
+          <div className="border-l-2 border-[#FF2D55]/40 pl-4 mb-8">
+            <p className="text-white text-base leading-relaxed">사랑하는데 자꾸 상처받는 사이.</p>
+            <p className="text-white text-base leading-relaxed">가족이라 <span className="text-[#FF2D55] font-semibold">더 어려운</span> 거예요.</p>
+          </div>
+
+          <div className="bg-[#1C1C1E] border border-[#2C2C2E] p-5 mb-8">
+            <div className="flex items-start gap-4">
+              <div className="border-2 border-[#FF2D55] text-[#FF2D55] font-serif-kr font-bold px-3 py-2 text-sm flex-shrink-0">
+                극(剋)
+              </div>
+              <div>
+                <p className="text-white text-sm font-semibold mb-1">오행 극 — 에너지 소모 구조</p>
+                <p className="text-[#8E8E93] text-xs leading-relaxed">
+                  한 사람의 기운이 다른 사람을 지속적으로 소모시키는 구조. 억압이 아니라 오행의 흐름입니다.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-[#555] text-sm mb-1">가까워서 더 세게 부딪히는 관계</p>
+          <div className="flex items-center gap-2 text-[#555] text-xs mb-6">
+            <span className="text-[#FF2D55]">✦</span>
+            <span>왜 우리는 서로에게 상처가 될까?</span>
+          </div>
+
+          <button
+            onClick={() => navigate('/app')}
+            className="flex items-center gap-2 text-white font-semibold text-sm group"
+          >
+            <span>가족 관계 보기</span>
+            <span className="text-[#FF2D55] group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+          <div className="w-24 h-px bg-[#BF5AF2] mt-1" />
+        </div>
+      </section>
+
+      {/* ════════════════════════════════
+          OFFER — 그 사람 생일 넣어봐
+      ════════════════════════════════ */}
+      <section className="px-5 py-20 border-t border-[#2C2C2E]">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-3">
+            <p className="text-[#8E8E93] text-xs uppercase tracking-widest">TOXIC SAJU ANALYSIS</p>
+          </div>
+          <h2 className="font-serif-kr font-black text-[clamp(2.4rem,10vw,4rem)] text-white text-center leading-tight mb-2">
+            그 사람
+          </h2>
+          <h2 className="font-serif-kr font-black text-[clamp(2.4rem,10vw,4rem)] text-center leading-tight mb-2">
+            <span className="text-[#FF2D55]">생일 넣어봐</span>
+          </h2>
+          <div className="flex justify-center mb-2">
+            <div className="w-16 h-0.5 bg-[#FF2D55]" />
+          </div>
+          <p className="text-center text-[#8E8E93] text-sm mb-10">
+            딱 한 명 떠오른다면 지금.<br />
+            결과 캡처해서 친구 태그하기.
+          </p>
+
+          {/* Mock UI */}
+          <div className="bg-[#141414] border border-[#2C2C2E] p-5 mb-6" style={{ boxShadow: '0 0 60px rgba(255,45,85,0.08)' }}>
+            <div className="flex items-center gap-2 text-[#8E8E93] text-xs mb-4">
+              <span>📅</span> 생년월일 입력
+            </div>
+            <div className="grid grid-cols-4 gap-2 mb-5">
+              {['1995년', '07월', '21일', '00:00'].map(v => (
+                <div key={v} className="bg-[#1C1C1E] border border-[#2C2C2E] px-2 py-2.5 text-[#8E8E93] text-xs flex items-center justify-between">
+                  <span>{v}</span>
+                  <span className="text-[#555]">∨</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-[#2C2C2E] pt-4 mb-4">
+              <p className="text-[#8E8E93] text-xs mb-2">종합 관계 분석 결과</p>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-[#8E8E93] text-sm">독성 지수</span>
+                <span className="text-[#FF2D55] font-black text-4xl">97</span>
+                <span className="text-[#FF2D55] text-xl font-bold">%</span>
+                <span className="ml-auto bg-[#FF2D55]/10 border border-[#FF2D55] text-[#FF2D55] text-xs px-3 py-1 font-bold">
+                  위험도 MAX ⚠
+                </span>
+              </div>
+              <div className="w-full h-2 bg-[#2C2C2E] rounded-full overflow-hidden mb-4">
+                <div className="h-full rounded-full" style={{ width: '97%', background: 'linear-gradient(90deg, #FF2D55, #BF5AF2)' }} />
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {['#집착주의', '#감정소모', '#헤어나다후폭풍', '#미련주의'].map(tag => (
+                  <span key={tag} className="text-[10px] text-[#FF2D55] bg-[#FF2D55]/10 border border-[#FF2D55]/20 px-2 py-0.5">{tag}</span>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-2 border-[#FF2D55] p-px">
+              <button
+                onClick={() => navigate('/app')}
+                className="w-full bg-[#FF2D55] text-white font-bold text-base py-4 flex items-center justify-center gap-3 hover:bg-[#FF2D55]/90 transition-opacity"
+              >
+                바로 분석하기
+                <span className="text-xl">→</span>
+              </button>
+            </div>
+          </div>
+
+          <p className="text-center text-[#8E8E93] text-sm">
+            전 연인 · 친구 · 상사 · 가족{' '}
+            <span className="border border-[#8E8E93] rounded-full px-2 py-0.5 text-xs">다 가능</span>
+          </p>
+          <div className="flex justify-center mt-2">
+            <span className="text-[#FF2D55] text-sm">✦</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════
+          TESTIMONIALS
+      ════════════════════════════════ */}
+      <section className="px-5 py-16 border-t border-[#2C2C2E]">
+        <div className="max-w-2xl mx-auto">
+          <p className="text-[#8E8E93] text-xs uppercase tracking-widest mb-8 text-center">실제 반응</p>
+          <div className="space-y-4">
+            {[
+              { q: '"전 남친이랑 왜 그렇게 싸웠는지 사주 보고 처음으로 이해됐어요"', r: '20대 여성' },
+              { q: '"팀장이랑 항상 부딪히는 이유가 인사형(刑) 충돌이었다는거 소름..."', r: '직장인' },
+              { q: '"엄마랑 나 오행이 정반대라고 나와서 오히려 마음이 편해졌어요"', r: '30대 여성' },
+            ].map(({ q, r }) => (
+              <div key={r} className="bg-[#111] border border-[#2C2C2E] p-5">
+                <p className="text-[#FF2D55] text-lg font-serif-kr mb-2">"</p>
+                <p className="text-white text-sm leading-relaxed mb-3">{q.slice(1, -1)}</p>
+                <p className="text-[#555] text-xs">— {r}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════
+          FINAL CTA
+      ════════════════════════════════ */}
+      <section className="px-5 py-20 border-t border-[#2C2C2E]" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #150008 100%)' }}>
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="font-serif-kr font-black text-[clamp(2rem,8vw,3.5rem)] text-white leading-tight mb-2">
+            지금 바로
+          </h2>
+          <h2 className="font-serif-kr font-black text-[clamp(2rem,8vw,3.5rem)] text-[#FF2D55] leading-tight mb-6">
+            분석해보세요
+          </h2>
+          <p className="text-[#8E8E93] mb-10 leading-relaxed">
+            당신을 힘들게 한 그 사람,<br />
+            사주에 이미 답이 있었습니다.
           </p>
           <button
             onClick={() => navigate('/app')}
-            className="gradient-red glow-red px-12 py-5 text-white font-bold text-lg rounded-sm hover:opacity-90 transition-all w-full sm:w-auto"
+            className="w-full bg-[#FF2D55] text-white font-bold text-lg py-5 hover:bg-[#FF2D55]/90 transition-opacity"
+            style={{ boxShadow: '0 0 60px rgba(255,45,85,0.3)' }}
           >
             내 사주 분석하기 →
           </button>
@@ -243,17 +403,16 @@ export default function Landing() {
       </section>
 
       {/* FOOTER */}
-      <footer className="border-t border-border py-8 px-4">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <img src="/logo.svg" alt="TOXIC" className="h-12 object-contain opacity-50" />
-          <p className="text-text-secondary text-xs text-center">
+      <footer className="border-t border-[#2C2C2E] py-8 px-5">
+        <div className="max-w-2xl mx-auto flex flex-col items-center gap-4">
+          <img src="/logo.svg" alt="TOXIC" className="h-8 object-contain opacity-40" />
+          <p className="text-[#555] text-xs text-center">
             사주로 보는 관계의 본질 · toxic.kr
           </p>
-          <p className="text-text-secondary text-xs">
-            © 2025 TOXIC. All rights reserved.
-          </p>
+          <p className="text-[#333] text-xs">© 2025 TOXIC. All rights reserved.</p>
         </div>
       </footer>
+
     </div>
   );
 }
