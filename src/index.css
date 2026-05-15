@@ -1,19 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+KR:wght@700;900&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  background-color: #0A0A0A;
+  background-color: #0D0D0D;
   color: #FFFFFF;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Noto Sans KR', 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 #root {
@@ -21,10 +22,57 @@ body {
   min-height: 100vh;
 }
 
-.font-serif-kr {
-  font-family: 'Noto Serif KR', serif;
+/* ── 그레인 오버레이 ── */
+.grain-overlay {
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.045;
+  pointer-events: none;
+  z-index: 9998;
+  animation: grain-shift 8s steps(10) infinite;
 }
 
+@keyframes grain-shift {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-2%, -3%); }
+  20%  { transform: translate(3%, 1%); }
+  30%  { transform: translate(-1%, 3%); }
+  40%  { transform: translate(2%, -2%); }
+  50%  { transform: translate(-3%, 1%); }
+  60%  { transform: translate(1%, -2%); }
+  70%  { transform: translate(-2%, 3%); }
+  80%  { transform: translate(3%, -1%); }
+  90%  { transform: translate(-1%, 2%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ── 폰트 유틸 ── */
+.font-display    { font-family: 'Black Han Sans', sans-serif; }
+.font-serif-kr   { font-family: 'Noto Serif KR', serif; }
+.font-sans-kr    { font-family: 'Noto Sans KR', sans-serif; }
+
+/* ── 브러시 언더라인 ── */
+.brush-underline {
+  position: relative;
+  display: inline;
+}
+.brush-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 4px;
+  background: #FF2D55;
+  transform: skewX(-8deg) scaleX(1.02);
+  border-radius: 2px;
+  opacity: 0.9;
+}
+
+/* ── 그라디언트 유틸 ── */
 @layer utilities {
   .gradient-red {
     background: linear-gradient(135deg, #FF2D55 0%, #BF5AF2 100%);
@@ -36,51 +84,37 @@ body {
     background-clip: text;
   }
   .glow-red {
-    box-shadow: 0 0 20px rgba(255, 45, 85, 0.3);
-  }
-  .glow-purple {
-    box-shadow: 0 0 20px rgba(191, 90, 242, 0.3);
+    box-shadow: 0 0 40px rgba(255,45,85,0.25);
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #1C1C1E;
-}
-::-webkit-scrollbar-thumb {
-  background: #FF2D55;
-  border-radius: 2px;
-}
+/* ── 커스텀 스크롤바 ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #FF2D55; }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ── 애니메이션 ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 10px rgba(255, 45, 85, 0.3); }
-  50% { box-shadow: 0 0 30px rgba(255, 45, 85, 0.6); }
+  0%, 100% { box-shadow: 0 0 20px rgba(255,45,85,0.2); }
+  50%       { box-shadow: 0 0 50px rgba(255,45,85,0.5); }
 }
-
 @keyframes float-char {
-  0% { opacity: 0; transform: translateY(10px); }
-  20% { opacity: 1; transform: translateY(0); }
-  80% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-10px); }
+  0%   { opacity: 0; transform: translateY(12px); }
+  20%  { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-12px); }
 }
+.animate-fade-up    { animation: fadeUp 0.5s ease forwards; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.char-animate       { animation: float-char 1.5s ease-in-out infinite; }
 
-.animate-fade-in {
-  animation: fadeIn 0.4s ease forwards;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.char-animate {
-  animation: float-char 1.5s ease-in-out infinite;
+/* ── select 스타일 ── */
+select {
+  background-image: none;
+  -webkit-appearance: none;
+  appearance: none;
 }
