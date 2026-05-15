@@ -22,7 +22,7 @@ export default function Landing() {
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-bg/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <img src="/logo.png" alt="TOXIC" className="h-8 object-contain" style={{ filter: 'brightness(0) saturate(100%) invert(56%) sepia(89%) saturate(400%) hue-rotate(295deg) brightness(105%)' }} />
+          <img src="/logo.png" alt="TOXIC" className="h-14 object-contain" style={{ filter: 'brightness(0) saturate(100%) invert(56%) sepia(89%) saturate(400%) hue-rotate(295deg) brightness(105%)' }} />
           <button
             onClick={() => navigate('/app')}
             className="text-sm text-text-secondary hover:text-white transition-colors border border-border px-4 py-2 rounded-sm hover:border-accent-red/50"
@@ -245,7 +245,7 @@ export default function Landing() {
       {/* FOOTER */}
       <footer className="border-t border-border py-8 px-4">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <img src="/logo.png" alt="TOXIC" className="h-7 object-contain opacity-40" style={{ filter: 'brightness(0) saturate(100%) invert(56%) sepia(89%) saturate(400%) hue-rotate(295deg) brightness(105%)' }} />
+          <img src="/logo.png" alt="TOXIC" className="h-12 object-contain opacity-40" style={{ filter: 'brightness(0) saturate(100%) invert(56%) sepia(89%) saturate(400%) hue-rotate(295deg) brightness(105%)' }} />
           <p className="text-text-secondary text-xs text-center">
             사주로 보는 관계의 본질 · toxic.kr
           </p>
