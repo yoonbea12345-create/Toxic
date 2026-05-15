@@ -53,7 +53,7 @@ export default function AppPage() {
     <div className="min-h-screen bg-bg">
       <header className="border-b border-border px-4 py-4 flex items-center justify-between max-w-lg mx-auto">
         <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity">
-          <img src="/logo.png" alt="TOXIC" className="h-14 object-contain" style={{ filter: 'brightness(0) saturate(100%) invert(56%) sepia(89%) saturate(400%) hue-rotate(295deg) brightness(105%)' }} />
+          <img src="/logo.svg" alt="TOXIC" className="h-14 object-contain" />
         </button>
         {showProgress && (
           <div className="flex gap-1.5">
