@@ -77,6 +77,8 @@ export default function Landing() {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
   const [reviews] = useState(() => shuffle(ALL_REVIEWS));
+  const [reviewPage, setReviewPage] = useState(0);
+  const totalPages = Math.ceil(reviews.length / 5);
 
   useEffect(() => {
     const el = heroRef.current;
@@ -88,6 +90,11 @@ export default function Landing() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setReviewPage(p => (p + 1) % totalPages), 30000);
+    return () => clearInterval(t);
+  }, [totalPages]);
 
   return (
     <div className="bg-[#0A0A0A] min-h-screen overflow-x-hidden relative">
@@ -143,8 +150,11 @@ export default function Landing() {
           >
             그 사람 생일 넣어보기 →
           </button>
-          <p className="font-sans-kr text-[#555] text-xs text-center">
+          <p className="font-sans-kr text-[#555] text-xs text-center mb-2">
             무료 · 1분 · 전 연인 · 친구 · 직장 · 가족 다 가능
+          </p>
+          <p className="font-sans-kr text-[#444] text-xs text-center">
+            생일 몰라도 괜찮아요 — <span className="text-[#666]">대략적인 나이만 알아도 분석 가능해요</span>
           </p>
         </div>
 
@@ -386,7 +396,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          SOCIAL PROOF — 후기 50개
+          SOCIAL PROOF — 후기 슬라이드 (5개씩, 30초)
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
@@ -416,20 +426,45 @@ export default function Landing() {
             ))}
           </div>
 
-          {/* 후기 2-열 그리드 (50개) */}
-          <div className="columns-2 gap-3 space-y-0">
-            {reviews.map((review, i) => (
-              <div key={i} className="break-inside-avoid border border-[#1a1a1a] p-4 mb-3">
+          {/* 후기 슬라이드 — 5개씩 */}
+          <div key={reviewPage} className="animate-fade-in space-y-3 mb-8">
+            {reviews.slice(reviewPage * 5, reviewPage * 5 + 5).map((review, i) => (
+              <div key={i} className="border border-[#1a1a1a] p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-1.5 py-0.5 font-sans-kr">
+                  <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-2 py-0.5 font-sans-kr">
                     {review.tag}
                   </span>
                   <Stars count={review.stars} />
                 </div>
-                <p className="font-sans-kr text-white text-[11px] leading-relaxed mb-2">"{review.q}"</p>
-                <p className="font-sans-kr text-[#444] text-[10px]">— {review.r}</p>
+                <p className="font-sans-kr text-white text-sm leading-relaxed mb-2">"{review.q}"</p>
+                <p className="font-sans-kr text-[#444] text-xs">— {review.r}</p>
               </div>
             ))}
+          </div>
+
+          {/* 페이지 인디케이터 + 수동 이동 */}
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => setReviewPage(p => (p - 1 + totalPages) % totalPages)}
+              className="text-[#444] hover:text-[#FF2D55] transition-colors text-sm px-2"
+            >
+              ←
+            </button>
+            <div className="flex gap-1.5">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setReviewPage(i)}
+                  className={`rounded-full transition-all duration-300 ${i === reviewPage ? 'bg-[#FF2D55] w-4 h-1.5' : 'bg-[#333] w-1.5 h-1.5'}`}
+                />
+              ))}
+            </div>
+            <button
+              onClick={() => setReviewPage(p => (p + 1) % totalPages)}
+              className="text-[#444] hover:text-[#FF2D55] transition-colors text-sm px-2"
+            >
+              →
+            </button>
           </div>
         </div>
       </section>
