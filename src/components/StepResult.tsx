@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import html2canvas from 'html2canvas';
 import type { SajuResult, PersonData, RelationType } from '../utils/saju';
+import { fetchAIAnalysis } from '../utils/aiAnalysis';
 import ShareCard from './ShareCard';
 
 interface StepResultProps {
@@ -314,18 +315,11 @@ export default function StepResult({ myData, targetData, result, relationType, o
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ myData, targetData, relationType, sajuResult: result }),
-        });
-        if (!res.ok) throw new Error('API error');
-        const data = await res.json();
-        setAiAnalysis(data.analysis);
+        const analysis = await fetchAIAnalysis(myData, targetData, relationType, result);
+        setAiAnalysis(analysis);
       } catch {
         setAiError(true);
       } finally {
-        // API 완료 → 로딩 화면에 완료 애니메이션 1초 보여준 후 결과로 전환
         setApiDone(true);
         setTimeout(() => setShowLoading(false), 1000);
       }
