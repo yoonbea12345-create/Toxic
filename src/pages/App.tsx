@@ -4,10 +4,9 @@ import type { PersonData, RelationType, SajuResult } from '../utils/saju';
 import { analyzeSaju } from '../utils/saju';
 import StepInput from '../components/StepInput';
 import StepRelation from '../components/StepRelation';
-import StepLoading from '../components/StepLoading';
 import StepResult from '../components/StepResult';
 
-type Step = 'my-info' | 'relation' | 'target-info' | 'loading' | 'result';
+type Step = 'my-info' | 'relation' | 'target-info' | 'result';
 
 export default function AppPage() {
   const navigate = useNavigate();
@@ -28,28 +27,20 @@ export default function AppPage() {
   };
 
   const handleTargetInfo = (data: PersonData) => {
+    if (!myData) return;
     setTargetData(data);
-    setStep('loading');
-    setTimeout(() => {
-      if (myData) {
-        const res = analyzeSaju(myData, data, relationType);
-        setResult(res);
-        setStep('result');
-      }
-    }, 2800);
+    const res = analyzeSaju(myData, data, relationType);
+    setResult(res);
+    setStep('result');
   };
 
   const handleSkipTarget = () => {
+    if (!myData) return;
     const emptyTarget: PersonData = { name: '', birthdate: '', birthtime: '', gender: '여' };
     setTargetData(emptyTarget);
-    setStep('loading');
-    setTimeout(() => {
-      if (myData) {
-        const res = analyzeSaju(myData, emptyTarget, relationType);
-        setResult(res);
-        setStep('result');
-      }
-    }, 2800);
+    const res = analyzeSaju(myData, emptyTarget, relationType);
+    setResult(res);
+    setStep('result');
   };
 
   const handleReset = () => {
@@ -59,8 +50,8 @@ export default function AppPage() {
     setStep('my-info');
   };
 
-  const stepNumber = { 'my-info': 1, 'relation': 2, 'target-info': 3, 'loading': 4, 'result': 5 };
-  const showProgress = step !== 'loading' && step !== 'result';
+  const stepNumber = { 'my-info': 1, 'relation': 2, 'target-info': 3, 'result': 4 };
+  const showProgress = step !== 'result';
 
   return (
     <div className="min-h-screen bg-bg">
@@ -99,7 +90,6 @@ export default function AppPage() {
             isTarget
           />
         )}
-        {step === 'loading' && <StepLoading />}
         {step === 'result' && result && myData && targetData && (
           <StepResult
             myData={myData}

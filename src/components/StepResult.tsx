@@ -70,124 +70,167 @@ const ACCURACY_LABELS: Record<string, { label: string; color: string; desc: stri
 };
 
 // ───────────────────────────────────────────
-// AI 로딩 전체화면
+// AI 로딩 전체화면 (실제 경과 시간 기반)
 // ───────────────────────────────────────────
-const AI_STEPS = [
-  { label: '사주 기본 정보 확인', sub: '년주·월주·일주·시주 파악', delay: 0 },
-  { label: '충돌 구조 분석', sub: '충(沖)·형(刑)·해(害)·극(剋) 계산', delay: 2200 },
-  { label: '감정 패턴 & 역학 해석', sub: '두 사람의 기질 충돌 방식 분석', delay: 5000 },
-  { label: '갈등 시나리오 생성', sub: '실제 터질 법한 상황 3가지 도출', delay: 8500 },
-  { label: '회피 전략 & 최종 정리', sub: '앞으로 안부딪히기 위한 가이드', delay: 12000 },
+const LOADING_STEPS = [
+  { pctStart: 0,  pctEnd: 20,  label: '사주 기본 정보 확인',    sub: '年柱 · 月柱 · 日柱 · 時柱',     hanja: '命' },
+  { pctStart: 20, pctEnd: 40,  label: '충돌 구조 분석',          sub: '沖 · 刑 · 害 · 剋 계산',         hanja: '沖' },
+  { pctStart: 40, pctEnd: 60,  label: '감정 패턴 해석',          sub: '두 사람의 기질 충돌 방식',        hanja: '氣' },
+  { pctStart: 60, pctEnd: 80,  label: '갈등 시나리오 도출',      sub: '실제 터질 법한 상황 분석',        hanja: '刑' },
+  { pctStart: 80, pctEnd: 100, label: '최종 분석 정리',          sub: '회피 전략 & 결론 도출',           hanja: '決' },
 ];
 
-function AILoadingScreen({ hasTarget, score, done }: { hasTarget: boolean; score: number; done: boolean }) {
-  const [activeStep, setActiveStep] = useState(0);
+const EXPECTED_MS = 22000;
 
-  // 고정 타이머로 단계 진행 (마지막 단계는 타이머 없음 — API 올 때까지 대기)
+function AILoadingScreen({ hasTarget, score, done, result }: {
+  hasTarget: boolean;
+  score: number;
+  done: boolean;
+  result: SajuResult;
+}) {
+  const startRef = useRef(Date.now());
+  const doneRef = useRef(false);
+  const [progress, setProgress] = useState(0);
+
   useEffect(() => {
-    const timers = [
-      setTimeout(() => setActiveStep(1), 2200),
-      setTimeout(() => setActiveStep(2), 5000),
-      setTimeout(() => setActiveStep(3), 8500),
-      setTimeout(() => setActiveStep(4), 13500),
-      // 마지막 step(4)은 done=true 될 때까지 "진행 중" 유지
-    ];
-    return () => timers.forEach(clearTimeout);
+    const iv = setInterval(() => {
+      if (doneRef.current) return;
+      const elapsed = Date.now() - startRef.current;
+      setProgress(Math.min((elapsed / EXPECTED_MS) * 95, 95));
+    }, 120);
+    return () => clearInterval(iv);
   }, []);
 
-  // API 응답 완료 → 모든 단계 즉시 완료 표시
   useEffect(() => {
-    if (done) setActiveStep(AI_STEPS.length);
+    if (done && !doneRef.current) {
+      doneRef.current = true;
+      setProgress(100);
+    }
   }, [done]);
 
   const color = score >= 80 ? '#FF2D55' : score >= 60 ? '#BF5AF2' : '#F59E0B';
 
+  const statusMsg =
+    progress < 20  ? '사주 정보를 읽어들이는 중...' :
+    progress < 40  ? '충돌 구조를 계산하는 중...' :
+    progress < 60  ? '감정 패턴을 해석하는 중...' :
+    progress < 80  ? '갈등 시나리오를 분석하는 중...' :
+    progress < 100 ? '최종 결론을 정리하는 중...' :
+    '분석 완료';
+
+  // 四柱 명판
+  const myPillars = [
+    result.myYear  && { stem: result.myYear.stem,  branch: result.myYear.branch,  label: '年' },
+    result.myMonth && { stem: result.myMonth.stem, branch: result.myMonth.branch, label: '月' },
+    result.myDay   && { stem: result.myDay.stem,   branch: result.myDay.branch,   label: '日' },
+    result.myHour  && { stem: result.myHour.stem,  branch: result.myHour.branch,  label: '時' },
+  ].filter(Boolean) as { stem: string; branch: string; label: string }[];
+
+  const targetPillars = hasTarget ? [
+    result.targetYear  && { stem: result.targetYear.stem,  branch: result.targetYear.branch,  label: '年' },
+    result.targetMonth && { stem: result.targetMonth.stem, branch: result.targetMonth.branch, label: '月' },
+    result.targetDay   && { stem: result.targetDay.stem,   branch: result.targetDay.branch,   label: '日' },
+  ].filter(Boolean) as { stem: string; branch: string; label: string }[] : [];
+
   return (
-    <div className="min-h-screen flex flex-col justify-center max-w-lg mx-auto px-4 py-12">
-      {/* 상단 요약 — 점수만 미리 보여주기 */}
-      <div className="flex flex-col items-center mb-14">
-        <div className="relative w-24 h-24 mb-6">
-          {/* 바깥 ping 링 */}
-          <div className="absolute inset-0 rounded-full border animate-ping opacity-20"
-            style={{ borderColor: color }} />
-          {/* 중간 pulse 링 */}
-          <div className="absolute inset-2 rounded-full border animate-pulse opacity-40"
-            style={{ borderColor: color }} />
-          {/* 점수 */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-sans text-3xl font-bold text-white">{score}</span>
-            <span className="text-[#555] text-[10px]">/ 100</span>
+    <div className="min-h-screen flex flex-col justify-center max-w-lg mx-auto px-4 py-10">
+
+      {/* 사주 명판 */}
+      <div className="flex justify-center items-center gap-8 mb-10">
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-[#333] text-[9px] tracking-[0.2em] uppercase">나</p>
+          <div className="flex gap-1.5">
+            {myPillars.map((p, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <span className="text-[#2a2a2a] text-[8px] mb-1">{p.label}</span>
+                <div className="w-9 h-11 border border-[#1e1e1e] bg-[#0A0A0A] flex flex-col items-center justify-center gap-0.5">
+                  <span className="text-[#FF2D55] text-sm font-bold leading-none">{p.stem}</span>
+                  <span className="text-[#666] text-sm leading-none">{p.branch}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <p className="font-display text-white text-xl tracking-wide mb-2">
-          AI 사주 분석 중
-        </p>
-        <p className="font-sans-kr text-[#555] text-sm">
-          {hasTarget ? '두 사람의 충돌 구조를 계산하고 있어요' : '내 위험 유형을 분석하고 있어요'}
-        </p>
+        {hasTarget && targetPillars.length > 0 && (
+          <>
+            <div className="flex flex-col items-center pb-3">
+              <span className="text-[#FF2D55]/30 text-2xl">⚡</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-[#333] text-[9px] tracking-[0.2em] uppercase">상대</p>
+              <div className="flex gap-1.5">
+                {targetPillars.map((p, i) => (
+                  <div key={i} className="flex flex-col items-center">
+                    <span className="text-[#2a2a2a] text-[8px] mb-1">{p.label}</span>
+                    <div className="w-9 h-11 border border-[#1e1e1e] bg-[#0A0A0A] flex flex-col items-center justify-center gap-0.5">
+                      <span className="text-[#BF5AF2] text-sm font-bold leading-none">{p.stem}</span>
+                      <span className="text-[#666] text-sm leading-none">{p.branch}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* 점수 + 상태 메시지 */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-baseline gap-1 mb-2">
+          <span className="font-sans text-5xl font-bold" style={{ color }}>{score}</span>
+          <span className="text-[#333] text-sm">/ 100</span>
+        </div>
+        <p className="font-sans-kr text-[#555] text-sm">{statusMsg}</p>
       </div>
 
       {/* 단계 리스트 */}
-      <div className="border border-[#1a1a1a] bg-[#0D0D0D] divide-y divide-[#1a1a1a] mb-8">
-        {AI_STEPS.map((s, i) => {
-          const done = i < activeStep;
-          const current = i === activeStep;
-          const pending = i > activeStep;
+      <div className="border border-[#141414] bg-[#080808] divide-y divide-[#141414] mb-5">
+        {LOADING_STEPS.map((s, i) => {
+          const isDone    = progress >= s.pctEnd;
+          const isCurrent = !isDone && progress >= s.pctStart;
+          const isPending = progress < s.pctStart;
           return (
-            <div
-              key={i}
-              className={`flex items-center gap-4 px-5 py-4 transition-all duration-700 ${
-                pending ? 'opacity-25' : 'opacity-100'
-              }`}
-            >
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border transition-all duration-500 ${
-                done    ? 'border-[#FF2D55] bg-[#FF2D55]' :
-                current ? 'border-[#FF2D55] bg-[#FF2D55]/10' :
-                          'border-[#2a2a2a]'
+            <div key={i} className={`flex items-center gap-4 px-5 py-3.5 transition-all duration-500 ${isPending ? 'opacity-15' : 'opacity-100'}`}>
+              <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center border transition-all duration-500 ${
+                isDone    ? 'border-[#FF2D55]/60 bg-[#FF2D55]/8' :
+                isCurrent ? 'border-[#FF2D55]/30' :
+                            'border-[#1a1a1a]'
               }`}>
-                {done    && <span className="text-white text-[10px] font-bold">✓</span>}
-                {current && <span className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse block" />}
+                {isDone
+                  ? <span className="text-[#FF2D55] text-xs">✓</span>
+                  : <span className={`text-[11px] font-bold ${isCurrent ? 'text-[#FF2D55] animate-pulse' : 'text-[#222]'}`}>{s.hanja}</span>
+                }
               </div>
-
               <div className="flex-1 min-w-0">
-                <p className={`font-sans-kr text-sm font-medium leading-tight ${
-                  done || current ? 'text-white' : 'text-[#444]'
-                }`}>
+                <p className={`font-sans-kr text-sm font-medium ${isDone || isCurrent ? 'text-white' : 'text-[#222]'}`}>
                   {s.label}
-                  {current && <span className="text-[#FF2D55] animate-pulse"> ···</span>}
+                  {isCurrent && <span className="text-[#FF2D55] animate-pulse"> ···</span>}
                 </p>
-                <p className="font-sans-kr text-[#444] text-[11px] mt-0.5">{s.sub}</p>
+                <p className="text-[#2a2a2a] text-[10px] mt-0.5 font-sans-kr">{s.sub}</p>
               </div>
-
-              {done && (
-                <span className="text-[#FF2D55] text-[11px] font-sans-kr flex-shrink-0 font-medium">
-                  완료
-                </span>
-              )}
-              {current && (
-                <span className="text-[#555] text-[11px] font-sans-kr flex-shrink-0 animate-pulse">
-                  진행 중
-                </span>
-              )}
+              {isDone    && <span className="text-[#FF2D55]/70 text-[10px] flex-shrink-0 font-sans-kr">완료</span>}
+              {isCurrent && <span className="text-[#444] text-[10px] flex-shrink-0 font-sans-kr animate-pulse">분석 중</span>}
             </div>
           );
         })}
       </div>
 
-      {/* 진행 바 — 시간 기반 */}
-      <div className="w-full h-px bg-[#1a1a1a] overflow-hidden">
+      {/* 실시간 진행 바 */}
+      <div className="w-full h-[2px] bg-[#111] overflow-hidden mb-2">
         <div
-          className="h-full bg-[#FF2D55] transition-none"
+          className="h-full"
           style={{
-            width: `${((activeStep + 1) / AI_STEPS.length) * 100}%`,
-            transition: 'width 2s ease-out',
+            width: `${progress}%`,
+            background: `linear-gradient(90deg, ${color}50, ${color})`,
+            transition: progress >= 100 ? 'width 0.4s ease' : 'width 0.15s linear',
           }}
         />
       </div>
-      <p className="font-sans-kr text-center text-[#333] text-[11px] mt-4">
-        보통 15–25초 소요됩니다
-      </p>
+      <div className="flex justify-between">
+        <p className="font-sans-kr text-[#222] text-[10px]">AI 분석 진행률</p>
+        <p className="font-sans text-[#444] text-[10px]">{Math.round(progress)}%</p>
+      </div>
     </div>
   );
 }
@@ -291,7 +334,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   // ── AI 계산 중: 전체 화면 로딩 (API 완료 후 1초까지 유지) ──
   if (showLoading) {
-    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} done={apiDone} />;
+    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} done={apiDone} result={result} />;
   }
 
   // ── 공유 핸들러 ──
