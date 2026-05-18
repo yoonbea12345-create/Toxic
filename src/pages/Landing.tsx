@@ -12,7 +12,7 @@ export default function Landing() {
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0D0D0D]/85 backdrop-blur-md border-b border-white/5">
         <div className="max-w-xl mx-auto px-5 py-3 flex items-center justify-between">
-          <img src="/logo.svg" alt="TOXIC" className="h-10 object-contain" />
+          <img src="/logo.svg" alt="TOXIC" className="h-16 object-contain" />
           <button
             onClick={() => navigate('/app')}
             className="text-xs text-[#888] border border-[#333] px-4 py-2 hover:border-[#FF2D55]/60 hover:text-white transition-all font-sans-kr tracking-wide"
