@@ -143,6 +143,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 - 충 유발 지지: ${sajuResult.myDangerBranches?.join(', ') || '분석 중'}
 - 극 유발 오행: ${sajuResult.myDangerOhaeng?.join(', ') || '분석 중'}
 
+다음 JSON 형식으로만 반환하세요 (코드블록 없이 순수 JSON):
+
 {
   "toxicSummary": "나의 독성 패턴 한 줄 요약 (20자 이내, 직접적으로)",
 
@@ -205,7 +207,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 2500,
+      max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     });

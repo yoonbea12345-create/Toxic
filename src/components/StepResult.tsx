@@ -445,27 +445,17 @@ export default function StepResult({ myData, targetData, result, relationType, o
         </div>
       )}
 
-      {/* ══════════════════════════════════════
-          에러 폴백
-      ══════════════════════════════════════ */}
+      {/* AI 실패 알림 (섹션은 계속 렌더) */}
       {aiError && (
-        <div className="space-y-4">
-          <SectionHeader number="01" title="나와 안맞는 이유" />
-          <Card accent="#FF2D55">
-            <SubLabel text="핵심 충돌 구조" />
-            <p className="text-white text-sm font-bold mb-2">{result.conflictType}</p>
-            <p className="text-[#888] text-sm leading-relaxed">{result.conflictSummary}</p>
-          </Card>
-          <Card><SubLabel text="충(沖) 분석" /><p className="text-[#888] text-sm leading-relaxed">{result.analysis.chungAnalysis}</p></Card>
-          <Card><SubLabel text="형(刑) 분석" /><p className="text-[#888] text-sm leading-relaxed">{result.analysis.hyungAnalysis}</p></Card>
-          <Card><SubLabel text="오행 극(剋)" /><p className="text-[#888] text-sm leading-relaxed">{result.analysis.geukAnalysis}</p></Card>
+        <div className="border border-[#2a1a1a] bg-[#1a0a0a] px-4 py-3 text-xs text-[#666] font-sans-kr">
+          AI 분석 서버 오류 — 사주 기본 데이터로 결과를 표시합니다
         </div>
       )}
 
       {/* ══════════════════════════════════════
-          3-SECTION 결과 (상대 있을 때)
+          결과 (상대 있을 때)
       ══════════════════════════════════════ */}
-      {!aiError && hasTarget && (
+      {hasTarget && (
         <div className="space-y-4">
 
           {/* ════ 01 나와 안맞는 이유 ════ */}
@@ -756,9 +746,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
       )}
 
       {/* ══════════════════════════════════════
-          3-SECTION 결과 (역산 모드)
+          결과 (역산 모드)
       ══════════════════════════════════════ */}
-      {!aiError && !hasTarget && (
+      {!hasTarget && (
         <div className="space-y-4">
 
           <SectionHeader number="01" title="나와 안맞는 이유" subtitle="내 사주 기질과 충돌 구조" />
