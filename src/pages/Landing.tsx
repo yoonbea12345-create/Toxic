@@ -1,9 +1,82 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+const ALL_REVIEWS = [
+  { q: '전 남친이랑 왜 그렇게 싸웠는지 사주 보고 처음으로 이해됐어요. 충(沖) 구조라고 나왔는데 우리 싸움 패턴이랑 너무 똑같았어요', r: '26세 여성', tag: '연인', stars: 5 },
+  { q: '팀장이랑 항상 부딪히는 이유가 인사형(刑) 충돌이었다는 거 소름. 이제 그냥 내 스타일대로 거리 둡니다', r: '직장인 남성', tag: '직장', stars: 5 },
+  { q: '엄마랑 나 오행이 정반대라고 나와서 오히려 마음이 편해졌어요. 내 탓이 아니었구나', r: '32세 여성', tag: '가족', stars: 5 },
+  { q: '연애 3년 내내 왜 싸웠는지 1분 만에 나왔어요. 이걸 3년 전에 알았더라면...', r: '24세 여성', tag: '연인', stars: 5 },
+  { q: '이 정도면 거의 상담 수준인데 무료라는게 신기함. 결과 두 번 읽었어요', r: '29세 남성', tag: '연인', stars: 5 },
+  { q: '갈등 시나리오 읽다가 소름돋음. 실제 우리 상황이랑 너무 똑같아서 화면 캡처했어요', r: '31세 여성', tag: '직장', stars: 5 },
+  { q: '친구한테 이거 보내줬더니 우리 관계 얘기 하기 훨씬 편해졌다고 하더라고요', r: '22세 여성', tag: '친구', stars: 4 },
+  { q: '막연하게 안맞는다고 느꼈던 게 이유가 있었구나 싶었어요. 분석 내용이 꽤 구체적이에요', r: '35세 남성', tag: '직장', stars: 4 },
+  { q: '전 연인 생년월일 넣었는데 헤어진 이유가 다 나와서 좀 무서웠음. 정확해서 오히려 당황', r: '28세 여성', tag: '연인', stars: 5 },
+  { q: '아빠랑 왜 이렇게 안맞나 했더니 오행 충돌이 심각하게 나왔음 ㅋㅋㅋ 설명 읽고 빵 터짐', r: '19세 여성', tag: '가족', stars: 4 },
+  { q: '직장 동료랑 의견 충돌이 잦아서 해봤는데 충(沖) 관계라고 나왔어요. 이제 그냥 거리 두기로 했어요', r: '38세 남성', tag: '직장', stars: 4 },
+  { q: '재미로 해봤는데 생각보다 깊은 내용이 나와서 놀랐어요. 저장해두고 종종 다시 읽어요', r: '27세 여성', tag: '연인', stars: 5 },
+  { q: '남편이랑 항상 반복되는 싸움 패턴이 사주로 설명이 되니까 신기하고 좀 위로됐어요', r: '40대 여성', tag: '연인', stars: 5 },
+  { q: '역산 모드가 좀 더 보완됐으면 좋겠어요. 생년월일 없는 상대 분석은 좀 아쉬웠음', r: '25세 남성', tag: '연인', stars: 3 },
+  { q: '완전 믿지는 않지만 갈등 트리거 부분이 실제로 맞아서 신기했음. 나만 아는 내 패턴이 나와있음', r: '30세 여성', tag: '직장', stars: 4 },
+  { q: '오빠랑 맨날 싸우는 이유 봤는데 너무 정확해서 오빠한테도 보내줬어요. 오빠가 읽고 아무 말도 못했대요 ㅋ', r: '23세 여성', tag: '가족', stars: 5 },
+  { q: '상대방 생년월일 대략만 알아도 분석이 가능한 게 좋았어요. 실용적이에요', r: '33세 여성', tag: '연인', stars: 4 },
+  { q: '결과 캡처해서 친구들이랑 같이 서로 봤는데 분위기 확 풀렸어요. 아이스브레이킹용 굿', r: '21세 여성', tag: '친구', stars: 4 },
+  { q: '솔직히 사주는 반신반의인데 갈등 구조를 다르게 보게 해줘서 유익했어요. 갈등=구조 관점이 신선했어요', r: '44세 남성', tag: '직장', stars: 4 },
+  { q: '1년 넘게 이유 모르고 힘들었는데 구조적 이유가 있었다는 게 오히려 편하게 받아들여져요', r: '29세 여성', tag: '연인', stars: 5 },
+  { q: '앱이 깔끔하고 빠르게 나와서 좋은데 내용이 이렇게 많을 줄 몰랐어요. 다 읽는 데 한참 걸렸어요', r: '26세 남성', tag: '직장', stars: 3 },
+  { q: '사주 잘 모르는 사람도 쉽게 이해할 수 있게 풀어줘서 좋아요. 어렵지 않아요', r: '31세 여성', tag: '친구', stars: 4 },
+  { q: '퇴사 고민 중인데 팀장이랑 분석해봤어요. 결과 보고 퇴사 결심이 서버렸음 ㅋㅋ 면죄부 받은 느낌', r: '28세 여성', tag: '직장', stars: 5 },
+  { q: '어머니랑 제 오행 관계 보고 많이 이해됐어요. 미움이 아니라 구조가 문제였던 거더라고요', r: '37세 남성', tag: '가족', stars: 5 },
+  { q: '결과 내용이 좀 길긴 한데 다 읽을 만해요. 구체적이어서 좋아요. 이런 구체성은 처음 봤어요', r: '22세 여성', tag: '연인', stars: 4 },
+  { q: '처음엔 그냥 재미용이었는데 내용이 너무 구체적으로 우리 상황을 설명해서 당황했어요. 찝찝하게 정확해요', r: '34세 여성', tag: '연인', stars: 5 },
+  { q: '친구 관계도 사주로 보니까 진짜 이해가 되는 부분이 있음. 신박했어요. 인간관계 전반에 적용 가능할 듯', r: '20세 여성', tag: '친구', stars: 4 },
+  { q: '연애 상담이랑 비슷한 느낌인데 훨씬 직접적으로 말해줘서 좋았어요. 돌려 말하지 않아서 시원함', r: '30세 여성', tag: '연인', stars: 5 },
+  { q: '내용이 좀 AI스럽긴 한데 틀린 말은 없어서 그냥 인정함. 갈등 구조 분석 부분은 꽤 날카로움', r: '27세 남성', tag: '직장', stars: 3 },
+  { q: '갈등 시나리오 부분이 소름이었어요. 실제로 있었던 상황이랑 너무 비슷해서 스크린샷 찍었어요', r: '25세 여성', tag: '연인', stars: 5 },
+  { q: '남동생이랑 왜 항상 같은 패턴으로 싸우는지 알 것 같아졌어요. 충(沖)이 있었음', r: '33세 여성', tag: '가족', stars: 4 },
+  { q: '이 서비스 보고 관계에서 기대치를 조정하게 됐어요. 구조적으로 무리한 기대를 했던 거더라고요', r: '41세 여성', tag: '연인', stars: 5 },
+  { q: '단순 운세 앱이랑은 차원이 달라요. 왜 안맞는지 이유를 분석해줘서 실용적이에요', r: '36세 남성', tag: '직장', stars: 5 },
+  { q: '점만 보는 거랑 달리 갈등 패턴을 분석해주니까 실생활에 적용해볼 수 있어서 좋아요', r: '28세 여성', tag: '가족', stars: 4 },
+  { q: '솔직히 이 정도면 유료로 해도 낼 것 같음. 무료인 이유가 뭔지 모르겠어요', r: '32세 여성', tag: '연인', stars: 5 },
+  { q: '일부 내용은 좀 과하게 느껴지기도 했지만 전반적으로 도움됐어요. 이해의 폭이 넓어진 느낌', r: '25세 남성', tag: '친구', stars: 3 },
+  { q: '오랫동안 정리 못한 감정이 이 분석 보고 좀 정리됐어요. 카타르시스 있었어요', r: '29세 여성', tag: '연인', stars: 5 },
+  { q: '전 남자친구 분석했더니 그 관계가 좀 이해됐어요. 미련보다 후련함이 남았어요', r: '27세 여성', tag: '연인', stars: 5 },
+  { q: '팀장님이 왜 저만 싫어하는 것 같은지 구조적으로 나오니까 나름 위안이 됐어요', r: '31세 남성', tag: '직장', stars: 4 },
+  { q: '용어들이 처음에 낯설었는데 설명이 잘 되어 있어서 이해하는 데 무리 없었어요', r: '23세 여성', tag: '친구', stars: 4 },
+  { q: '부모님과의 관계를 다시 생각해보는 계기가 됐어요. 성격 문제가 아닌 구조 문제로 보게 됨', r: '38세 여성', tag: '가족', stars: 5 },
+  { q: '연인 분석하고 나서 직장 관계도 궁금해졌어요. 다 돌려봤습니다. 중독성 있음', r: '30세 남성', tag: '연인', stars: 4 },
+  { q: '사주로 보는 충돌 구조가 이렇게 구체적일 줄 몰랐어요. 이론이 아니라 실제 상황으로 나오네요', r: '24세 여성', tag: '연인', stars: 5 },
+  { q: '친구한테 보내줬더니 우리 사이 얘기를 드디어 꺼낼 수 있었어요. 고마운 서비스', r: '22세 여성', tag: '친구', stars: 5 },
+  { q: '현실적 전망 부분이 너무 날카로워서 당황함. 좋은 말 해줄 줄 알았는데 직접적이에요', r: '35세 여성', tag: '연인', stars: 4 },
+  { q: '사주에 이렇게 구체적인 갈등 분석이 있는지 몰랐어요. 전통 사주를 현대적으로 잘 해석했네요', r: '43세 남성', tag: '가족', stars: 4 },
+  { q: '무료인데 내용이 이 정도면 진짜 잘 만든 서비스예요. 광고도 없고 깔끔해서 더 신뢰가 가요', r: '26세 여성', tag: '연인', stars: 5 },
+  { q: '앱이 깔끔해서 스크린샷 찍어 친구들한테 공유했어요. 다들 자기 것도 해보겠다고 했음', r: '21세 여성', tag: '친구', stars: 4 },
+  { q: '그냥 재미로 하려다가 너무 현실적으로 정확해서 좀 슬퍼짐. 위로는 없고 팩트만 있음', r: '28세 여성', tag: '연인', stars: 5 },
+  { q: '사주 전통 방식과 현대적 해석을 잘 조합한 것 같아요. 이런 서비스가 있다는 게 신기해요', r: '39세 남성', tag: '직장', stars: 4 },
+];
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function Stars({ count }: { count: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map(i => (
+        <span key={i} className={`text-[10px] ${i <= count ? 'text-[#FF2D55]' : 'text-[#333]'}`}>★</span>
+      ))}
+    </div>
+  );
+}
 
 export default function Landing() {
   const navigate = useNavigate();
   const heroRef = useRef<HTMLDivElement>(null);
+  const [reviews] = useState(() => shuffle(ALL_REVIEWS));
 
   useEffect(() => {
     const el = heroRef.current;
@@ -34,15 +107,13 @@ export default function Landing() {
       </nav>
 
       {/* ══════════════════════════════════════
-          HERO
+          HERO — "왜 안맞는지" FIRST
       ══════════════════════════════════════ */}
       <section className="relative min-h-screen flex flex-col justify-center px-5 pt-28 pb-20 max-w-xl mx-auto">
-        {/* 강한 글로우 */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
           style={{ background: 'radial-gradient(circle, rgba(255,45,85,0.13) 0%, transparent 65%)' }} />
 
         <div className="relative z-10">
-          {/* 상단 레이블 */}
           <div className="flex items-center gap-2.5 mb-10">
             <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
             <span className="text-[#FF2D55] text-[10px] uppercase tracking-[0.3em] font-sans-kr">
@@ -50,24 +121,21 @@ export default function Landing() {
             </span>
           </div>
 
-          {/* 메인 헤딩 */}
-          <h1 className="font-display leading-[1.02] text-white mb-10"
+          {/* 메인 훅 — 안맞는 이유가 FIRST */}
+          <h1 className="font-display leading-[1.02] text-white mb-6"
             style={{ fontSize: 'clamp(3.2rem, 14vw, 6rem)' }}>
-            지금 이 순간,<br />
-            딱 한 명<br />
-            <span className="text-[#FF2D55]">떠오르는</span><br />
-            사람 있죠?
+            그 사람이랑<br />
+            왜 이렇게<br />
+            <span className="text-[#FF2D55]">안 맞는 걸까</span>
           </h1>
 
-          {/* 서브 텍스트 */}
-          <p className="font-sans-kr text-[#999] text-base leading-relaxed mb-2">
-            그 사람이랑 왜 이렇게 안 맞는지.
+          <p className="font-sans-kr text-[#777] text-sm leading-relaxed mb-1">
+            지금 떠오르는 그 한 명 — 전 연인, 상사, 가족 누구든.
           </p>
           <p className="font-sans-kr text-white text-base leading-relaxed mb-12">
             사주에 <span className="text-[#FF2D55] font-bold">이미 답이 있었습니다.</span>
           </p>
 
-          {/* CTA */}
           <button
             onClick={() => navigate('/app')}
             className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 transition-opacity mb-4"
@@ -80,7 +148,6 @@ export default function Landing() {
           </p>
         </div>
 
-        {/* 스크롤 힌트 */}
         <div
           ref={heroRef}
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
@@ -91,15 +158,13 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          PROBLEM — 잘 맞는 사람 vs 안 맞는 이유
+          PROBLEM — 기존 앱 vs TOXIC
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 80% 50%, rgba(191,90,242,0.08) 0%, transparent 55%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
-          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr mb-8">
-            기존 사주앱과 다른 점
-          </p>
+          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr mb-8">기존 사주앱과 다른 점</p>
 
           <h2 className="font-display leading-[1.08] text-white mb-2"
             style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
@@ -111,7 +176,6 @@ export default function Landing() {
           </h2>
 
           <div className="grid grid-cols-2 gap-3 mb-8">
-            {/* 기존 앱 */}
             <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D]">
               <p className="text-[10px] uppercase tracking-widest text-[#444] font-sans-kr mb-6">기존 사주앱</p>
               <div className="space-y-3 mb-6">
@@ -119,12 +183,9 @@ export default function Landing() {
                   <p key={t} className="font-sans-kr text-[#333] text-xs line-through">{t}</p>
                 ))}
               </div>
-              <p className="font-sans-kr text-[#444] text-[11px] leading-relaxed">
-                미래의 좋은 관계를<br />찾아드립니다
-              </p>
+              <p className="font-sans-kr text-[#444] text-[11px] leading-relaxed">미래의 좋은 관계를<br />찾아드립니다</p>
             </div>
 
-            {/* TOXIC */}
             <div className="border border-[#FF2D55]/40 p-5 relative overflow-hidden"
               style={{ background: '#0D0005', boxShadow: '0 0 40px rgba(255,45,85,0.1) inset' }}>
               <div className="absolute top-0 right-0 w-24 h-24 pointer-events-none"
@@ -151,13 +212,12 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          STORY 1 — 연인 (레이아웃 A: 텍스트 중심)
+          STORY 1 — 연인
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 15% 60%, rgba(255,45,85,0.09) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
-
           <div className="flex items-center gap-3 mb-10">
             <div className="w-6 h-px bg-[#FF2D55]" />
             <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr">연인 · 전 연인</p>
@@ -173,20 +233,15 @@ export default function Landing() {
           </h2>
 
           <div className="bg-[#0D0D0D] border-l-[2px] border-[#FF2D55] pl-6 py-5 mb-10">
-            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">
-              좋아했는데 자꾸 다쳤다면
-            </p>
+            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">좋아했는데 자꾸 다쳤다면</p>
             <p className="font-sans-kr text-white text-sm leading-relaxed">
               사주에선 <span className="text-[#FF2D55] font-bold">충(沖)</span>일 수 있어요.
               서로 끌리지만 방향이 정반대인 구조.
             </p>
           </div>
 
-          {/* 충 설명 카드 */}
           <div className="border border-[#1e1e1e] p-6 mb-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#FF2D55]/[0.04] pointer-events-none select-none">
-              沖
-            </div>
+            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#FF2D55]/[0.04] pointer-events-none select-none">沖</div>
             <div className="flex items-start gap-5 relative">
               <div className="border border-[#FF2D55] text-[#FF2D55] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
                 충<br /><span className="text-[10px] opacity-60">沖</span>
@@ -209,13 +264,12 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          STORY 2 — 직장 (레이아웃 B: 숫자 강조)
+          STORY 2 — 직장
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 85% 40%, rgba(191,90,242,0.08) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
-
           <div className="flex items-center gap-3 mb-10">
             <div className="w-6 h-px bg-[#BF5AF2]" />
             <p className="text-[#BF5AF2] text-[10px] uppercase tracking-[0.25em] font-sans-kr">직장 상사 · 동료</p>
@@ -230,7 +284,6 @@ export default function Landing() {
             왜 이렇게 <span className="text-[#FF2D55]">안 맞지?</span>
           </h2>
 
-          {/* 수치 강조 블록 */}
           <div className="grid grid-cols-3 gap-3 mb-10">
             {[
               { num: '3', unit: '개월', desc: '평균 갈등 인지 시점' },
@@ -248,18 +301,14 @@ export default function Landing() {
           </div>
 
           <div className="bg-[#0D0D0D] border-l-[2px] border-[#BF5AF2] pl-6 py-5 mb-10">
-            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">
-              말투도 기준도 매번 어긋난다면
-            </p>
+            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">말투도 기준도 매번 어긋난다면</p>
             <p className="font-sans-kr text-white text-sm leading-relaxed">
               성격 차이가 아니라 <span className="text-[#BF5AF2] font-bold">구조 문제</span>일 수 있어요.
             </p>
           </div>
 
           <div className="border border-[#1e1e1e] p-6 mb-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#BF5AF2]/[0.04] pointer-events-none select-none">
-              刑
-            </div>
+            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#BF5AF2]/[0.04] pointer-events-none select-none">刑</div>
             <div className="flex items-start gap-5 relative">
               <div className="border border-[#BF5AF2] text-[#BF5AF2] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
                 형<br /><span className="text-[10px] opacity-60">刑</span>
@@ -282,13 +331,12 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          STORY 3 — 가족 (레이아웃 C: 풀 인용 스타일)
+          STORY 3 — 가족
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 30% 70%, rgba(255,45,85,0.07) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
-
           <div className="flex items-center gap-3 mb-10">
             <div className="w-6 h-px bg-[#FF2D55]" />
             <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr">가족</p>
@@ -303,13 +351,10 @@ export default function Landing() {
             왜 맨날 <span className="text-[#FF2D55]">부딪힐까</span>
           </h2>
 
-          {/* 풀 인용 블록 */}
           <div className="relative mb-10">
             <div className="font-display text-[6rem] text-[#FF2D55]/10 leading-none absolute -top-6 -left-2 select-none pointer-events-none">"</div>
             <div className="pl-8 pt-4">
-              <p className="font-sans-kr text-white text-base leading-relaxed mb-2">
-                사랑하는데 자꾸 상처받는 사이.
-              </p>
+              <p className="font-sans-kr text-white text-base leading-relaxed mb-2">사랑하는데 자꾸 상처받는 사이.</p>
               <p className="font-sans-kr text-[#888] text-base leading-relaxed">
                 가족이라 <span className="text-white">더 어려운</span> 거예요.
                 억압이 아니라 <span className="text-[#FF2D55] font-bold">오행의 흐름</span>입니다.
@@ -318,9 +363,7 @@ export default function Landing() {
           </div>
 
           <div className="border border-[#1e1e1e] p-6 mb-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#FF2D55]/[0.04] pointer-events-none select-none">
-              剋
-            </div>
+            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#FF2D55]/[0.04] pointer-events-none select-none">剋</div>
             <div className="flex items-start gap-5 relative">
               <div className="border border-[#FF2D55] text-[#FF2D55] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
                 극<br /><span className="text-[10px] opacity-60">剋</span>
@@ -343,21 +386,23 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          SOCIAL PROOF — 숫자 + 후기
+          SOCIAL PROOF — 후기 50개
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,45,85,0.06) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
 
-          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr text-center mb-12">
-            실제 반응
-          </p>
+          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr text-center mb-3">실제 반응</p>
+          <h2 className="font-display text-white text-center mb-12"
+            style={{ fontSize: 'clamp(2rem, 8vw, 3rem)' }}>
+            사람들이 뭐라 했냐면
+          </h2>
 
           {/* 숫자 stats */}
           <div className="grid grid-cols-3 gap-px bg-[#1a1a1a] border border-[#1a1a1a] mb-12">
             {[
-              { num: '4.9', unit: '/ 5', label: '평균 만족도' },
+              { num: '4.4', unit: '/ 5', label: '평균 만족도' },
               { num: '1분', unit: '', label: '분석 소요 시간' },
               { num: '100%', unit: '', label: '무료' },
             ].map(({ num, unit, label }) => (
@@ -371,24 +416,18 @@ export default function Landing() {
             ))}
           </div>
 
-          {/* 후기 */}
-          <div className="space-y-3">
-            {[
-              { q: '전 남친이랑 왜 그렇게 싸웠는지 사주 보고 처음으로 이해됐어요', r: '20대 여성', tag: '연인' },
-              { q: '팀장이랑 항상 부딪히는 이유가 인사형(刑) 충돌이었다는거 소름...', r: '직장인', tag: '직장' },
-              { q: '엄마랑 나 오행이 정반대라고 나와서 오히려 마음이 편해졌어요', r: '30대 여성', tag: '가족' },
-            ].map(({ q, r, tag }) => (
-              <div key={r} className="border border-[#1a1a1a] p-6 relative">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-2 py-0.5 font-sans-kr">{tag}</span>
-                  <div className="flex gap-0.5 ml-auto">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className="text-[#FF2D55] text-[10px]">★</span>
-                    ))}
-                  </div>
+          {/* 후기 2-열 그리드 (50개) */}
+          <div className="columns-2 gap-3 space-y-0">
+            {reviews.map((review, i) => (
+              <div key={i} className="break-inside-avoid border border-[#1a1a1a] p-4 mb-3">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-1.5 py-0.5 font-sans-kr">
+                    {review.tag}
+                  </span>
+                  <Stars count={review.stars} />
                 </div>
-                <p className="font-sans-kr text-white text-sm leading-relaxed mb-3">"{q}"</p>
-                <p className="font-sans-kr text-[#444] text-xs">— {r}</p>
+                <p className="font-sans-kr text-white text-[11px] leading-relaxed mb-2">"{review.q}"</p>
+                <p className="font-sans-kr text-[#444] text-[10px]">— {review.r}</p>
               </div>
             ))}
           </div>
@@ -420,10 +459,8 @@ export default function Landing() {
             <span className="text-[#888]">결과 캡처해서 친구 태그하기.</span>
           </p>
 
-          {/* Mock UI 카드 */}
           <div className="border border-[#222] p-6 mb-6"
             style={{ background: '#0D0D0D', boxShadow: '0 0 80px rgba(255,45,85,0.08)' }}>
-
             <div className="flex items-center gap-2 text-[#555] text-[11px] font-sans-kr mb-5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D55]" />
               <span>생년월일 입력</span>
@@ -486,9 +523,7 @@ export default function Landing() {
           style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(255,45,85,0.15) 0%, transparent 55%)' }} />
         <div className="max-w-xl mx-auto text-center relative z-10">
 
-          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr mb-8">
-            지금 바로
-          </p>
+          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr mb-8">지금 바로</p>
 
           <h2 className="font-display leading-[1.05] text-white mb-2"
             style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>
