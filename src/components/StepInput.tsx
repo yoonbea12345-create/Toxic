@@ -63,19 +63,17 @@ export default function StepInput({ title, subtitle, onNext, onSkip, isTarget = 
       </div>
 
       <div className="space-y-5">
-        {/* 이름 (내 정보만) */}
-        {!isTarget && (
-          <div>
-            <label className="block text-text-secondary text-xs mb-2 uppercase tracking-wider">이름 (선택)</label>
-            <input
-              type="text"
-              placeholder="이름을 입력하세요"
-              value={data.name}
-              onChange={e => setData({ ...data, name: e.target.value })}
-              className="w-full bg-card-bg border border-border rounded-sm px-4 py-3 text-white placeholder-text-secondary focus:outline-none focus:border-accent-red transition-colors"
-            />
-          </div>
-        )}
+        {/* 이름 */}
+        <div>
+          <label className="block text-text-secondary text-xs mb-2 uppercase tracking-wider">이름 (선택)</label>
+          <input
+            type="text"
+            placeholder={isTarget ? "상대방 이름을 입력하세요" : "이름을 입력하세요"}
+            value={data.name}
+            onChange={e => setData({ ...data, name: e.target.value })}
+            className="w-full bg-card-bg border border-border rounded-sm px-4 py-3 text-white placeholder-text-secondary focus:outline-none focus:border-accent-red transition-colors"
+          />
+        </div>
 
         {/* 생년월일 */}
         <div>
