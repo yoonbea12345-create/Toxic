@@ -125,6 +125,87 @@ function Skeleton({ lines = 3 }: { lines?: number }) {
   );
 }
 
+const AI_STEPS = [
+  { label: '사주 기본 정보 확인', sub: '년주·월주·일주·시주 파악', delay: 0 },
+  { label: '충돌 구조 분석', sub: '충(沖)·형(刑)·해(害)·극(剋) 계산', delay: 1800 },
+  { label: '감정 패턴 & 역학 해석', sub: '두 사람의 기질 충돌 방식 분석', delay: 3800 },
+  { label: '갈등 시나리오 생성', sub: '실제 터질 법한 상황 3가지 도출', delay: 6000 },
+  { label: '회피 전략 & 최종 정리', sub: '앞으로 안부딪히기 위한 가이드', delay: 8500 },
+];
+
+function AILoadingScreen({ hasTarget }: { hasTarget: boolean }) {
+  const [activeStep, setActiveStep] = useState(-1);
+
+  useEffect(() => {
+    const timers = AI_STEPS.map((s, i) =>
+      setTimeout(() => setActiveStep(i), s.delay)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  return (
+    <div className="py-10">
+      {/* 헤더 */}
+      <div className="flex flex-col items-center mb-12">
+        <div className="relative w-16 h-16 mb-5">
+          <div className="absolute inset-0 rounded-full border border-[#FF2D55]/20 animate-ping" />
+          <div className="absolute inset-2 rounded-full border border-[#FF2D55]/40 animate-pulse" />
+          <div className="absolute inset-4 rounded-full bg-[#FF2D55]/20 flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse" />
+          </div>
+        </div>
+        <p className="font-display text-white text-lg tracking-wide mb-1">AI 사주 분석 중</p>
+        <p className="font-sans-kr text-[#555] text-xs">
+          {hasTarget ? '두 사람의 충돌 구조를 계산하고 있어요' : '내 위험 유형을 분석하고 있어요'}
+        </p>
+      </div>
+
+      {/* 단계 리스트 */}
+      <div className="border border-[#1a1a1a] bg-[#0D0D0D] divide-y divide-[#1a1a1a]">
+        {AI_STEPS.map((s, i) => {
+          const done = i < activeStep;
+          const current = i === activeStep;
+          const pending = i > activeStep;
+          return (
+            <div
+              key={i}
+              className={`flex items-center gap-4 px-5 py-4 transition-all duration-700 ${pending ? 'opacity-30' : 'opacity-100'}`}
+            >
+              {/* 상태 아이콘 */}
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border transition-all duration-500 ${
+                done    ? 'border-[#FF2D55] bg-[#FF2D55]' :
+                current ? 'border-[#FF2D55] bg-[#FF2D55]/10' :
+                          'border-[#333]'
+              }`}>
+                {done    && <span className="text-white text-[10px] font-bold">✓</span>}
+                {current && <span className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse block" />}
+              </div>
+
+              {/* 텍스트 */}
+              <div className="flex-1 min-w-0">
+                <p className={`font-sans-kr text-sm font-medium ${done || current ? 'text-white' : 'text-[#555]'}`}>
+                  {s.label}
+                  {current && <span className="text-[#FF2D55] animate-pulse"> ···</span>}
+                </p>
+                <p className="font-sans-kr text-[#555] text-[10px] mt-0.5">{s.sub}</p>
+              </div>
+
+              {/* done 표시 */}
+              {done && (
+                <span className="text-[#FF2D55] text-[10px] font-sans-kr flex-shrink-0">완료</span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="font-sans-kr text-center text-[#444] text-[11px] mt-6">
+        보통 10–20초 소요됩니다
+      </p>
+    </div>
+  );
+}
+
 export default function StepResult({ myData, targetData, result, relationType, onReset }: StepResultProps) {
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
@@ -267,18 +348,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
       ══════════════════════════════════════ */}
 
       {aiLoading ? (
-        <div className="space-y-4">
-          <SectionHeader number="01" title="나와 안맞는 이유" />
-          {[4, 3, 5].map((lines, i) => (
-            <Card key={i}><div className="h-3 bg-[#1e1e1e] rounded w-1/3 mb-4 animate-pulse" /><Skeleton lines={lines} /></Card>
-          ))}
-          <SectionHeader number="02" title="어떤 상황에서 안맞는지" />
-          {[3, 3].map((lines, i) => (
-            <Card key={i}><Skeleton lines={lines} /></Card>
-          ))}
-          <SectionHeader number="03" title="앞으로 이렇게 해보세요" />
-          <Card><Skeleton lines={4} /></Card>
-        </div>
+        <AILoadingScreen hasTarget={hasTarget} />
       ) : aiError ? (
         <div className="space-y-4">
           <SectionHeader number="01" title="나와 안맞는 이유" />
