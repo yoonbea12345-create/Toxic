@@ -30,6 +30,19 @@ interface AvoidanceGuide {
   boundaries: string;
 }
 
+interface PersonalImpact {
+  onMe: string;
+  warningSignals: string[];
+  whatYouLose: string;
+}
+
+interface ContinuationAssessment {
+  structuralAnalysis: string;
+  whatItTakes: string;
+  redLine: string;
+  verdict: string;
+}
+
 interface AIAnalysis {
   toxicSummary?: string;
   coreConflict?: { title: string; description: string };
@@ -42,7 +55,8 @@ interface AIAnalysis {
   hiddenDynamic?: string;
   realisticOutlook?: string;
   avoidanceGuide?: AvoidanceGuide;
-  // 역산 모드
+  personalImpact?: PersonalImpact;
+  continuationAssessment?: ContinuationAssessment;
   myCharacter?: { core: string; strength: string; shadow: string };
   dangerTypes?: DangerType[];
   warningPattern?: string;
@@ -55,6 +69,122 @@ const ACCURACY_LABELS: Record<string, { label: string; color: string; desc: stri
   year:  { label: '기본 분석', color: '#9E9E9E', desc: '년주 기반' },
 };
 
+// ───────────────────────────────────────────
+// AI 로딩 전체화면
+// ───────────────────────────────────────────
+const AI_STEPS = [
+  { label: '사주 기본 정보 확인', sub: '년주·월주·일주·시주 파악', delay: 0 },
+  { label: '충돌 구조 분석', sub: '충(沖)·형(刑)·해(害)·극(剋) 계산', delay: 2200 },
+  { label: '감정 패턴 & 역학 해석', sub: '두 사람의 기질 충돌 방식 분석', delay: 5000 },
+  { label: '갈등 시나리오 생성', sub: '실제 터질 법한 상황 3가지 도출', delay: 8500 },
+  { label: '회피 전략 & 최종 정리', sub: '앞으로 안부딪히기 위한 가이드', delay: 12000 },
+];
+
+function AILoadingScreen({ hasTarget, score }: { hasTarget: boolean; score: number }) {
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const timers = AI_STEPS.map((s, i) =>
+      setTimeout(() => setActiveStep(i), s.delay)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const color = score >= 80 ? '#FF2D55' : score >= 60 ? '#BF5AF2' : '#F59E0B';
+
+  return (
+    <div className="min-h-screen flex flex-col justify-center max-w-lg mx-auto px-4 py-12">
+      {/* 상단 요약 — 점수만 미리 보여주기 */}
+      <div className="flex flex-col items-center mb-14">
+        <div className="relative w-24 h-24 mb-6">
+          {/* 바깥 ping 링 */}
+          <div className="absolute inset-0 rounded-full border animate-ping opacity-20"
+            style={{ borderColor: color }} />
+          {/* 중간 pulse 링 */}
+          <div className="absolute inset-2 rounded-full border animate-pulse opacity-40"
+            style={{ borderColor: color }} />
+          {/* 점수 */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="font-sans text-3xl font-bold text-white">{score}</span>
+            <span className="text-[#555] text-[10px]">/ 100</span>
+          </div>
+        </div>
+
+        <p className="font-display text-white text-xl tracking-wide mb-2">
+          AI 사주 분석 중
+        </p>
+        <p className="font-sans-kr text-[#555] text-sm">
+          {hasTarget ? '두 사람의 충돌 구조를 계산하고 있어요' : '내 위험 유형을 분석하고 있어요'}
+        </p>
+      </div>
+
+      {/* 단계 리스트 */}
+      <div className="border border-[#1a1a1a] bg-[#0D0D0D] divide-y divide-[#1a1a1a] mb-8">
+        {AI_STEPS.map((s, i) => {
+          const done = i < activeStep;
+          const current = i === activeStep;
+          const pending = i > activeStep;
+          return (
+            <div
+              key={i}
+              className={`flex items-center gap-4 px-5 py-4 transition-all duration-700 ${
+                pending ? 'opacity-25' : 'opacity-100'
+              }`}
+            >
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border transition-all duration-500 ${
+                done    ? 'border-[#FF2D55] bg-[#FF2D55]' :
+                current ? 'border-[#FF2D55] bg-[#FF2D55]/10' :
+                          'border-[#2a2a2a]'
+              }`}>
+                {done    && <span className="text-white text-[10px] font-bold">✓</span>}
+                {current && <span className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse block" />}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className={`font-sans-kr text-sm font-medium leading-tight ${
+                  done || current ? 'text-white' : 'text-[#444]'
+                }`}>
+                  {s.label}
+                  {current && <span className="text-[#FF2D55] animate-pulse"> ···</span>}
+                </p>
+                <p className="font-sans-kr text-[#444] text-[11px] mt-0.5">{s.sub}</p>
+              </div>
+
+              {done && (
+                <span className="text-[#FF2D55] text-[11px] font-sans-kr flex-shrink-0 font-medium">
+                  완료
+                </span>
+              )}
+              {current && (
+                <span className="text-[#555] text-[11px] font-sans-kr flex-shrink-0 animate-pulse">
+                  진행 중
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 진행 바 — 시간 기반 */}
+      <div className="w-full h-px bg-[#1a1a1a] overflow-hidden">
+        <div
+          className="h-full bg-[#FF2D55] transition-none"
+          style={{
+            width: `${((activeStep + 1) / AI_STEPS.length) * 100}%`,
+            transition: 'width 2s ease-out',
+          }}
+        />
+      </div>
+      <p className="font-sans-kr text-center text-[#333] text-[11px] mt-4">
+        보통 15–25초 소요됩니다
+      </p>
+    </div>
+  );
+}
+
+// ───────────────────────────────────────────
+// 결과 공통 UI 헬퍼
+// ───────────────────────────────────────────
 function ScoreGauge({ score }: { score: number }) {
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
@@ -115,97 +245,9 @@ function Card({ children, accent, className = '' }: { children: React.ReactNode;
   );
 }
 
-function Skeleton({ lines = 3 }: { lines?: number }) {
-  return (
-    <div className="animate-pulse space-y-2">
-      {Array.from({ length: lines }).map((_, i) => (
-        <div key={i} className="h-3 bg-[#1e1e1e] rounded" style={{ width: `${[100, 82, 65][i % 3]}%` }} />
-      ))}
-    </div>
-  );
-}
-
-const AI_STEPS = [
-  { label: '사주 기본 정보 확인', sub: '년주·월주·일주·시주 파악', delay: 0 },
-  { label: '충돌 구조 분석', sub: '충(沖)·형(刑)·해(害)·극(剋) 계산', delay: 1800 },
-  { label: '감정 패턴 & 역학 해석', sub: '두 사람의 기질 충돌 방식 분석', delay: 3800 },
-  { label: '갈등 시나리오 생성', sub: '실제 터질 법한 상황 3가지 도출', delay: 6000 },
-  { label: '회피 전략 & 최종 정리', sub: '앞으로 안부딪히기 위한 가이드', delay: 8500 },
-];
-
-function AILoadingScreen({ hasTarget }: { hasTarget: boolean }) {
-  const [activeStep, setActiveStep] = useState(-1);
-
-  useEffect(() => {
-    const timers = AI_STEPS.map((s, i) =>
-      setTimeout(() => setActiveStep(i), s.delay)
-    );
-    return () => timers.forEach(clearTimeout);
-  }, []);
-
-  return (
-    <div className="py-10">
-      {/* 헤더 */}
-      <div className="flex flex-col items-center mb-12">
-        <div className="relative w-16 h-16 mb-5">
-          <div className="absolute inset-0 rounded-full border border-[#FF2D55]/20 animate-ping" />
-          <div className="absolute inset-2 rounded-full border border-[#FF2D55]/40 animate-pulse" />
-          <div className="absolute inset-4 rounded-full bg-[#FF2D55]/20 flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse" />
-          </div>
-        </div>
-        <p className="font-display text-white text-lg tracking-wide mb-1">AI 사주 분석 중</p>
-        <p className="font-sans-kr text-[#555] text-xs">
-          {hasTarget ? '두 사람의 충돌 구조를 계산하고 있어요' : '내 위험 유형을 분석하고 있어요'}
-        </p>
-      </div>
-
-      {/* 단계 리스트 */}
-      <div className="border border-[#1a1a1a] bg-[#0D0D0D] divide-y divide-[#1a1a1a]">
-        {AI_STEPS.map((s, i) => {
-          const done = i < activeStep;
-          const current = i === activeStep;
-          const pending = i > activeStep;
-          return (
-            <div
-              key={i}
-              className={`flex items-center gap-4 px-5 py-4 transition-all duration-700 ${pending ? 'opacity-30' : 'opacity-100'}`}
-            >
-              {/* 상태 아이콘 */}
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 border transition-all duration-500 ${
-                done    ? 'border-[#FF2D55] bg-[#FF2D55]' :
-                current ? 'border-[#FF2D55] bg-[#FF2D55]/10' :
-                          'border-[#333]'
-              }`}>
-                {done    && <span className="text-white text-[10px] font-bold">✓</span>}
-                {current && <span className="w-2 h-2 rounded-full bg-[#FF2D55] animate-pulse block" />}
-              </div>
-
-              {/* 텍스트 */}
-              <div className="flex-1 min-w-0">
-                <p className={`font-sans-kr text-sm font-medium ${done || current ? 'text-white' : 'text-[#555]'}`}>
-                  {s.label}
-                  {current && <span className="text-[#FF2D55] animate-pulse"> ···</span>}
-                </p>
-                <p className="font-sans-kr text-[#555] text-[10px] mt-0.5">{s.sub}</p>
-              </div>
-
-              {/* done 표시 */}
-              {done && (
-                <span className="text-[#FF2D55] text-[10px] font-sans-kr flex-shrink-0">완료</span>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <p className="font-sans-kr text-center text-[#444] text-[11px] mt-6">
-        보통 10–20초 소요됩니다
-      </p>
-    </div>
-  );
-}
-
+// ───────────────────────────────────────────
+// 메인 컴포넌트
+// ───────────────────────────────────────────
 export default function StepResult({ myData, targetData, result, relationType, onReset }: StepResultProps) {
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
@@ -234,6 +276,12 @@ export default function StepResult({ myData, targetData, result, relationType, o
     })();
   }, []);
 
+  // ── AI 계산 중: 전체 화면 로딩 ──
+  if (aiLoading) {
+    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} />;
+  }
+
+  // ── 공유 핸들러 ──
   const handleSaveImage = async () => {
     if (!shareCardRef.current) return;
     const canvas = await html2canvas(shareCardRef.current, { backgroundColor: '#0A0A0A', scale: 2 });
@@ -263,10 +311,11 @@ export default function StepResult({ myData, targetData, result, relationType, o
     }
   };
 
+  // ── 결과 화면 ──
   return (
     <div className="animate-fade-in max-w-lg mx-auto px-4 py-8 space-y-4">
 
-      {/* ── 헤더 ── */}
+      {/* 헤더 */}
       <div className="text-center">
         <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] mb-3">TOXIC 분석 결과</p>
         <div className="flex justify-center mb-4">
@@ -311,7 +360,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         <ScoreGauge score={result.toxicScore} />
       </div>
 
-      {/* ── 충돌 뱃지 ── */}
+      {/* 충돌 뱃지 */}
       {(result.conflicts.chung.length > 0 || result.conflicts.hyung.length > 0 ||
         result.conflicts.hae.length > 0 || result.conflicts.pa.length > 0) && (
         <div className="flex flex-wrap gap-2">
@@ -333,23 +382,17 @@ export default function StepResult({ myData, targetData, result, relationType, o
         </div>
       )}
 
-      {/* ── AI 한 줄 요약 ── */}
-      {(aiLoading || aiAnalysis?.toxicSummary) && (
+      {/* AI 한 줄 요약 */}
+      {aiAnalysis?.toxicSummary && (
         <div className="border border-[#FF2D55]/30 bg-[#FF2D55]/5 p-4 text-center">
-          {aiLoading
-            ? <div className="h-4 bg-[#1e1e1e] rounded animate-pulse w-3/4 mx-auto" />
-            : <p className="text-[#FF2D55] font-bold text-sm">"{aiAnalysis?.toxicSummary}"</p>
-          }
+          <p className="text-[#FF2D55] font-bold text-sm">"{aiAnalysis.toxicSummary}"</p>
         </div>
       )}
 
       {/* ══════════════════════════════════════
-          3-SECTION ANALYSIS
+          에러 폴백
       ══════════════════════════════════════ */}
-
-      {aiLoading ? (
-        <AILoadingScreen hasTarget={hasTarget} />
-      ) : aiError ? (
+      {aiError && (
         <div className="space-y-4">
           <SectionHeader number="01" title="나와 안맞는 이유" />
           <Card accent="#FF2D55">
@@ -361,58 +404,67 @@ export default function StepResult({ myData, targetData, result, relationType, o
           <Card><SubLabel text="형(刑) 분석" /><p className="text-[#888] text-sm leading-relaxed">{result.analysis.hyungAnalysis}</p></Card>
           <Card><SubLabel text="오행 극(剋)" /><p className="text-[#888] text-sm leading-relaxed">{result.analysis.geukAnalysis}</p></Card>
         </div>
-      ) : hasTarget ? (
-        /* ─── 상대 있을 때 ─── */
+      )}
+
+      {/* ══════════════════════════════════════
+          3-SECTION 결과 (상대 있을 때)
+      ══════════════════════════════════════ */}
+      {!aiError && hasTarget && (
         <div className="space-y-4">
 
-          {/* ════ SECTION 1 — 나와 안맞는 이유 ════ */}
-          <SectionHeader
-            number="01"
-            title="나와 안맞는 이유"
-            subtitle="사주 구조에서 비롯된 근본적인 충돌 원인"
-          />
+          {/* ════ 01 나와 안맞는 이유 ════ */}
+          <SectionHeader number="01" title="나와 안맞는 이유" subtitle="사주 구조에서 비롯된 근본적인 충돌 원인" />
 
-          {aiAnalysis?.coreConflict && (
-            <Card accent="#FF2D55">
-              <SubLabel text="핵심 갈등 구조" />
-              <p className="text-white text-base font-bold mb-3">{aiAnalysis.coreConflict.title}</p>
-              <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.coreConflict.description}</p>
-            </Card>
-          )}
+          <Card accent="#FF2D55">
+            <SubLabel text="핵심 갈등 구조" />
+            {aiAnalysis?.coreConflict ? (
+              <>
+                <p className="text-white text-base font-bold mb-3">{aiAnalysis.coreConflict.title}</p>
+                <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.coreConflict.description}</p>
+              </>
+            ) : (
+              <>
+                <p className="text-white text-base font-bold mb-3">{result.conflictType}</p>
+                <p className="text-[#888] text-sm leading-relaxed">{result.conflictSummary}</p>
+              </>
+            )}
+          </Card>
 
-          {aiAnalysis?.conflictAnalysis && (
+          {(aiAnalysis?.conflictAnalysis?.chung || aiAnalysis?.conflictAnalysis?.hyung ||
+            aiAnalysis?.conflictAnalysis?.hae || aiAnalysis?.conflictAnalysis?.geuk ||
+            result.analysis.chungAnalysis || result.analysis.hyungAnalysis) && (
             <Card>
               <SubLabel text="사주 충돌 분석" />
               <div className="space-y-4">
-                {aiAnalysis.conflictAnalysis.chung && (
+                {(aiAnalysis?.conflictAnalysis?.chung || result.analysis.chungAnalysis) && (
                   <div>
                     <span className="text-[10px] border border-[#FF2D55]/40 text-[#FF2D55] px-2 py-0.5 inline-block mb-2">충(沖)</span>
-                    <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.conflictAnalysis.chung}</p>
+                    <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis?.conflictAnalysis?.chung || result.analysis.chungAnalysis}</p>
                   </div>
                 )}
-                {aiAnalysis.conflictAnalysis.hyung && (
-                  <div className={aiAnalysis.conflictAnalysis.chung ? 'border-t border-[#1a1a1a] pt-4' : ''}>
+                {(aiAnalysis?.conflictAnalysis?.hyung || result.analysis.hyungAnalysis) && (
+                  <div className="border-t border-[#1a1a1a] pt-4">
                     <span className="text-[10px] border border-[#BF5AF2]/40 text-[#BF5AF2] px-2 py-0.5 inline-block mb-2">형(刑)</span>
-                    <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.conflictAnalysis.hyung}</p>
+                    <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis?.conflictAnalysis?.hyung || result.analysis.hyungAnalysis}</p>
                   </div>
                 )}
-                {aiAnalysis.conflictAnalysis.hae && (
+                {aiAnalysis?.conflictAnalysis?.hae && (
                   <div className="border-t border-[#1a1a1a] pt-4">
                     <span className="text-[10px] border border-[#FF9800]/40 text-[#FF9800] px-2 py-0.5 inline-block mb-2">해(害)</span>
                     <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.conflictAnalysis.hae}</p>
                   </div>
                 )}
-                {aiAnalysis.conflictAnalysis.geuk && (
+                {(aiAnalysis?.conflictAnalysis?.geuk || result.analysis.geukAnalysis) && (
                   <div className="border-t border-[#1a1a1a] pt-4">
                     <span className="text-[10px] border border-[#FF2D55]/40 text-[#FF2D55] px-2 py-0.5 inline-block mb-2">극(剋)</span>
-                    <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.conflictAnalysis.geuk}</p>
+                    <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis?.conflictAnalysis?.geuk || result.analysis.geukAnalysis}</p>
                   </div>
                 )}
               </div>
             </Card>
           )}
 
-          {aiAnalysis?.emotionalPattern && (
+          {aiAnalysis?.emotionalPattern ? (
             <Card>
               <SubLabel text="감정 반응 패턴" />
               <div className="space-y-4">
@@ -429,6 +481,11 @@ export default function StepResult({ myData, targetData, result, relationType, o
                   <p className="text-[#aaa] text-sm leading-relaxed">{aiAnalysis.emotionalPattern.cycle}</p>
                 </div>
               </div>
+            </Card>
+          ) : (
+            <Card>
+              <SubLabel text="감정 반응 패턴" />
+              <p className="text-[#888] text-sm leading-relaxed">{result.analysis.overallAnalysis}</p>
             </Card>
           )}
 
@@ -459,21 +516,15 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </div>
           )}
 
-          {/* ════ SECTION 2 — 어떤 상황에서 안맞는지 ════ */}
-          <SectionHeader
-            number="02"
-            title="어떤 상황에서 안맞는지"
-            subtitle="실제로 충돌이 터지는 구체적 시나리오"
-          />
+          {/* ════ 02 어떤 상황에서 안맞는지 ════ */}
+          <SectionHeader number="02" title="어떤 상황에서 안맞는지" subtitle="실제로 충돌이 터지는 구체적 시나리오" />
 
-          {aiAnalysis?.conflictScenarios && aiAnalysis.conflictScenarios.length > 0 && (
+          {aiAnalysis?.conflictScenarios && aiAnalysis.conflictScenarios.length > 0 ? (
             <div className="space-y-3">
               {aiAnalysis.conflictScenarios.map((s, i) => (
                 <Card key={i}>
                   <div className="flex items-start gap-3">
-                    <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">
-                      {i + 1}
-                    </span>
+                    <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">{i + 1}</span>
                     <div>
                       <p className="text-white text-sm font-bold mb-2">{s.situation}</p>
                       <p className="text-[#777] text-xs leading-relaxed mb-3">{s.whatHappens}</p>
@@ -485,13 +536,30 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 </Card>
               ))}
             </div>
+          ) : (
+            <Card>
+              <SubLabel text="충돌 상황" />
+              <p className="text-[#888] text-sm leading-relaxed">{result.analysis.overallAnalysis}</p>
+            </Card>
           )}
 
-          {aiAnalysis?.triggerPoints && aiAnalysis.triggerPoints.length > 0 && (
+          {aiAnalysis?.triggerPoints && aiAnalysis.triggerPoints.length > 0 ? (
             <Card>
               <SubLabel text="갈등 트리거" />
               <div className="space-y-2">
                 {aiAnalysis.triggerPoints.map((t, i) => (
+                  <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
+                    <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
+                    <p className="text-[#888] text-sm">{t}</p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ) : (
+            <Card>
+              <SubLabel text="갈등 트리거" />
+              <div className="space-y-2">
+                {result.tags.map((t, i) => (
                   <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
                     <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
                     <p className="text-[#888] text-sm">{t}</p>
@@ -508,12 +576,8 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-          {/* ════ SECTION 3 — 앞으로 이렇게 해보세요 ════ */}
-          <SectionHeader
-            number="03"
-            title="앞으로 이렇게 해보세요"
-            subtitle="부딪히지 않기 위한 현실적 가이드"
-          />
+          {/* ════ 03 앞으로 이렇게 해보세요 ════ */}
+          <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="부딪히지 않기 위한 현실적 가이드" />
 
           {aiAnalysis?.avoidanceGuide ? (
             <div className="space-y-3">
@@ -541,7 +605,14 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.avoidanceGuide.boundaries}</p>
               </Card>
             </div>
-          ) : null}
+          ) : (
+            <Card accent="#FF2D55">
+              <SubLabel text="현실적 가이드" />
+              <p className="text-[#888] text-sm leading-relaxed">
+                이 관계의 충돌 구조는 구조적입니다. 상대를 바꾸려 하기보다, 충돌이 일어나는 상황 자체를 피하고 기대치를 조정하는 것이 현실적입니다.
+              </p>
+            </Card>
+          )}
 
           {aiAnalysis?.realisticOutlook && (
             <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
@@ -549,30 +620,113 @@ export default function StepResult({ myData, targetData, result, relationType, o
               <p className="text-[#aaa] text-sm leading-relaxed">{aiAnalysis.realisticOutlook}</p>
             </div>
           )}
-        </div>
-      ) : (
-        /* ─── 역산 모드 ─── */
-        <div className="space-y-4">
 
-          {/* ════ SECTION 1 ════ */}
-          <SectionHeader number="01" title="나와 안맞는 이유" subtitle="내 사주 기질과 충돌 구조" />
+          {/* ════ 04 이 관계가 나에게 하는 일 ════ */}
+          <SectionHeader number="04" title="이 관계가 나에게 하는 일" subtitle="지금 이 순간 당신에게 일어나고 있는 것" />
 
-          {aiAnalysis?.myCharacter && (
-            <Card accent="#FF2D55">
-              <SubLabel text="나의 사주 기질" />
-              <p className="text-[#888] text-sm leading-relaxed mb-4">{aiAnalysis.myCharacter.core}</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="border border-[#1a1a1a] p-3">
-                  <p className="text-[#4CAF50] text-[10px] mb-1.5">강점</p>
-                  <p className="text-[#888] text-xs leading-relaxed">{aiAnalysis.myCharacter.strength}</p>
-                </div>
-                <div className="border border-[#1a1a1a] p-3">
-                  <p className="text-[#FF2D55] text-[10px] mb-1.5">그림자</p>
-                  <p className="text-[#888] text-xs leading-relaxed">{aiAnalysis.myCharacter.shadow}</p>
-                </div>
+          {aiAnalysis?.personalImpact ? (
+            <div className="space-y-3">
+              <Card accent="#BF5AF2">
+                <SubLabel text="지금 나에게 미치는 영향" />
+                <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.personalImpact.onMe}</p>
+              </Card>
+
+              {aiAnalysis.personalImpact.warningSignals?.length > 0 && (
+                <Card>
+                  <SubLabel text="이 관계가 나를 갉아먹는 신호" />
+                  <div className="space-y-2">
+                    {aiAnalysis.personalImpact.warningSignals.map((signal, i) => (
+                      <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
+                        <span className="text-[#BF5AF2] text-xs mt-0.5 flex-shrink-0">⚠</span>
+                        <p className="text-[#888] text-sm">{signal}</p>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              <div className="border border-[#BF5AF2]/20 p-5 bg-[#BF5AF2]/5">
+                <SubLabel text="잃어가고 있는 것" />
+                <p className="text-[#aaa] text-sm leading-relaxed">{aiAnalysis.personalImpact.whatYouLose}</p>
               </div>
+            </div>
+          ) : (
+            <Card accent="#BF5AF2">
+              <SubLabel text="이 관계의 에너지 소모" />
+              <p className="text-[#888] text-sm leading-relaxed">
+                충돌 구조가 강한 관계일수록 유지에 드는 감정 비용이 큽니다. 이 관계에서 반복적으로 느끼는 피로감은 의지력 부족이 아니라 구조의 문제입니다.
+              </p>
             </Card>
           )}
+
+          {/* ════ 05 이 관계, 계속 가야 할까? ════ */}
+          <SectionHeader number="05" title="이 관계, 계속 가야 할까?" subtitle="사주 구조로 보는 냉철한 판단" />
+
+          {aiAnalysis?.continuationAssessment ? (
+            <div className="space-y-3">
+              <Card>
+                <SubLabel text="구조적 분석" />
+                <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.continuationAssessment.structuralAnalysis}</p>
+              </Card>
+
+              <Card>
+                <SubLabel text="계속하려면 필요한 것" />
+                <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.continuationAssessment.whatItTakes}</p>
+              </Card>
+
+              <Card accent="#FF2D55">
+                <SubLabel text="이 신호가 보이면 재고하세요" />
+                <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.continuationAssessment.redLine}</p>
+              </Card>
+
+              <div className="border border-[#FF2D55] p-5"
+                style={{ background: 'linear-gradient(135deg, #0D0005 0%, #0A0A0A 100%)' }}>
+                <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr mb-3">최종 판정</p>
+                <p className="text-white text-base font-bold leading-snug font-sans-kr">
+                  {aiAnalysis.continuationAssessment.verdict}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="border border-[#FF2D55] p-5"
+              style={{ background: 'linear-gradient(135deg, #0D0005 0%, #0A0A0A 100%)' }}>
+              <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr mb-3">구조적 판단</p>
+              <p className="text-white text-sm font-sans-kr leading-relaxed">
+                충돌 구조는 바뀌지 않습니다. 바뀔 수 있는 건 두 사람이 그 구조를 어떻게 다루느냐입니다.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════
+          3-SECTION 결과 (역산 모드)
+      ══════════════════════════════════════ */}
+      {!aiError && !hasTarget && (
+        <div className="space-y-4">
+
+          <SectionHeader number="01" title="나와 안맞는 이유" subtitle="내 사주 기질과 충돌 구조" />
+
+          <Card accent="#FF2D55">
+            <SubLabel text="나의 사주 기질" />
+            {aiAnalysis?.myCharacter ? (
+              <>
+                <p className="text-[#888] text-sm leading-relaxed mb-4">{aiAnalysis.myCharacter.core}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="border border-[#1a1a1a] p-3">
+                    <p className="text-[#4CAF50] text-[10px] mb-1.5">강점</p>
+                    <p className="text-[#888] text-xs leading-relaxed">{aiAnalysis.myCharacter.strength}</p>
+                  </div>
+                  <div className="border border-[#1a1a1a] p-3">
+                    <p className="text-[#FF2D55] text-[10px] mb-1.5">그림자</p>
+                    <p className="text-[#888] text-xs leading-relaxed">{aiAnalysis.myCharacter.shadow}</p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-[#888] text-sm leading-relaxed">{result.conflictSummary}</p>
+            )}
+          </Card>
 
           {aiAnalysis?.dangerTypes && aiAnalysis.dangerTypes.length > 0 && (
             <div className="space-y-3">
@@ -600,10 +754,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </div>
           )}
 
-          {/* ════ SECTION 2 ════ */}
           <SectionHeader number="02" title="어떤 상황에서 안맞는지" subtitle="내가 자주 반복하는 갈등 패턴" />
 
-          {aiAnalysis?.conflictScenarios && aiAnalysis.conflictScenarios.length > 0 && (
+          {aiAnalysis?.conflictScenarios && aiAnalysis.conflictScenarios.length > 0 ? (
             <div className="space-y-3">
               {aiAnalysis.conflictScenarios.map((s, i) => (
                 <Card key={i}>
@@ -618,6 +771,11 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 </Card>
               ))}
             </div>
+          ) : (
+            <Card>
+              <SubLabel text="반복 갈등 패턴" />
+              <p className="text-[#888] text-sm leading-relaxed">{result.analysis.overallAnalysis}</p>
+            </Card>
           )}
 
           {aiAnalysis?.triggerPoints && (
@@ -641,7 +799,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-          {/* ════ SECTION 3 ════ */}
           <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="내 패턴을 이해하고 충돌 줄이기" />
 
           {aiAnalysis?.avoidanceGuide ? (
@@ -668,11 +825,18 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 <p className="text-[#888] text-sm leading-relaxed">{aiAnalysis.avoidanceGuide.boundaries}</p>
               </Card>
             </div>
-          ) : null}
+          ) : (
+            <Card accent="#FF2D55">
+              <SubLabel text="현실적 가이드" />
+              <p className="text-[#888] text-sm leading-relaxed">
+                내 충돌 패턴을 인식하는 것 자체가 첫 번째 단계입니다. 같은 상황에서 반복해서 반응하는 방식을 관찰하고, 자동 반응 전에 잠깐 멈추는 연습을 하세요.
+              </p>
+            </Card>
+          )}
         </div>
       )}
 
-      {/* ── 태그 ── */}
+      {/* 태그 */}
       <div className="flex flex-wrap gap-2 pt-2">
         {result.tags.map(tag => (
           <span key={tag} className="text-xs text-[#FF2D55] bg-[#FF2D55]/8 border border-[#FF2D55]/20 px-3 py-1">
@@ -681,7 +845,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         ))}
       </div>
 
-      {/* ── 공유 ── */}
+      {/* 공유 */}
       <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D]">
         <p className="text-[#555] text-[10px] uppercase tracking-[0.25em] mb-4">결과 공유하기</p>
         <div className="flex justify-center mb-4">
