@@ -47,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 - 합(合): ${sajuResult.conflicts.hap.map((h: {name:string}) => h.name).join(', ') || '없음'}
 - 오행 극: ${sajuResult.conflicts.geuk.direction || '없음'}
 
-다음 JSON 형식으로 반환해주세요. 내용은 실제 인물이 겪는 구체적 상황처럼 생동감 있게 작성하세요:
+다음 JSON 형식으로 반환해주세요 (코드블록 없이 순수 JSON). 내용은 실제 인물이 겪는 구체적 상황처럼 생동감 있게 작성하세요:
 
 {
   "toxicSummary": "한 줄 핵심 요약 (20자 이내, 직접적이고 날카롭게)",
@@ -66,8 +66,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   "conflictScenarios": [
     {
-      "situation": "갈등이 터지는 구체적 상황 — 실제 일어나는 장면 (예: '카톡을 2시간째 읽씹 당했을 때', '의견이 다른데 상대가 고집을 꺾지 않을 때')",
-      "whatHappens": "두 사람이 실제로 어떻게 반응하는지. 구체적인 말투, 행동, 감정을 2-3문장으로. 예: '나는 그 자리에서 말을 끊고 싸늘하게 돌아서고, 상대는 왜 화났는지조차 모른 채 당황해한다'",
+      "situation": "갈등이 터지는 구체적 상황 — 실제 일어나는 장면 (예: '카톡을 2시간째 읽씹 당했을 때')",
+      "whatHappens": "두 사람이 실제로 어떻게 반응하는지. 구체적인 말투, 행동, 감정을 2-3문장으로",
       "whySaju": "이 충돌이 사주 구조에서 왜 필연적인지 1문장으로"
     },
     {
@@ -85,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   "emotionalPattern": {
     "myPattern": "나는 이 관계에서 어떤 감정을 주로 느끼고 어떻게 행동하는지 — 구체적인 감정 반응과 행동 패턴",
     "targetPattern": "상대는 이 관계에서 어떤 사람인지, 어떤 방식으로 갈등에 반응하는지 — 상대의 성향을 구체적으로",
-    "cycle": "두 사람이 반복하는 갈등 사이클을 스토리처럼 묘사. A가 ~하면, B는 ~하고, 그러면 A는 ~하는 식의 순환 구조 (2-3문장)"
+    "cycle": "두 사람이 반복하는 갈등 사이클을 스토리처럼 묘사 (2-3문장)"
   },
 
   "energyDynamic": {
@@ -94,7 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     "longTermEffect": "이 관계를 1년, 3년, 5년 이어가면 어떻게 되는지 현실적으로"
   },
 
-  "relationSpecific": "${relationType} 관계에서 이 충돌 구조가 어떻게 나타나는지 구체적으로. ${relationType}만의 특수한 갈등 지점과 역학 (3-4문장)",
+  "relationSpecific": "${relationType} 관계에서 이 충돌 구조가 어떻게 나타나는지 구체적으로 (3-4문장)",
 
   "triggerPoints": [
     "가장 폭발하기 쉬운 트리거 1 — 상대가 하는 구체적인 말이나 행동",
@@ -102,35 +102,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     "트리거 3 — 피하기 가장 어려운 트리거"
   ],
 
-  "hiddenDynamic": "표면에 드러나지 않는 이 관계의 가장 날카로운 통찰. 두 사람이 의식하지 못하는 숨겨진 역학을 2-3문장으로. 가장 불편한 진실을 담아야 함",
+  "hiddenDynamic": "표면에 드러나지 않는 이 관계의 가장 날카로운 통찰. 두 사람이 의식하지 못하는 숨겨진 역학을 2-3문장으로",
 
-  "realisticOutlook": "이 관계의 현실적 전망 — 희망적이지 않게, 구조적으로. '좋아질 수 있습니다' 같은 말 금지. 있는 그대로의 구조적 한계를 (2-3문장)",
+  "realisticOutlook": "이 관계의 현실적 전망 — 희망적이지 않게, 구조적으로 (2-3문장)",
 
   "avoidanceGuide": {
-    "mindset": "이 관계에서 앞으로 갖춰야 할 마음가짐 — 관계 구조를 이해하고 기대치를 어떻게 조정해야 하는지 (2문장, 현실적으로)",
+    "mindset": "이 관계에서 앞으로 갖춰야 할 마음가짐 (2문장, 현실적으로)",
     "practicalTips": [
-      "실제로 써먹을 수 있는 충돌 회피 팁 1 — 구체적인 행동으로 (예: '상대가 침묵에 들어갔을 때 30분은 먼저 말 걸지 않기')",
+      "실제로 써먹을 수 있는 충돌 회피 팁 1 — 구체적인 행동으로",
       "실제로 써먹을 수 있는 충돌 회피 팁 2 — 구체적인 행동으로",
       "실제로 써먹을 수 있는 충돌 회피 팁 3 — 구체적인 행동으로"
     ],
-    "boundaries": "어떤 부분에서 선을 긋고, 어디까지 기대할 수 있는지. 이 관계에서 절대 기대하면 안 되는 것과 타협 가능한 것 (2문장)"
+    "boundaries": "이 관계에서 절대 기대하면 안 되는 것과 타협 가능한 것 (2문장)"
   },
 
   "personalImpact": {
-    "onMe": "이 관계가 현재 나에게 실제로 하고 있는 일 — 감정적·심리적 영향을 날카롭게 (2-3문장). '힘들 수 있어요' 금지, 직접적으로",
+    "onMe": "이 관계가 현재 나에게 실제로 하고 있는 일 — 감정적·심리적 영향을 날카롭게 (2-3문장)",
     "warningSignals": [
       "이 관계가 나를 갉아먹고 있다는 신호 1 — 실제로 느낄 수 있는 구체적 증상",
       "신호 2",
       "신호 3"
     ],
-    "whatYouLose": "이 관계 때문에 잃어가고 있는 것 — 에너지, 자존감, 시간 등 (2문장)"
+    "whatYouLose": "이 관계 때문에 잃어가고 있는 것 (2문장)"
   },
 
   "continuationAssessment": {
-    "structuralAnalysis": "이 관계가 구조적으로 개선 가능한지 — 사주 구조에 기반한 냉철한 분석 (2-3문장). 희망적이지 않게",
-    "whatItTakes": "만약 이 관계를 이어가려면 실제로 필요한 것 — 현실적으로 달성 가능한지 포함 (2문장)",
+    "structuralAnalysis": "이 관계가 구조적으로 개선 가능한지 — 냉철한 분석 (2-3문장)",
+    "whatItTakes": "만약 이 관계를 이어가려면 실제로 필요한 것 (2문장)",
     "redLine": "이 신호가 보이면 관계를 진지하게 재고해야 한다 — 구체적이고 명확하게",
-    "verdict": "최종 한 줄 판정 — 가장 직접적이고 날카롭게. 사주 전문가로서의 솔직한 결론"
+    "verdict": "최종 한 줄 판정 — 가장 직접적이고 날카롭게"
   }
 }`;
   } else {
@@ -190,7 +190,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   "warningPattern": "내가 반복하는 갈등 패턴을 3문장으로. 내가 자각 못하는 부분 포함. 직접적으로 단언",
 
-  "hiddenDynamic": "내 사주 구조에서 관계에 영향을 주는 숨겨진 패턴 — 가장 불편한 진실 (2문장)",
+  "hiddenDynamic": "내 사주 구조에서 관계에 영향을 주는 숨겨진 패턴 (2문장)",
 
   "avoidanceGuide": {
     "mindset": "내 기질을 이해하고 관계에서 어떤 마음가짐으로 접근해야 하는지 (2문장)",
@@ -222,6 +222,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ analysis });
   } catch (err) {
     console.error('Claude API error:', err);
-    return res.status(500).json({ error: 'Analysis failed' });
+    return res.status(500).json({ error: 'Analysis failed', details: String(err) });
   }
 }
