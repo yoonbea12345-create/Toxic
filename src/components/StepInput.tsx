@@ -25,8 +25,8 @@ export default function StepInput({ title, subtitle, onNext, onSkip, isTarget = 
     return Array.from({ length: new Date(+year, +month, 0).getDate() }, (_, i) => i + 1);
   };
 
-  // 상대방은 연도만 있어도 진행 가능
-  const isReady = isTarget ? !!selectedYear : (!!selectedYear && !!selectedMonth && !!selectedDay);
+  // 상대방은 이름 또는 연도 중 하나만 있어도 진행 가능 (둘 다 없어도 OK)
+  const isReady = isTarget ? true : (!!selectedYear && !!selectedMonth && !!selectedDay);
 
   // 정확도 레벨 계산
   const accuracyLevel = !selectedYear ? null
@@ -41,16 +41,16 @@ export default function StepInput({ title, subtitle, onNext, onSkip, isTarget = 
   };
 
   const handleSubmit = () => {
-    if (!selectedYear) return;
-    let dateStr = selectedYear;
-    if (selectedMonth) dateStr += `-${String(selectedMonth).padStart(2, '0')}`;
-    if (selectedMonth && selectedDay) dateStr += `-${String(selectedDay).padStart(2, '0')}`;
-    // 일이 없으면 01로 채워서 Date 파싱 가능하게
-    const fullDate = selectedDay
-      ? dateStr
-      : selectedMonth
-        ? `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`
-        : `${selectedYear}-06-01`;
+    let fullDate = '';
+    if (selectedYear) {
+      let dateStr = selectedYear;
+      if (selectedMonth) dateStr += `-${String(selectedMonth).padStart(2, '0')}`;
+      fullDate = selectedDay
+        ? dateStr + `-${String(selectedDay).padStart(2, '0')}`
+        : selectedMonth
+          ? `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`
+          : `${selectedYear}-06-01`;
+    }
     onNext({ ...data, birthdate: fullDate, birthtime: unknownTime ? '' : (data.birthtime || '') });
   };
 
@@ -183,7 +183,9 @@ export default function StepInput({ title, subtitle, onNext, onSkip, isTarget = 
           disabled={!isReady}
           className="w-full py-4 mt-2 gradient-red rounded-sm text-white font-semibold text-base disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
         >
-          {isTarget && accuracyLevel === 'year' ? '연도로 분석하기 →' : '다음 →'}
+          {isTarget
+            ? (accuracyLevel === 'year' ? '연도로 분석하기 →' : !selectedYear && !data.name ? '이름 없이 분석하기 →' : '다음 →')
+            : '다음 →'}
         </button>
 
         {/* 상대방 생일 아예 모를 때 */}
