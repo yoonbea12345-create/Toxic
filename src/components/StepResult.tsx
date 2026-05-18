@@ -80,15 +80,25 @@ const AI_STEPS = [
   { label: '회피 전략 & 최종 정리', sub: '앞으로 안부딪히기 위한 가이드', delay: 12000 },
 ];
 
-function AILoadingScreen({ hasTarget, score }: { hasTarget: boolean; score: number }) {
+function AILoadingScreen({ hasTarget, score, done }: { hasTarget: boolean; score: number; done: boolean }) {
   const [activeStep, setActiveStep] = useState(0);
 
+  // 고정 타이머로 단계 진행 (마지막 단계는 타이머 없음 — API 올 때까지 대기)
   useEffect(() => {
-    const timers = AI_STEPS.map((s, i) =>
-      setTimeout(() => setActiveStep(i), s.delay)
-    );
+    const timers = [
+      setTimeout(() => setActiveStep(1), 2200),
+      setTimeout(() => setActiveStep(2), 5000),
+      setTimeout(() => setActiveStep(3), 8500),
+      setTimeout(() => setActiveStep(4), 13500),
+      // 마지막 step(4)은 done=true 될 때까지 "진행 중" 유지
+    ];
     return () => timers.forEach(clearTimeout);
   }, []);
+
+  // API 응답 완료 → 모든 단계 즉시 완료 표시
+  useEffect(() => {
+    if (done) setActiveStep(AI_STEPS.length);
+  }, [done]);
 
   const color = score >= 80 ? '#FF2D55' : score >= 60 ? '#BF5AF2' : '#F59E0B';
 
@@ -251,7 +261,8 @@ function Card({ children, accent, className = '' }: { children: React.ReactNode;
 export default function StepResult({ myData, targetData, result, relationType, onReset }: StepResultProps) {
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
-  const [aiLoading, setAiLoading] = useState(true);
+  const [apiDone, setApiDone] = useState(false);   // API 응답 완료
+  const [showLoading, setShowLoading] = useState(true); // 로딩 화면 표시 여부
   const [aiError, setAiError] = useState(false);
 
   const hasTarget = Boolean(targetData.birthdate);
@@ -271,14 +282,16 @@ export default function StepResult({ myData, targetData, result, relationType, o
       } catch {
         setAiError(true);
       } finally {
-        setAiLoading(false);
+        // API 완료 → 로딩 화면에 완료 애니메이션 1초 보여준 후 결과로 전환
+        setApiDone(true);
+        setTimeout(() => setShowLoading(false), 1000);
       }
     })();
   }, []);
 
-  // ── AI 계산 중: 전체 화면 로딩 ──
-  if (aiLoading) {
-    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} />;
+  // ── AI 계산 중: 전체 화면 로딩 (API 완료 후 1초까지 유지) ──
+  if (showLoading) {
+    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} done={apiDone} />;
   }
 
   // ── 공유 핸들러 ──
@@ -485,7 +498,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           ) : (
             <Card>
               <SubLabel text="감정 반응 패턴" />
-              <p className="text-[#888] text-sm leading-relaxed">{result.analysis.overallAnalysis}</p>
+              <p className="text-[#888] text-sm leading-relaxed">{result.conflictSummary}</p>
             </Card>
           )}
 
@@ -539,7 +552,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           ) : (
             <Card>
               <SubLabel text="충돌 상황" />
-              <p className="text-[#888] text-sm leading-relaxed">{result.analysis.overallAnalysis}</p>
+              <p className="text-[#888] text-sm leading-relaxed">{result.conflictSummary}</p>
             </Card>
           )}
 
@@ -774,7 +787,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           ) : (
             <Card>
               <SubLabel text="반복 갈등 패턴" />
-              <p className="text-[#888] text-sm leading-relaxed">{result.analysis.overallAnalysis}</p>
+              <p className="text-[#888] text-sm leading-relaxed">{result.conflictSummary}</p>
             </Card>
           )}
 
