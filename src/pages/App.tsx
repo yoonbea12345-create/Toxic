@@ -39,6 +39,19 @@ export default function AppPage() {
     }, 2800);
   };
 
+  const handleSkipTarget = () => {
+    const emptyTarget: PersonData = { name: '', birthdate: '', birthtime: '', gender: '여' };
+    setTargetData(emptyTarget);
+    setStep('loading');
+    setTimeout(() => {
+      if (myData) {
+        const res = analyzeSaju(myData, emptyTarget, relationType);
+        setResult(res);
+        setStep('result');
+      }
+    }, 2800);
+  };
+
   const handleReset = () => {
     setMyData(null);
     setTargetData(null);
@@ -80,8 +93,9 @@ export default function AppPage() {
         {step === 'target-info' && (
           <StepInput
             title="상대방 정보를 입력해주세요"
-            subtitle="상대방 시간을 모르면 '몰라요'를 선택하세요"
+            subtitle="아는 만큼만 입력해도 분석 가능해요"
             onNext={handleTargetInfo}
+            onSkip={handleSkipTarget}
             isTarget
           />
         )}
