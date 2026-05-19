@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 const ADMIN_KEY = '1229';
 const EVENTS_KEY = 'toxic_events';
+const LOADING_STATES = { idle: 'idle', loading: 'loading', error: 'error' } as const;
 
 interface EventRecord {
   event: string;
@@ -119,6 +120,7 @@ export default function AdminPage() {
   const [pw, setPw] = useState('');
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [sessionTimes, setSessionTimes] = useState<number[]>([]);
+  const [fetchState, setFetchState] = useState<keyof typeof LOADING_STATES>('idle');
 
   useEffect(() => {
     if (sessionStorage.getItem('toxic_admin_auth') === '1') setAuthed(true);
@@ -126,12 +128,25 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!authed) return;
-    try {
-      const raw = localStorage.getItem(EVENTS_KEY);
-      if (raw) setEvents(JSON.parse(raw));
-      const timesRaw = localStorage.getItem('toxic_session_times');
-      if (timesRaw) setSessionTimes(JSON.parse(timesRaw));
-    } catch {}
+
+    setFetchState('loading');
+    fetch('/api/events', { headers: { 'x-admin-key': ADMIN_KEY } })
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(data => {
+        setEvents(data.events || []);
+        setSessionTimes(data.times || []);
+        setFetchState('idle');
+      })
+      .catch(() => {
+        // 서버 실패 시 localStorage 폴백
+        try {
+          const raw = localStorage.getItem(EVENTS_KEY);
+          if (raw) setEvents(JSON.parse(raw));
+          const timesRaw = localStorage.getItem('toxic_session_times');
+          if (timesRaw) setSessionTimes(JSON.parse(timesRaw));
+        } catch {}
+        setFetchState('error');
+      });
   }, [authed]);
 
   const handleLogin = () => {
@@ -191,6 +206,8 @@ export default function AdminPage() {
         <div>
           <p className="text-[#FF2D55] text-[10px] uppercase tracking-widest mb-1">TOXIC ADMIN</p>
           <h1 className="text-white text-2xl font-bold">시장검증 대시보드</h1>
+          {fetchState === 'loading' && <p className="text-[#444] text-xs mt-1">데이터 불러오는 중...</p>}
+          {fetchState === 'error' && <p className="text-[#FF9800] text-xs mt-1">서버 연결 실패 — 로컬 데이터 표시 중</p>}
         </div>
         <div className="flex gap-2">
           <button onClick={handleClear}

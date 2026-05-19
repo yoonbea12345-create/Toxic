@@ -5,11 +5,20 @@ const SESSION_START_KEY = 'toxic_session_start';
 const TIMES_KEY = 'toxic_session_times';
 const MAX_EVENTS = 500;
 
+function postToBackend(body: object) {
+  fetch('/api/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  }).catch(() => {});
+}
+
 export function trackEvent(event: string, props?: Record<string, unknown>) {
-  // Vercel Analytics로 전송
   try { vercelTrack(event, props as Record<string, string>); } catch {}
 
-  // localStorage에 로컬 저장 (admin 대시보드용)
+  postToBackend({ event, props, ts: Date.now() });
+
+  // localStorage 백업 (로컬 개발용)
   try {
     const raw = localStorage.getItem(EVENTS_KEY);
     const events = raw ? JSON.parse(raw) : [];
@@ -28,6 +37,9 @@ export function endSession() {
   const start = sessionStorage.getItem(SESSION_START_KEY);
   if (!start) return;
   const duration = Date.now() - Number(start);
+
+  postToBackend({ duration });
+
   try {
     const raw = localStorage.getItem(TIMES_KEY);
     const times = raw ? JSON.parse(raw) : [];
