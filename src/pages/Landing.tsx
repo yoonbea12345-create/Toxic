@@ -242,13 +242,13 @@ export default function Landing() {
 
           <div className="grid grid-cols-2 gap-3 mb-8">
             <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D]">
-              <p className="text-[10px] uppercase tracking-widest text-[#444] font-sans-kr mb-6">기존 사주앱</p>
+              <p className="text-[10px] uppercase tracking-widest text-[#666] font-sans-kr mb-6">기존 사주앱</p>
               <div className="space-y-3 mb-6">
                 {['우리 잘 맞을까?', '더 잘 맞는 상대는?', '이상형 찾기'].map(t => (
-                  <p key={t} className="font-sans-kr text-[#333] text-xs line-through">{t}</p>
+                  <p key={t} className="font-sans-kr text-[#666] text-xs line-through">{t}</p>
                 ))}
               </div>
-              <p className="font-sans-kr text-[#444] text-[11px] leading-relaxed">미래의 좋은 관계를<br />찾아드립니다</p>
+              <p className="font-sans-kr text-[#777] text-[11px] leading-relaxed">미래의 좋은 관계를<br />찾아드립니다</p>
             </div>
 
             <div className="border border-[#FF2D55]/40 p-5 relative overflow-hidden"
