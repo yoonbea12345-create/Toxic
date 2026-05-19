@@ -463,12 +463,26 @@ function PaywallModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
                 className="text-[9px] font-bold px-1.5 py-0.5 border border-[#FF2D55]/50 text-[#FF2D55] flex-shrink-0 mt-0.5"
                 style={{ background: 'rgba(255,45,85,0.08)' }}
               >
+                03
+              </span>
+              <div>
+                <p className="text-white text-sm font-semibold mb-0.5">앞으로 이렇게 해보세요</p>
+                <p className="text-[#444] text-[11px] leading-relaxed">
+                  상황별 실전 가이드 · 선긋기 · 현실적 전망
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-4">
+              <span
+                className="text-[9px] font-bold px-1.5 py-0.5 border border-[#FF2D55]/50 text-[#FF2D55] flex-shrink-0 mt-0.5"
+                style={{ background: 'rgba(255,45,85,0.08)' }}
+              >
                 04
               </span>
               <div>
                 <p className="text-white text-sm font-semibold mb-0.5">이 관계가 나에게 하는 일</p>
                 <p className="text-[#444] text-[11px] leading-relaxed">
-                  경고 신호 3가지 · 내가 잃어가는 것 · 감정 소모 분석
+                  경고 신호 · 내가 잃어가는 것 · 감정 소모 분석
                 </p>
               </div>
             </div>
@@ -492,7 +506,7 @@ function PaywallModal({ onClose, onPay }: { onClose: () => void; onPay: () => vo
           <div className="flex items-center justify-center gap-2 mb-5">
             <div className="h-px flex-1 bg-[#1a1a1a]" />
             <p className="text-[#333] text-[10px] whitespace-nowrap">
-              87%가 이 두 섹션을 가장 많이 공유했습니다
+              91%가 이 세 섹션을 가장 많이 공유했습니다
             </p>
             <div className="h-px flex-1 bg-[#1a1a1a]" />
           </div>
@@ -1120,53 +1134,62 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
           <ToggleBtn open={isOpen('s02')} onToggle={() => toggleSection('s02')} />
 
-          {/* ════ 03 앞으로 이렇게 해보세요 ════ */}
-          <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="부딪히지 않기 위한 현실적 가이드" />
+          {/* ════ 03 앞으로 이렇게 해보세요 (유료) ════ */}
+          <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="상황별 실전 가이드 · 선긋기 · 현실적 전망" />
 
-          {ai.avoidanceGuide ? (
-            <Card accent="#FF2D55">
-              <SubLabel text="마음가짐" />
-              <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.mindset}</p>
-            </Card>
+          {!paywallUnlocked ? (
+            <LockedPremium
+              teaser="이 충돌 구조에서 덜 소모되기 위해 지금 당장 쓸 수 있는 구체적인 방법들이 있습니다. 어떤 상황에서 어떻게 행동하면 되는지, 반드시 지켜야 할 선은 무엇인지—"
+              onUnlock={handleOpenPaywall}
+            />
           ) : (
-            <Card accent="#FF2D55">
-              <SubLabel text="현실적 가이드" />
-              <p className="text-[#888] text-sm leading-relaxed">
-                이 관계의 충돌 구조는 구조적입니다. 상대를 바꾸려 하기보다, 충돌이 일어나는 상황 자체를 피하고 기대치를 조정하는 것이 현실적입니다.
-              </p>
-            </Card>
-          )}
+            <>
+              {ai.avoidanceGuide ? (
+                <Card accent="#FF2D55">
+                  <SubLabel text="마음가짐" />
+                  <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.mindset}</p>
+                </Card>
+              ) : (
+                <Card accent="#FF2D55">
+                  <SubLabel text="현실적 가이드" />
+                  <p className="text-[#888] text-sm leading-relaxed">
+                    이 관계의 충돌 구조는 구조적입니다. 상대를 바꾸려 하기보다, 충돌이 일어나는 상황 자체를 피하고 기대치를 조정하는 것이 현실적입니다.
+                  </p>
+                </Card>
+              )}
 
-          {isOpen('s03') && ai.avoidanceGuide && (
-            <div className="space-y-3">
-              <Card>
-                <SubLabel text="실전 팁" />
+              {isOpen('s03') && ai.avoidanceGuide && (
                 <div className="space-y-3">
-                  {ai.avoidanceGuide.practicalTips.map((tip, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <span className="w-5 h-5 rounded-full border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <p className="text-[#888] text-sm leading-relaxed">{tip}</p>
+                  <Card>
+                    <SubLabel text="실전 팁" />
+                    <div className="space-y-3">
+                      {ai.avoidanceGuide.practicalTips.map((tip, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <span className="w-5 h-5 rounded-full border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                            {i + 1}
+                          </span>
+                          <p className="text-[#888] text-sm leading-relaxed">{tip}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </Card>
+                  </Card>
 
-              <Card>
-                <SubLabel text="선긋기" />
-                <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.boundaries}</p>
-              </Card>
+                  <Card>
+                    <SubLabel text="선긋기" />
+                    <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.boundaries}</p>
+                  </Card>
 
-              {ai.realisticOutlook && (
-                <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
-                  <SubLabel text="현실적 전망" />
-                  <p className="text-[#aaa] text-sm leading-relaxed">{ai.realisticOutlook}</p>
+                  {ai.realisticOutlook && (
+                    <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
+                      <SubLabel text="현실적 전망" />
+                      <p className="text-[#aaa] text-sm leading-relaxed">{ai.realisticOutlook}</p>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+              {ai.avoidanceGuide && <ToggleBtn open={isOpen('s03')} onToggle={() => toggleSection('s03')} />}
+            </>
           )}
-          {ai.avoidanceGuide && <ToggleBtn open={isOpen('s03')} onToggle={() => toggleSection('s03')} />}
 
           {/* ════ 04 이 관계가 나에게 하는 일 ════ */}
           <SectionHeader number="04" title="이 관계가 나에게 하는 일" subtitle="지금 이 순간 당신에게 일어나고 있는 것" />

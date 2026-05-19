@@ -144,9 +144,10 @@ export default function AdminPage() {
   };
 
   const handleClear = () => {
-    if (confirm('모든 분석 데이터를 초기화할까요?')) {
+    if (confirm('모든 분석 데이터 + 유료 잠금 상태를 초기화할까요?')) {
       localStorage.removeItem(EVENTS_KEY);
       localStorage.removeItem('toxic_session_times');
+      localStorage.removeItem('toxic_premium');
       setEvents([]);
       setSessionTimes([]);
     }
