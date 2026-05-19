@@ -11,8 +11,16 @@ const MODEL_HAIKU  = 'claude-haiku-4-5-20251001';
 
 const SYSTEM_CACHED: Anthropic.TextBlockParam & { cache_control: { type: 'ephemeral' } } = {
   type: 'text',
-  text: `당신은 사주명리학 전문가입니다. TOXIC — "왜 안맞는지" — 사주로 날카롭고 구체적으로 설명합니다.
-원칙: 추상적 설명 금지, 실제 상황/대화/감정으로 묘사, 단정적으로, 완전한 JSON, 한국어`,
+  text: `당신은 수십 년 경력의 사주명리학 상담사입니다. 사람들이 당신의 분석을 듣고 "어?? 어떻게 알았지?!" 하고 소름 돋는 반응을 보이는 게 당신의 강점입니다.
+
+[핵심 원칙]
+1. 추상적 표현 절대 금지. "갈등이 생깁니다" X → "상대가 '왜 이렇게 예민해'라고 하면 속에서 뭔가 올라오면서 말이 끊어집니다" O
+2. 반드시 실제 대화체·감정·신체 반응을 포함하여 묘사. "억울한 느낌이 든다" X → "입은 '아니야 괜찮아'라고 하지만 그날 밤 혼자 그 말을 몇 번이나 되새깁니다" O
+3. 상대방의 말투·행동 방식을 특정하여 묘사. 상대가 어떤 식으로 반응하는지 콕 집어냄.
+4. 사주 에너지 설명은 반드시 일상 행동으로 번역. "화(火) 기운" X → "감정이 즉각 표면으로 올라와 참지 못하고 말해버리는 성향" O
+5. 한 문장 안에 구체적 상황·감정·결과가 다 들어가도록. 단정적으로, 반복 표현 없이.
+6. 완전한 JSON만 출력. 주석 없이. 마크다운 없이. 설명 없이.
+7. 한국어 전용. 전문 용어는 괄호 안에 쉬운 설명 필수.`,
   cache_control: { type: 'ephemeral' },
 };
 
@@ -71,180 +79,206 @@ function extractJson(text: string) {
   return JSON.parse(match[0]);
 }
 
-// ─── Phase 1A: 핵심 요약 ─────────────────────────────────────────
+// ─── Phase 1A: 핵심 갈등 + 감정 패턴 ───────────────────────────────
 function buildPhase1APrompt(myData: any, targetData: any, relationType: string, result: any): string {
   const hasTarget = Boolean(targetData?.birthdate);
-  const chung = result.conflicts.chung.map((c: any) => c.name).join(',') || '없음';
-  const hyung = result.conflicts.hyung.map((h: any) => h.name).join(',') || '없음';
-  const geuk  = result.conflicts.geuk?.direction || '없음';
+  const chung = result.conflicts.chung.map((c: any) => c.name).join(', ') || '없음';
+  const hyung = result.conflicts.hyung.map((h: any) => h.name).join(', ') || '없음';
+  const hae   = result.conflicts.hae?.map((h: any) => h.name).join(', ') || '없음';
+  const geuk  = result.conflicts.geuk?.exists ? result.conflicts.geuk.direction : '없음';
+  const score = result.toxicScore;
+  const myPillar = `${result.myYear?.stem}${result.myYear?.branch}년 ${result.myMonth ? result.myMonth.stem+result.myMonth.branch+'월' : ''} ${result.myDay ? result.myDay.stem+result.myDay.branch+'일' : ''}`.trim();
+  const tgPillar = hasTarget ? `${result.targetYear?.stem}${result.targetYear?.branch}년 ${result.targetMonth ? result.targetMonth.stem+result.targetMonth.branch+'월' : ''} ${result.targetDay ? result.targetDay.stem+result.targetDay.branch+'일' : ''}`.trim() : '';
 
   if (hasTarget) {
-    return `사주 핵심 갈등 분석. 순수 JSON만 출력. 모든 설명은 쉬운 한국어로, 전문 용어 없이, 일반인이 바로 이해할 수 있게.
+    return `[사주 데이터]
+나(${myData.gender}): ${myPillar} / 상대(${targetData.gender}): ${tgPillar}
+관계: ${relationType} | 독성지수: ${score}점
+충(沖): ${chung} | 형(刑): ${hyung} | 해(害): ${hae} | 극(剋): ${geuk}
+갈등요약: ${result.conflictSummary || ''} | 태그: ${result.tags?.join(',') || ''}
 
-나:${myData.gender}/${myData.birthdate} 년${result.myYear.stem}${result.myYear.branch} 월${result.myMonth ? result.myMonth.stem+result.myMonth.branch : '-'} 일${result.myDay ? result.myDay.stem+result.myDay.branch : '-'}
-상대:${targetData.gender}/${targetData.birthdate} 년${result.targetYear.stem}${result.targetYear.branch} 월${result.targetMonth ? result.targetMonth.stem+result.targetMonth.branch : '-'} 일${result.targetDay ? result.targetDay.stem+result.targetDay.branch : '-'}
-관계:${relationType} 독성:${result.toxicScore} 충:${chung} 형:${hyung} 극:${geuk}
+[출력 형식] 순수 JSON만. 주석·마크다운 없이.
 
 {
-  "toxicSummary": "20자 이내, 이 관계를 한마디로 정의",
+  "toxicSummary": "20자 이내. 이 관계를 정의하는 날카로운 한마디. 예: '서로를 조금씩 갉아먹는 구조'",
   "coreConflict": {
-    "title": "12자 이내 충돌 유형명",
-    "description": "4문장. 왜 이 두 사람이 구조적으로 안 맞는지, 어떤 상황에서 충돌이 생기는지, 상대방 입장에서 나는 어떻게 보이는지, 이 갈등이 왜 반복되는지. 구체적이고 단정적으로."
+    "title": "12자 이내. 이 충돌의 이름. 예: '방향이 다른 두 에너지'",
+    "description": "5문장. ①이 두 사람이 왜 구조적으로 안 맞는지 — 사주 에너지를 일상 행동으로 번역해 설명. ②어떤 순간에 갈등이 시작되는지 — 구체적인 생활 장면. ③그 순간 나와 상대방이 각각 무슨 생각을 하는지 — 내면의 독백까지. ④상대방 눈에 나는 어떤 사람으로 보이는지, 나 눈에 상대는 어떤 사람인지. ⑤이 갈등이 왜 노력해도 반복될 수밖에 없는지 — 구조 차원의 이유."
   },
   "conflictAnalysis": {
-    "chung": ${chung !== '없음' ? `"충(沖)이 이 관계에서 실제로 어떻게 작동하는지 3문장. 첫째, 어떤 에너지 충돌인지. 둘째, 실생활에서 어떤 상황으로 터지는지(대화 예시 포함). 셋째, 왜 반복될 수밖에 없는지."` : 'null'},
-    "hyung": ${hyung !== '없음' ? `"형(刑)이 이 관계에서 실제로 어떻게 작동하는지 3문장. 구체적 상황과 감정 묘사 포함."` : 'null'},
-    "hae": null,
-    "geuk": ${geuk !== '없음' ? `"극(剋)이 이 관계에서 실제로 어떻게 작동하는지 3문장. 누가 누구를 억누르는지, 어떻게 체감되는지."` : 'null'}
+    "chung": ${chung !== '없음' ? `"충(沖·정면충돌 에너지)이 이 관계에서 어떻게 작동하는지 4문장. ①이 충 이름(${chung})이 어떤 에너지 충돌인지 — 물/불/나무/쇠 등 기운을 실제 성향으로 번역. ②일상에서 어떤 상황으로 터지는지 — 실제 대화 예시('...라고 하면 상대는 ...라고 한다' 형식). ③그 순간 양쪽이 각각 느끼는 감정과 속마음. ④왜 이 충돌이 해결되지 않고 반복되는지."` : 'null'},
+    "hyung": ${hyung !== '없음' ? `"형(刑·압박 에너지)이 이 관계에서 어떻게 작동하는지 3문장. 충처럼 폭발하지 않지만 관계를 서서히 압박하는 방식 — 어떤 상황에서 말못할 긴장이 생기는지, 그 긴장이 어떻게 쌓이는지, 결국 어떻게 터지는지."` : 'null'},
+    "hae": ${hae !== '없음' ? `"해(害·에너지 소모 구조)가 어떻게 작동하는지 3문장. 겉으로는 문제없어 보이지만 함께 있을수록 에너지가 빠지는 구체적인 방식 — 어떤 대화·상황에서 이유없이 지치는지."` : 'null'},
+    "geuk": ${geuk !== '없음' ? `"극(剋·억압 구조)이 어떻게 작동하는지 3문장. 누가 누구를 억누르는지(${geuk} 방향) — 억누르는 쪽은 어떤 행동으로 나타나는지, 눌리는 쪽은 어떻게 체감하는지, 장기적으로 어떻게 되는지."` : 'null'}
   },
   "emotionalPattern": {
-    "myPattern": "내가 이 관계에서 주로 어떻게 감정적으로 반응하는지 2-3문장. 어떤 말이나 행동에 특히 상처받는지, 속으로 무슨 생각을 하는지 구체적으로.",
-    "targetPattern": "상대가 이 관계에서 주로 어떻게 감정적으로 반응하는지 2-3문장. 상대의 특유한 반응 패턴을 구체적으로.",
-    "cycle": "두 사람이 반복하는 갈등 사이클 2-3문장. 어떻게 시작해서 어떻게 끝나고 왜 또 반복되는지 실제 상황처럼."
+    "myPattern": "3문장. 내가 이 관계에서 갈등이 생겼을 때 어떻게 반응하는지 — 어떤 말·행동에 특히 상처받는지, 그 순간 속으로 무슨 말이 올라오는지, 어떻게 처리하는지(참는지/터뜨리는지/냉각되는지).",
+    "targetPattern": "3문장. 상대방이 갈등 상황에서 어떻게 반응하는지 — 상대 특유의 말투·행동 방식, 그게 나에게 어떻게 느껴지는지, 왜 상대는 그렇게 반응할 수밖에 없는지.",
+    "cycle": "3문장. 두 사람이 반복하는 갈등 사이클 — 어떤 사소한 일에서 시작되는지, 어떤 방식으로 커지는지, 어떻게 가라앉고 왜 또 반복되는지. 읽으면서 '맞아, 딱 이래' 싶게 구체적으로."
   },
-  "hiddenDynamic": "겉으로 보이지 않는 숨겨진 역학 2-3문장. 두 사람이 인식하지 못하는 패턴, 무의식적으로 서로에게 하는 일."
+  "hiddenDynamic": "3문장. 두 사람이 스스로는 인식 못하는 숨겨진 역학 — 처음에 끌린 이유가 지금 갈등의 이유가 되는 아이러니, 서로 무의식적으로 상대방에게 하는 일, 그 패턴이 왜 쉽게 바뀌지 않는지."
 }`;
   }
 
-  return `내 사주 기질 분석. 순수 JSON만 출력. 쉬운 한국어, 전문 용어 없이.
+  return `[사주 데이터]
+나(${myData.gender}): ${myPillar}
+충 유발 지지: ${result.myDangerBranches?.join(',') || '없음'} | 극 유발 오행: ${result.myDangerOhaeng?.join(',') || '없음'}
+갈등 성향: ${result.conflictType || ''} | 독성지수: ${score}
 
-나:${myData.gender}/${myData.birthdate} 년${result.myYear.stem}${result.myYear.branch} 월${result.myMonth ? result.myMonth.stem+result.myMonth.branch : '-'} 일${result.myDay ? result.myDay.stem+result.myDay.branch : '-'}
-충유발:${result.myDangerBranches?.join(',') || '없음'} 극유발:${result.myDangerOhaeng?.join(',') || '없음'}
+[출력 형식] 순수 JSON만.
 
 {
-  "toxicSummary": "20자 이내, 내 갈등 성향 핵심",
+  "toxicSummary": "20자 이내. 내 갈등 기질의 핵심을 날카롭게.",
   "myCharacter": {
-    "core": "3-4문장. 내 사주 기질의 핵심. 어떤 상황에서 어떻게 반응하는 사람인지, 인간관계에서 어떤 패턴이 반복되는지 구체적으로.",
-    "strength": "2문장. 이 기질의 강점. 어떤 상황에서 빛나는지 구체적으로.",
-    "shadow": "2문장. 이 기질의 그림자. 어떤 상황에서 독이 되는지 구체적으로."
+    "core": "4문장. ①내 사주 기질의 핵심 에너지를 일상 행동으로 번역. ②인간관계에서 어떤 패턴이 반복되는지 — 특정 유형과 왜 자꾸 충돌하는지. ③내가 모르는 내 모습 — 남들 눈에는 어떻게 보이는지. ④이 기질이 만들어내는 관계 패턴.",
+    "strength": "2문장. 이 기질이 빛나는 구체적 상황과 그 이유.",
+    "shadow": "2문장. 이 기질이 독이 되는 구체적 상황 — 어떤 말·행동이 나도 모르게 상대를 힘들게 하는지."
   },
-  "hiddenDynamic": "2-3문장. 내가 스스로 잘 모르는 무의식적 패턴. 남들 눈에는 보이지만 나는 모르는 것."
+  "hiddenDynamic": "3문장. 내가 스스로 잘 모르는 무의식적 갈등 패턴 — 왜 같은 유형의 사람과 반복적으로 문제가 생기는지, 내 어떤 행동이 원인인지, 그걸 알아채는 방법."
 }`;
 }
 
-// ─── Phase 1B: 상세 시나리오 (병렬 실행) ─────────────────────────
+// ─── Phase 1B: 시나리오·회피 가이드 (병렬 실행) ──────────────────
 function buildPhase1BPrompt(myData: any, targetData: any, relationType: string, result: any): string {
   const hasTarget = Boolean(targetData?.birthdate);
-  const chung = result.conflicts.chung.map((c: any) => c.name).join(',') || '없음';
-  const geuk  = result.conflicts.geuk?.direction || '없음';
+  const chung = result.conflicts.chung.map((c: any) => c.name).join(', ') || '없음';
+  const geuk  = result.conflicts.geuk?.exists ? result.conflicts.geuk.direction : '없음';
+  const score = result.toxicScore;
+  const myYr  = `${result.myYear?.stem}${result.myYear?.branch}`;
+  const tgYr  = hasTarget ? `${result.targetYear?.stem}${result.targetYear?.branch}` : '';
 
   if (hasTarget) {
-    return `사주 갈등 시나리오·회피 가이드. 순수 JSON만. 쉬운 한국어, 전문 용어 없이, 실생활 예시 중심.
+    return `[사주 데이터]
+나(${myData.gender}): ${myYr}년 | 상대(${targetData.gender}): ${tgYr}년
+관계: ${relationType} | 독성지수: ${score}점 | 충: ${chung} | 극: ${geuk}
+갈등패턴: ${result.conflictSummary || ''} | 태그: ${result.tags?.join(',') || ''}
 
-나:${myData.gender}/${myData.birthdate} 년${result.myYear.stem}${result.myYear.branch}
-상대:${targetData.gender}/${targetData.birthdate} 년${result.targetYear.stem}${result.targetYear.branch}
-관계:${relationType} 독성:${result.toxicScore} 충:${chung} 극:${geuk}
+[목표] 사용자가 읽으면서 "어?? 어떻게 알았지?!" 하고 소름 돋게 만드는 갈등 시나리오와 실용적 가이드.
+[출력 형식] 순수 JSON만.
 
 {
   "conflictScenarios": [
     {
-      "situation": "30자 이내 구체적 생활 장면 (예: '카페에서 진로 이야기를 하다가')",
-      "whatHappens": "4문장. 그 상황에서 구체적으로 어떤 대화가 오가고, 어떤 감정이 올라오고, 어떻게 폭발하거나 냉각되는지. 마치 그 자리에 있는 것처럼 생생하게.",
-      "whySaju": "2문장. 이게 단순한 성격 차이가 아니라 사주 구조상 왜 이렇게 될 수밖에 없는지."
+      "situation": "25자 이내. ${relationType} 관계에서 실제로 일어날 법한 구체적인 생활 장면. 예: '피곤한 저녁에 계획을 바꾸자고 했을 때', '중요한 결정 앞두고 의견을 물었을 때'",
+      "whatHappens": "5문장. ①그 상황에서 상대방이 정확히 어떻게 말하거나 행동하는지(대화체로). ②그 말·행동이 나에게 어떻게 들리고 느껴지는지. ③그 순간 나 안에서 어떤 감정이 올라오는지 — 속마음 독백까지. ④내가 어떻게 반응하고, 그게 상대방에게 어떻게 보이는지. ⑤그날 이후 어떤 식으로 남는지(냉각·후회·반복).",
+      "whySaju": "2문장. 이게 단순 성격 차이가 아니라 사주 구조상 왜 이런 패턴이 생기는지 — 쉬운 말로."
     },
     {
-      "situation": "30자 이내 다른 생활 장면",
-      "whatHappens": "4문장. 구체적 대화·감정·결말.",
+      "situation": "25자 이내. 다른 장면 (첫 번째와 다른 맥락)",
+      "whatHappens": "5문장. 같은 형식으로. 대화·감정·속마음·반응·여운.",
       "whySaju": "2문장."
     },
     {
-      "situation": "30자 이내 또 다른 생활 장면",
-      "whatHappens": "4문장. 구체적 대화·감정·결말.",
+      "situation": "25자 이내. 세 번째 장면 (누적된 감정이 터지는 상황)",
+      "whatHappens": "5문장. 앞의 두 상황이 쌓인 결과로 생기는 더 큰 갈등 장면.",
       "whySaju": "2문장."
     }
   ],
-  "triggerPoints": ["구체적 트리거1 (어떤 말/행동/상황)", "트리거2", "트리거3", "트리거4", "트리거5"],
-  "relationSpecific": "${relationType} 관계에서 특히 부각되는 갈등 패턴 2-3문장. 이 관계 유형이기 때문에 생기는 특수한 긴장.",
-  "realisticOutlook": "앞으로 이 관계가 어떻게 흘러갈 가능성이 높은지 2-3문장. 솔직하고 직접적으로.",
+  "triggerPoints": [
+    "상대방이 이 말을 하면 무조건 올라오는 것 — 어떤 말인지 직접 인용 형식",
+    "이 행동을 보면 뭔가 폭발하는 것 — 구체적인 행동",
+    "이런 상황이 되면 나도 모르게 방어적이 되는 것",
+    "상대방이 이 태도를 보이면 더 이상 대화가 안 되는 것",
+    "이 패턴이 반복되면 관계 전체에 회의감이 드는 것"
+  ],
+  "relationSpecific": "3문장. ${relationType} 관계이기 때문에 특히 더 아픈 갈등 — 다른 관계 유형이었다면 넘어갈 수 있는 것이 왜 이 관계에서는 더 크게 느껴지는지, 이 관계 특유의 긴장 구조.",
+  "realisticOutlook": "3문장. 솔직한 전망 — 이 갈등 구조를 인식하지 못한 채 계속 가면 어떻게 되는지, 인식한다면 어떤 가능성이 있는지, 어떤 것은 노력으로 변할 수 없는지.",
   "energyDynamic": {
-    "whoLoses": "2문장. 누가 더 에너지를 소모하고, 어떤 방식으로 소모되는지.",
-    "drainMechanism": "2문장. 에너지가 빠져나가는 구체적인 메커니즘. 어떤 대화·상황에서 특히 소모되는지.",
-    "longTermEffect": "2문장. 이 관계를 오래 유지했을 때 장기적으로 나타나는 영향."
+    "whoLoses": "2문장. 이 관계에서 에너지를 더 많이 쓰는 쪽과 그 이유 — 어떤 방식으로 소모되는지 구체적으로.",
+    "drainMechanism": "2문장. 에너지가 빠져나가는 정확한 메커니즘 — 어떤 대화 직후, 어떤 상황 이후에 특히 지치는지.",
+    "longTermEffect": "2문장. 이 패턴이 6개월, 1년 쌓이면 나에게 어떤 변화가 생기는지 — 구체적인 변화."
   },
   "avoidanceGuide": {
-    "mindset": "3문장. 이 관계에서 덜 상처받고 살아남기 위해 가져야 할 핵심 마음가짐. 현실적이고 직접적으로.",
+    "mindset": "3문장. 이 관계에서 덜 소모되기 위한 핵심 마인드셋 — 상대를 바꾸려는 것을 포기하고 무엇에 집중해야 하는지, 왜 그게 현실적인지.",
     "practicalTips": [
-      "구체적 행동 팁1 — 어떤 상황에서 어떻게 행동하면 되는지",
-      "팁2",
-      "팁3",
-      "팁4",
-      "팁5"
+      "갈등이 시작되려고 할 때(징조가 보일 때) 구체적으로 어떻게 행동하면 되는지",
+      "상대방이 특정 반응을 보일 때 나는 무엇을 해야 하는지 — 행동 지침",
+      "이 관계에서 절대 하면 안 되는 것 — 왜 역효과가 나는지 포함",
+      "이 갈등 후 회복을 위해 나 자신에게 해줘야 할 것",
+      "이 관계를 오래 유지하려면 반드시 만들어야 할 루틴이나 규칙"
     ],
-    "boundaries": "2-3문장. 이 관계에서 반드시 지켜야 할 선. 어떤 상황에서 어떻게 선을 그어야 하는지."
+    "boundaries": "3문장. 이 관계에서 지켜야 할 선 — ①이 상황이 되면 대화를 멈춰야 한다. ②이 패턴이 반복되면 관계 형태를 바꿔야 한다. ③이 신호가 보이면 관계 자체를 재고해야 한다."
   }
 }`;
   }
 
-  return `내 사주 위험 유형·갈등 패턴. 순수 JSON만. 쉬운 한국어, 실생활 예시 중심.
+  return `[사주 데이터]
+나(${myData.gender}): ${myYr}년
+충 유발: ${result.myDangerBranches?.join(',') || '없음'} | 극 유발: ${result.myDangerOhaeng?.join(',') || '없음'}
+갈등 유형: ${result.conflictType || ''} | 독성지수: ${score}
 
-나:${myData.gender}/${myData.birthdate} 년${result.myYear.stem}${result.myYear.branch}
-충유발:${result.myDangerBranches?.join(',') || '없음'} 극유발:${result.myDangerOhaeng?.join(',') || '없음'}
+[출력 형식] 순수 JSON만.
 
 {
   "dangerTypes": [
     {
-      "type": "위험 유형명 (예: 통제형, 회피형)",
-      "years": "이런 유형이 많은 출생연도대 힌트",
-      "whyDangerous": "3문장. 이 유형과 왜 안 맞는지, 어떤 방식으로 서로 힘들게 하는지 구체적으로.",
-      "realScenario": "3문장. 실제로 이런 유형과 만났을 때 어떤 상황이 벌어지는지 생생하게."
+      "type": "위험 유형명 (예: 통제형)",
+      "years": "이 유형이 많이 나타나는 출생연대 힌트",
+      "whyDangerous": "3문장. 이 유형과 왜 구조적으로 안 맞는지 — 어떤 방식으로 서로를 소모시키는지, 처음엔 왜 끌렸다가 나중에 힘들어지는지.",
+      "realScenario": "3문장. 이 유형과 실제로 관계를 맺었을 때 반복되는 장면 — 대화체·감정·결말 포함."
     },
     {
       "type": "두 번째 위험 유형명",
-      "years": "출생연도대 힌트",
+      "years": "출생연대 힌트",
       "whyDangerous": "3문장.",
       "realScenario": "3문장."
     }
   ],
   "conflictScenarios": [
     {
-      "situation": "30자 이내 구체적 장면",
-      "whatHappens": "4문장. 실제로 어떻게 충돌이 벌어지는지 생생하게.",
+      "situation": "25자 이내 구체적 장면",
+      "whatHappens": "4문장. 어떤 갈등이 어떻게 터지는지 생생하게 — 대화·감정·속마음.",
       "whySaju": "2문장."
     },
     {
-      "situation": "30자 이내 다른 장면",
+      "situation": "25자 이내 다른 장면",
       "whatHappens": "4문장.",
       "whySaju": "2문장."
     }
   ],
-  "triggerPoints": ["구체적 트리거1", "트리거2", "트리거3", "트리거4", "트리거5"],
-  "warningPattern": "3문장. 내가 반복하는 갈등 패턴. 왜 같은 실수를 반복하는지, 어떻게 빠져나올 수 있는지.",
+  "triggerPoints": ["이 말을 들으면 반응하는 것 — 직접 인용형", "이 행동을 보면 방어적이 되는 것", "이 상황이 되면 감정이 올라오는 것", "이 패턴이 반복될 때 무력감을 느끼는 것", "이 신호가 보이면 마음이 닫히는 것"],
+  "warningPattern": "3문장. 내가 반복하는 갈등 패턴 — 어떤 상황에서 같은 실수를 반복하는지, 왜 그러는지, 어떻게 다르게 할 수 있는지.",
   "avoidanceGuide": {
-    "mindset": "3문장. 핵심 마음가짐.",
-    "practicalTips": ["구체적 팁1", "팁2", "팁3", "팁4", "팁5"],
-    "boundaries": "2-3문장. 지켜야 할 선."
+    "mindset": "3문장. 핵심 마인드셋 — 나의 갈등 기질을 알고 어떻게 다르게 반응할 것인지.",
+    "practicalTips": ["갈등 시작 전 할 수 있는 것", "갈등 중 해야 하는 것", "갈등 후 회복 방법", "이 기질과 함께 살아가는 방법", "에너지를 충전하는 방법"],
+    "boundaries": "3문장. 나를 지키기 위한 관계별 선 긋기 방법."
   }
 }`;
 }
 
-// ─── Phase 2 ─────────────────────────────────────────────────────
+// ─── Phase 2: 관계 영향 + 지속 판단 ─────────────────────────────
 function buildPhase2Prompt(myData: any, targetData: any, relationType: string, result: any): string {
-  const chung = result.conflicts.chung.map((c: any) => c.name).join(',') || '없음';
-  const geuk  = result.conflicts.geuk?.direction || '없음';
+  const chung = result.conflicts.chung.map((c: any) => c.name).join(', ') || '없음';
+  const geuk  = result.conflicts.geuk?.exists ? result.conflicts.geuk.direction : '없음';
+  const score = result.toxicScore;
+  const myYr  = `${result.myYear?.stem}${result.myYear?.branch}`;
+  const tgYr  = `${result.targetYear?.stem}${result.targetYear?.branch}`;
 
-  return `사주 관계 영향·지속 판단. 순수 JSON만. 쉬운 한국어, 직접적이고 솔직하게.
+  return `[사주 데이터]
+나(${myData.gender}): ${myYr}년 일주:${result.myDay ? result.myDay.stem+result.myDay.branch : '미상'}
+상대(${targetData.gender}): ${tgYr}년
+관계: ${relationType} | 독성지수: ${score}점 | 충: ${chung} | 극: ${geuk}
 
-나:${myData.gender}/${myData.birthdate} 년${result.myYear.stem}${result.myYear.branch} 일${result.myDay ? result.myDay.stem+result.myDay.branch : '-'}
-상대:${targetData.gender}/${targetData.birthdate} 년${result.targetYear.stem}${result.targetYear.branch}
-관계:${relationType} 독성:${result.toxicScore} 충:${chung} 극:${geuk}
+[목표] 04번 섹션: "이 관계가 나에게 하고 있는 일"을 거울처럼 보여줘서 소름 돋게. 05번 섹션: 계속 가야 할지 사주로 판정 — 따뜻하지만 솔직하게.
+[출력 형식] 순수 JSON만.
 
 {
   "personalImpact": {
-    "onMe": "3-4문장. 이 관계가 지금 나에게 실제로 하고 있는 일. 내 감정, 자존감, 에너지, 일상에 어떤 영향을 미치는지 구체적으로.",
+    "onMe": "4문장. 이 관계가 지금 나에게 실제로 하고 있는 일. ①에너지·체력 측면에서 — 이 사람과 만난 날과 만나지 않은 날이 어떻게 다른지. ②감정·자존감 측면에서 — 이 관계 안에서 나는 어떤 버전의 나인지. ③일상 영향 — 이 관계 때문에 다른 것에 어떤 영향이 가는지. ④내가 의식하지 못하고 있었던 것.",
     "warningSignals": [
-      "이 관계가 나를 갉아먹고 있다는 구체적 신호1 (어떤 증상/감정/행동 변화)",
-      "신호2",
-      "신호3",
-      "신호4",
-      "신호5"
+      "이 관계가 나를 갉아먹고 있다는 신호 — 신체 반응으로 나타나는 것 (예: 연락 오면 몸이 먼저 반응하는 것)",
+      "감정 측면에서 나타나는 신호 — 이전과 달라진 나의 감정 패턴",
+      "행동 측면에서 나타나는 신호 — 내가 이 관계 때문에 하게 된 행동 변화",
+      "생각 측면에서 나타나는 신호 — 이 사람에 대해 반복되는 생각 패턴",
+      "관계 외부에서 나타나는 신호 — 다른 관계나 일에 생기는 영향"
     ],
-    "whatYouLose": "2-3문장. 이 관계를 유지하면서 내가 서서히 잃어가고 있는 것들. 구체적으로."
+    "whatYouLose": "3문장. 이 관계를 유지하면서 내가 서서히 포기하거나 잃어가는 것들 — ①내 에너지의 어느 부분. ②내 어떤 모습이나 능력. ③내가 원래 가지고 싶었던 어떤 것."
   },
   "continuationAssessment": {
-    "structuralAnalysis": "3-4문장. 이 관계의 구조적 문제. 노력으로 해결 가능한 부분과 사주 구조상 변하지 않는 부분을 솔직하게.",
-    "whatItTakes": "2-3문장. 이 관계를 계속 이어가려면 현실적으로 무엇이 필요한지. 가능한지 여부도 포함.",
-    "redLine": "2-3문장. 이 신호가 보이면 관계를 재고해야 하는 구체적인 레드라인. 추상적이지 않게.",
-    "verdict": "2-3문장. 사주 구조로 보는 최종 판정. 솔직하고 단호하게."
+    "structuralAnalysis": "4문장. 이 관계의 구조적 분석. ①사주 구조상 이 갈등의 뿌리 — 두 사람의 에너지가 어떤 식으로 충돌하는지. ②노력으로 바꿀 수 있는 것 vs 구조적으로 변하지 않는 것을 명확히 구분. ③지금까지 어떤 패턴이 반복됐을지 — 이미 경험했을 법한 것. ④이 구조를 알고 관계를 이어간다는 것이 어떤 의미인지.",
+    "whatItTakes": "3문장. 이 관계를 계속 이어가기로 결심했다면 — ①두 사람 모두에게 현실적으로 필요한 변화. ②어느 한쪽만 노력하는 구조가 왜 지속되기 어려운지. ③이게 가능하려면 어떤 조건이 충족되어야 하는지.",
+    "redLine": "3문장. 이 신호가 보이면 관계를 반드시 재고해야 하는 레드라인 — ①이 행동·패턴이 반복될 때. ②나에게 이런 변화가 생겼을 때. ③관계 안에서 이것이 느껴질 때. 모두 추상적이지 않고 구체적으로.",
+    "verdict": "3문장. 사주 구조 기반 최종 판정 — 솔직하고 단호하되 잔인하지 않게. 이 관계가 나에게 어떤 의미인지, 계속 가야 한다면 어떤 전제가 필요한지, 이 판정을 읽는 사람에게 전하는 마지막 한마디."
   }
 }`;
 }
@@ -264,8 +298,8 @@ export default async function handler(req: any, res: any) {
     if (phase === 1) {
       // Phase 1A + 1B 병렬 실행 (40s → ~20s)
       const [textA, textB] = await Promise.all([
-        callSonnet(buildPhase1APrompt(myData, targetData, relationType, result), 1200),
-        callSonnet(buildPhase1BPrompt(myData, targetData, relationType, result), 1600),
+        callSonnet(buildPhase1APrompt(myData, targetData, relationType, result), 1600),
+        callSonnet(buildPhase1BPrompt(myData, targetData, relationType, result), 2200),
       ]);
       const dataA = extractJson(textA);
       const dataB = extractJson(textB);
@@ -274,7 +308,7 @@ export default async function handler(req: any, res: any) {
       // Phase 2: Sonnet, 800 토큰
       const text = await callSonnet(
         buildPhase2Prompt(myData, targetData, relationType, result),
-        1200,
+        1600,
       );
       return res.status(200).json({ data: extractJson(text) });
     }
