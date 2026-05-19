@@ -80,7 +80,7 @@ const LOADING_STEPS = [
   { pctStart: 80, pctEnd: 100, label: '최종 분석 정리',          sub: '회피 전략 & 결론 도출',           hanja: '決' },
 ];
 
-const EXPECTED_MS = 22000;
+const PROGRESS_TAU = 13000; // time constant for asymptotic curve (ms)
 
 const SAJU_QUOTES = [
   '사주(四柱)는 당신의 운명이 아니라, 타고난 기질입니다.',
@@ -157,7 +157,8 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
     const iv = setInterval(() => {
       if (doneRef.current) return;
       const elapsed = Date.now() - startRef.current;
-      const pct = Math.min((elapsed / EXPECTED_MS) * 95, 95);
+      // asymptotic curve: fast at first, gradually slows, never freezes
+      const pct = 99 * (1 - Math.exp(-elapsed / PROGRESS_TAU));
       setProgress(pct);
       setStepIdx(Math.min(Math.floor((pct / 100) * LOADING_STEPS.length), LOADING_STEPS.length - 1));
     }, 100);
