@@ -1,10 +1,16 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const SUPABASE_URL = process.env.SUPABASE_URL!;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+function sbSelect(table: string, query: string) {
+  return fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+    },
+  });
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,21 +21,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'unauthorized' });
   }
 
-  const [eventsResult, timesResult] = await Promise.all([
-    supabase
-      .from('toxic_events')
-      .select('event, props, ts')
-      .order('ts', { ascending: false })
-      .limit(500),
-    supabase
-      .from('toxic_session_times')
-      .select('duration')
-      .order('id', { ascending: false })
-      .limit(200),
-  ]);
+  try {
+    const [eventsRes, timesRes] = await Promise.all([
+      sbSelect('toxic_events', 'select=event,props,ts&order=ts.desc&limit=500'),
+      sbSelect('toxic_session_times', 'select=duration&order=id.desc&limit=200'),
+    ]);
 
-  return res.status(200).json({
-    events: eventsResult.data || [],
-    times: (timesResult.data || []).map((r: { duration: number }) => r.duration),
-  });
+    const events = await eventsRes.json();
+    const timesRaw: { duration: number }[] = await timesRes.json();
+
+    return res.status(200).json({
+      events: Array.isArray(events) ? events : [],
+      times: Array.isArray(timesRaw) ? timesRaw.map(r => r.duration) : [],
+    });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return res.status(500).json({ error: msg });
+  }
 }

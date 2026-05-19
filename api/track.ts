@@ -1,5 +1,20 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = process.env.SUPABASE_URL!;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+function sbInsert(table: string, row: object) {
+  return fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify(row),
+  });
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -7,26 +22,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).end();
 
   try {
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
     const { event, props, ts, duration } = req.body || {};
-    const ops: Promise<unknown>[] = [];
+    const ops: Promise<Response>[] = [];
 
     if (event) {
-      ops.push(
-        supabase.from('toxic_events').insert({ event, props: props ?? null, ts: ts || Date.now() })
-          .then(r => { if (r.error) throw r.error; })
-      );
+      ops.push(sbInsert('toxic_events', { event, props: props ?? null, ts: ts || Date.now() }));
     }
-
     if (duration !== undefined) {
-      ops.push(
-        supabase.from('toxic_session_times').insert({ duration: Number(duration) })
-          .then(r => { if (r.error) throw r.error; })
-      );
+      ops.push(sbInsert('toxic_session_times', { duration: Number(duration) }));
     }
 
     await Promise.all(ops);
