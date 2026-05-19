@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const ADMIN_KEY = 'toxic_admin_2025';
+const ADMIN_KEY = '1229';
 const EVENTS_KEY = 'toxic_events';
 
 interface EventRecord {
