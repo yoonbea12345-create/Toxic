@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
+import { startSession } from '../utils/analytics';
 
 const ALL_REVIEWS = [
   { q: '전 남친이랑 왜 그렇게 싸웠는지 사주 보고 처음으로 이해됐어요. 충(沖) 구조라고 나왔는데 우리 싸움 패턴이랑 너무 똑같았어요', r: '26세 여성', tag: '연인', stars: 5 },
@@ -80,6 +81,8 @@ export default function Landing() {
   const [reviewPage, setReviewPage] = useState(0);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const totalPages = Math.ceil(reviews.length / 5);
+
+  useEffect(() => { startSession(); }, []);
 
   useEffect(() => {
     const el = heroRef.current;

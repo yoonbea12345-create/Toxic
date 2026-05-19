@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import html2canvas from 'html2canvas';
 import type { SajuResult, PersonData, RelationType } from '../utils/saju';
 import { fetchAIPhase1, fetchAIPhase2 } from '../utils/aiAnalysis';
+import { trackEvent, endSession } from '../utils/analytics';
 import ShareCard from './ShareCard';
 
 interface StepResultProps {
@@ -373,8 +374,17 @@ export default function StepResult({ myData, targetData, result, relationType, o
     return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} done={apiDone} result={result} />;
   }
 
+  // 결과 화면 진입 시 세션 타임 기록
+  useEffect(() => {
+    if (!showLoading) {
+      endSession();
+      trackEvent('result_view', { toxicScore: result.toxicScore, relationType });
+    }
+  }, [showLoading]);
+
   const handleSaveImage = async () => {
     if (!shareCardRef.current) return;
+    trackEvent('share', { method: 'image' });
     const canvas = await html2canvas(shareCardRef.current, { backgroundColor: '#0A0A0A', scale: 2 });
     const link = document.createElement('a');
     link.download = 'toxic-result.png';
@@ -383,11 +393,13 @@ export default function StepResult({ myData, targetData, result, relationType, o
   };
 
   const handleCopyLink = () => {
+    trackEvent('share', { method: 'link' });
     navigator.clipboard.writeText(window.location.href);
     showToast('링크가 복사되었습니다');
   };
 
   const handleKakaoShare = () => {
+    trackEvent('share', { method: 'kakao' });
     if (window.Kakao?.isInitialized()) {
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
@@ -508,8 +520,8 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
       {/* AI 실패 알림 */}
       {aiError && (
-        <div className="border border-[#2a1a1a] bg-[#1a0a0a] px-4 py-3 text-xs text-[#666] font-sans-kr">
-          AI 분석 서버 오류 — 사주 기본 데이터로 결과를 표시합니다
+        <div className="border border-[#1e1e1e] bg-[#0D0D0D] px-4 py-3 text-xs text-[#555] font-sans-kr">
+          지금 서버가 바빠 사주 기본 구조 기반으로 분석을 표시합니다
         </div>
       )}
 
@@ -764,9 +776,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {phase2Loading ? (
             <>
               <Phase2Skeleton />
-              <div className="text-center py-1">
-                <p className="text-[#333] text-[11px] font-sans-kr animate-pulse">추가 분석 중···</p>
-              </div>
+              <p className="text-center text-[#333] text-[11px] font-sans-kr animate-pulse py-1">
+                04·05 섹션 분석 중 — 잠시만 기다려주세요
+              </p>
             </>
           ) : (
             <>
@@ -815,9 +827,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           <SectionHeader number="05" title="이 관계, 계속 가야 할까?" subtitle="사주 구조로 보는 냉철한 판단" />
 
           {phase2Loading ? (
-            <>
-              <Phase2Skeleton />
-            </>
+            <Phase2Skeleton />
           ) : (
             <>
               {/* 미리보기: 최종 판정 */}

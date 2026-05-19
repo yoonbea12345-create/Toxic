@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { trackEvent } from '../utils/analytics';
 import type { PersonData, RelationType, SajuResult } from '../utils/saju';
 import { analyzeSaju } from '../utils/saju';
 import StepInput from '../components/StepInput';
@@ -8,22 +9,35 @@ import StepResult from '../components/StepResult';
 
 type Step = 'my-info' | 'relation' | 'target-info' | 'result';
 
+const SESSION_KEY = 'toxic_session';
+
+function saveSession(data: object) {
+  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); } catch {}
+}
+function loadSession() {
+  try { const raw = sessionStorage.getItem(SESSION_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
+}
+
 export default function AppPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<Step>('my-info');
-  const [myData, setMyData] = useState<PersonData | null>(null);
-  const [relationType, setRelationType] = useState<RelationType>('연인');
-  const [targetData, setTargetData] = useState<PersonData | null>(null);
-  const [result, setResult] = useState<SajuResult | null>(null);
+
+  const saved = loadSession();
+  const [step, setStep] = useState<Step>(saved?.step ?? 'my-info');
+  const [myData, setMyData] = useState<PersonData | null>(saved?.myData ?? null);
+  const [relationType, setRelationType] = useState<RelationType>(saved?.relationType ?? '연인');
+  const [targetData, setTargetData] = useState<PersonData | null>(saved?.targetData ?? null);
+  const [result, setResult] = useState<SajuResult | null>(saved?.result ?? null);
 
   const handleMyInfo = (data: PersonData) => {
     setMyData(data);
     setStep('relation');
+    trackEvent('step_complete_my-info');
   };
 
   const handleRelation = (rel: RelationType) => {
     setRelationType(rel);
     setStep('target-info');
+    trackEvent('step_complete_relation', { relationType: rel });
   };
 
   const handleTargetInfo = (data: PersonData) => {
@@ -32,6 +46,8 @@ export default function AppPage() {
     const res = analyzeSaju(myData, data, relationType);
     setResult(res);
     setStep('result');
+    saveSession({ step: 'result', myData, relationType, targetData: data, result: res });
+    trackEvent('step_complete_target-info', { toxicScore: res.toxicScore });
   };
 
   const handleSkipTarget = () => {
@@ -41,6 +57,13 @@ export default function AppPage() {
     const res = analyzeSaju(myData, emptyTarget, relationType);
     setResult(res);
     setStep('result');
+    saveSession({ step: 'result', myData, relationType, targetData: emptyTarget, result: res });
+    trackEvent('step_complete_skip-target', { toxicScore: res.toxicScore });
+  };
+
+  const handleBack = () => {
+    if (step === 'relation') setStep('my-info');
+    else if (step === 'target-info') setStep('relation');
   };
 
   const handleReset = () => {
@@ -48,6 +71,8 @@ export default function AppPage() {
     setTargetData(null);
     setResult(null);
     setStep('my-info');
+    try { sessionStorage.removeItem(SESSION_KEY); } catch {}
+    trackEvent('reset');
   };
 
   const stepNumber = { 'my-info': 1, 'relation': 2, 'target-info': 3, 'result': 3 };
@@ -58,23 +83,33 @@ export default function AppPage() {
         <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity">
           <img src="/logo.svg" alt="TOXIC" className="h-14 object-contain" />
         </button>
-        {step !== 'result' && (
-          <div className="flex gap-1.5">
-            {[1, 2, 3].map(n => (
-              <div
-                key={n}
-                className={`h-1 rounded-full transition-all duration-300 ${n <= stepNumber[step] ? 'bg-accent-red w-6' : 'bg-border w-3'}`}
-              />
-            ))}
-          </div>
-        )}
-        {step === 'result' && (
-          <div className="flex gap-1.5">
-            {[1, 2, 3].map(n => (
-              <div key={n} className="h-1 w-6 rounded-full bg-accent-red" />
-            ))}
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          {(step === 'relation' || step === 'target-info') && (
+            <button
+              onClick={handleBack}
+              className="text-[#555] text-sm hover:text-white transition-colors px-2"
+            >
+              ← 이전
+            </button>
+          )}
+          {step !== 'result' && (
+            <div className="flex gap-1.5">
+              {[1, 2, 3].map(n => (
+                <div
+                  key={n}
+                  className={`h-1 rounded-full transition-all duration-300 ${n <= stepNumber[step] ? 'bg-accent-red w-6' : 'bg-border w-3'}`}
+                />
+              ))}
+            </div>
+          )}
+          {step === 'result' && (
+            <div className="flex gap-1.5">
+              {[1, 2, 3].map(n => (
+                <div key={n} className="h-1 w-6 rounded-full bg-accent-red" />
+              ))}
+            </div>
+          )}
+        </div>
       </header>
 
       <main>
