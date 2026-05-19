@@ -900,9 +900,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
                   <SubLabel text="나의 위험 유형" />
                   {ai.dangerTypes.map((dt, i) => (
                     <Card key={i}>
-                      <div className="flex items-start justify-between mb-3">
-                        <p className="text-white text-sm font-bold">{dt.type}</p>
-                        {dt.years && <p className="text-[#555] text-[11px] flex-shrink-0 ml-2">{dt.years}</p>}
+                      <div className="mb-3">
+                        <p className="text-white text-sm font-bold mb-1">{dt.type}</p>
+                        {dt.years && <p className="text-[#555] text-[11px]">{dt.years}</p>}
                       </div>
                       <p className="text-[#777] text-xs leading-relaxed mb-3">{dt.whyDangerous}</p>
                       <div className="bg-[#FF2D55]/5 border border-[#FF2D55]/15 px-3 py-2.5">
