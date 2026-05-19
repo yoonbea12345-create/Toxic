@@ -652,11 +652,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
     })();
   }, [showLoading]);
 
-  if (showLoading) {
-    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} done={apiDone} result={result} />;
-  }
-
-  // 결과 화면 진입 시 세션 타임 기록
+  // 결과 화면 진입 시 세션 타임 기록 — 반드시 조건부 return 전에 위치해야 함
   useEffect(() => {
     if (!showLoading) {
       endSession();
@@ -664,6 +660,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
       trackEvent('paywall_impression');
     }
   }, [showLoading]);
+
+  if (showLoading) {
+    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} done={apiDone} result={result} />;
+  }
 
   const handleSaveImage = async () => {
     if (!shareCardRef.current) return;
