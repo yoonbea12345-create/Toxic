@@ -80,8 +80,6 @@ const LOADING_STEPS = [
   { pctStart: 80, pctEnd: 100, label: '최종 분석 정리',          sub: '회피 전략 & 결론 도출',           hanja: '決' },
 ];
 
-const PROGRESS_TAU = 13000; // time constant for asymptotic curve (ms)
-
 const SAJU_QUOTES = [
   '사주(四柱)는 당신의 운명이 아니라, 타고난 기질입니다.',
   '충(沖)이 있다고 나쁜 관계가 아닙니다. 갈등 방식이 다를 뿐입니다.',
@@ -136,16 +134,12 @@ const SAJU_QUOTES = [
   '음양(陰陽)의 균형이 깨지면 관계에서 항상 한쪽이 더 소모됩니다.',
 ];
 
-function AILoadingScreen({ hasTarget, score, done, result }: {
+function AILoadingScreen({ hasTarget, score, result, progress }: {
   hasTarget: boolean;
   score: number;
-  done: boolean;
   result: SajuResult;
+  progress: number;
 }) {
-  const startRef = useRef(Date.now());
-  const doneRef = useRef(false);
-  const [progress, setProgress] = useState(0);
-  const [stepIdx, setStepIdx] = useState(0);
   const [quoteIdx, setQuoteIdx] = useState(() => Math.floor(Math.random() * SAJU_QUOTES.length));
 
   useEffect(() => {
@@ -153,25 +147,11 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
     return () => clearInterval(iv);
   }, []);
 
-  useEffect(() => {
-    const iv = setInterval(() => {
-      if (doneRef.current) return;
-      const elapsed = Date.now() - startRef.current;
-      // asymptotic curve: fast at first, gradually slows, never freezes
-      const pct = 99 * (1 - Math.exp(-elapsed / PROGRESS_TAU));
-      setProgress(pct);
-      setStepIdx(Math.min(Math.floor((pct / 100) * LOADING_STEPS.length), LOADING_STEPS.length - 1));
-    }, 100);
-    return () => clearInterval(iv);
-  }, []);
-
-  useEffect(() => {
-    if (done && !doneRef.current) {
-      doneRef.current = true;
-      setProgress(100);
-      setStepIdx(LOADING_STEPS.length - 1);
-    }
-  }, [done]);
+  const stepIdx = Math.min(
+    Math.floor((progress / 100) * LOADING_STEPS.length),
+    LOADING_STEPS.length - 1
+  );
+  const isDone = progress >= 100;
 
   const color  = score >= 80 ? '#FF2D55' : score >= 60 ? '#BF5AF2' : '#F59E0B';
   const color2 = score >= 80 ? '#BF5AF2' : score >= 60 ? '#FF2D55' : '#F59E0B';
@@ -186,8 +166,6 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
   const tipAngle = (progress / 100) * 2 * Math.PI - Math.PI / 2;
   const tipX = 100 + R * Math.cos(tipAngle);
   const tipY = 100 + R * Math.sin(tipAngle);
-
-  const isDone = progress >= 100;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4"
@@ -295,7 +273,7 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
         <p key={step.label} className="text-white text-sm font-medium mb-1.5 char-enter">
           {isDone ? '분석 완료' : step.label}
         </p>
-        <p className="text-[#333] text-xs leading-relaxed">
+        <p className="text-[#888] text-xs leading-relaxed">
           {isDone ? '결과를 불러오는 중...' : step.sub}
         </p>
 
@@ -317,7 +295,7 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
       {/* Rotating saju quote */}
       {!isDone && (
         <div className="w-72 text-center px-4 mt-4">
-          <p key={quoteIdx} className="char-enter" style={{ color: '#2d2d2d', fontSize: '11px', lineHeight: '1.6' }}>
+          <p key={quoteIdx} className="char-enter" style={{ color: '#777', fontSize: '11px', lineHeight: '1.6' }}>
             {SAJU_QUOTES[quoteIdx]}
           </p>
         </div>
@@ -417,124 +395,160 @@ function LockIcon({ size = 20, color = '#FF2D55' }: { size?: number; color?: str
   );
 }
 
+// ── 섹션별 페이월 콘텐츠 ────────────────────────────────────────────
+const SECTION_PAYWALL: Record<string, {
+  title: string; hook: string; desc: string;
+  benefits: string[]; social: string;
+}> = {
+  '03': {
+    title: '앞으로 이렇게 해보세요',
+    hook: '이 충돌 구조에서 살아남는 실전 전략',
+    desc: '어떤 상황에서 어떻게 행동하면 되는지, 반드시 지켜야 할 선은 무엇인지 — 지금 당장 쓸 수 있는 가이드입니다.',
+    benefits: [
+      '상황별 5가지 행동 지침 — 갈등 전·중·후',
+      '역효과 나는 행동 패턴 — 절대 하면 안 되는 것',
+      '이 관계에서 반드시 지켜야 할 선 (선긋기)',
+      '6개월·1년 뒤 현실적인 전망',
+    ],
+    social: '이 섹션을 본 사람의 87%가 "실제로 도움됐다"고 답했습니다',
+  },
+  '04': {
+    title: '이 관계가 나에게 하는 일',
+    hook: '지금 이 순간 당신에게 일어나고 있는 것',
+    desc: '이 관계가 에너지·감정·일상에 어떤 영향을 미치는지 — 당신이 의식하지 못했던 것들이 드러납니다.',
+    benefits: [
+      '에너지·자존감·일상에 미치는 구체적인 영향',
+      '이 관계가 나를 갉아먹고 있다는 5가지 신호',
+      '내가 이 관계 때문에 서서히 잃어가는 것들',
+      '내가 의식하지 못하고 있었던 패턴',
+    ],
+    social: '가장 많이 공유되는 섹션 — 91%가 "소름 돋았다"고 답함',
+  },
+  '05': {
+    title: '이 관계, 계속 가야 할까?',
+    hook: '사주 구조 기반 AI 최종 판정',
+    desc: '노력으로 바꿀 수 있는 것과 구조적으로 불가능한 것을 명확히 구분해 — 냉철하지만 따뜻하게 판정합니다.',
+    benefits: [
+      '바꿀 수 있는 것 vs 구조적으로 불가능한 것',
+      '계속하려면 반드시 충족해야 할 현실적 조건',
+      '이 신호가 보이면 재고해야 할 레드라인 3가지',
+      'AI 최종 판정 — 솔직하고 단호하게',
+    ],
+    social: '"결국 결정하는 데 도움이 됐다" — 읽은 사람의 79%',
+  },
+};
+
 // ── 결제 팝업 모달 ───────────────────────────────────────────────────
-function PaywallModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
+function PaywallModal({ section, onClose, onPay }: {
+  section: '03' | '04' | '05';
+  onClose: () => void;
+  onPay: () => void;
+}) {
+  const c = SECTION_PAYWALL[section];
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.96)' }}
+      style={{ background: 'rgba(0,0,0,0.97)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
-        className="w-full max-w-sm mx-4 mb-safe relative animate-fade-in"
-        style={{ background: 'linear-gradient(160deg, #0E0003 0%, #0A0A0A 60%, #080810 100%)' }}
+        className="w-full max-w-sm mx-4 mb-4 sm:mb-0 relative animate-fade-in overflow-hidden"
+        style={{ background: 'linear-gradient(160deg, #0A0002 0%, #090909 50%, #070710 100%)' }}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center text-[#333] hover:text-[#666] transition-colors text-base leading-none z-10"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#333] hover:text-[#555] transition-colors z-10"
         >
           ✕
         </button>
 
-        <div className="border border-[#FF2D55]/20 p-6">
-          {/* Lock icon */}
-          <div className="flex justify-center mb-4">
-            <div
-              className="w-14 h-14 border border-[#FF2D55]/40 flex items-center justify-center"
-              style={{ background: 'rgba(255,45,85,0.08)' }}
+        <div className="border border-[#FF2D55]/20">
+          {/* Top accent gradient line */}
+          <div className="h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,45,85,0.7), transparent)' }} />
+
+          <div className="p-6">
+            {/* Badge row */}
+            <div className="flex items-center gap-2 mb-5">
+              <span
+                className="text-[9px] font-bold tracking-[0.2em] px-2.5 py-1 border border-[#FF2D55]/50 text-[#FF2D55]"
+                style={{ background: 'rgba(255,45,85,0.08)' }}
+              >
+                SECTION {section}
+              </span>
+              <div className="h-px flex-1 bg-[#111]" />
+              <div
+                className="w-9 h-9 border border-[#FF2D55]/30 flex items-center justify-center flex-shrink-0"
+                style={{ background: 'rgba(255,45,85,0.06)' }}
+              >
+                <LockIcon size={16} />
+              </div>
+            </div>
+
+            {/* Section title */}
+            <h2 className="text-white text-xl font-bold leading-snug mb-1">{c.title}</h2>
+            <p className="text-[#FF2D55] text-xs mb-2 font-medium">{c.hook}</p>
+            <p className="text-[#444] text-xs leading-relaxed mb-5">{c.desc}</p>
+
+            {/* Benefits */}
+            <div className="space-y-2.5 mb-5">
+              {c.benefits.map((b, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <div
+                    className="w-4 h-4 flex items-center justify-center flex-shrink-0 mt-0.5 rounded-full border border-[#FF2D55]/40"
+                    style={{ background: 'rgba(255,45,85,0.08)' }}
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#FF2D55]" />
+                  </div>
+                  <p className="text-[#666] text-xs leading-relaxed">{b}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Social proof */}
+            <div className="border border-[#141414] bg-[#080808] px-4 py-3 mb-5">
+              <p className="text-[#333] text-[10px] leading-relaxed text-center">{c.social}</p>
+            </div>
+
+            {/* Price row */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-[#2a2a2a] text-[10px] uppercase tracking-widest mb-1">이 섹션만 잠금 해제</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[#2a2a2a] text-sm line-through">₩500</span>
+                  <span className="text-white text-2xl font-bold tracking-tight">₩100</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span
+                  className="text-[10px] font-bold px-2 py-1 border border-[#FF2D55]/40 text-[#FF2D55]"
+                  style={{ background: 'rgba(255,45,85,0.08)' }}
+                >
+                  출시 기념 80% OFF
+                </span>
+              </div>
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={onPay}
+              className="w-full py-4 gradient-red text-white font-bold text-sm tracking-[0.05em] mb-3 relative overflow-hidden group"
             >
-              <LockIcon size={24} />
+              <span className="relative z-10">₩100으로 이 섹션 잠금 해제</span>
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                style={{ background: 'rgba(255,255,255,0.06)' }}
+              />
+            </button>
+
+            <div className="flex items-center justify-center gap-3 text-[#1e1e1e] text-[10px]">
+              <span>🔒 안전한 결제</span>
+              <span>·</span>
+              <span>즉시 잠금 해제</span>
+              <span>·</span>
+              <span>100% 환불 보장</span>
             </div>
           </div>
-
-          {/* Title */}
-          <p className="text-center text-[#FF2D55] text-[10px] uppercase tracking-[0.35em] mb-2">PREMIUM ANALYSIS</p>
-          <h2 className="text-center text-white text-xl font-bold leading-tight mb-2">
-            사주 AI 심층 분석
-          </h2>
-          <p className="text-center text-[#444] text-xs leading-relaxed mb-6 px-2">
-            가장 많은 사람들이 보고 싶어하는 분석입니다.<br />
-            이 관계, 당신에게 무슨 일이 일어나고 있나요?
-          </p>
-
-          {/* What you get */}
-          <div className="border border-[#1a1a1a] bg-[#080808] divide-y divide-[#111] mb-5">
-            <div className="flex items-start gap-3 p-4">
-              <span
-                className="text-[9px] font-bold px-1.5 py-0.5 border border-[#FF2D55]/50 text-[#FF2D55] flex-shrink-0 mt-0.5"
-                style={{ background: 'rgba(255,45,85,0.08)' }}
-              >
-                03
-              </span>
-              <div>
-                <p className="text-white text-sm font-semibold mb-0.5">앞으로 이렇게 해보세요</p>
-                <p className="text-[#444] text-[11px] leading-relaxed">
-                  상황별 실전 가이드 · 선긋기 · 현실적 전망
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-4">
-              <span
-                className="text-[9px] font-bold px-1.5 py-0.5 border border-[#FF2D55]/50 text-[#FF2D55] flex-shrink-0 mt-0.5"
-                style={{ background: 'rgba(255,45,85,0.08)' }}
-              >
-                04
-              </span>
-              <div>
-                <p className="text-white text-sm font-semibold mb-0.5">이 관계가 나에게 하는 일</p>
-                <p className="text-[#444] text-[11px] leading-relaxed">
-                  경고 신호 · 내가 잃어가는 것 · 감정 소모 분석
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-4">
-              <span
-                className="text-[9px] font-bold px-1.5 py-0.5 border border-[#FF2D55]/50 text-[#FF2D55] flex-shrink-0 mt-0.5"
-                style={{ background: 'rgba(255,45,85,0.08)' }}
-              >
-                05
-              </span>
-              <div>
-                <p className="text-white text-sm font-semibold mb-0.5">이 관계, 계속 가야 할까?</p>
-                <p className="text-[#444] text-[11px] leading-relaxed">
-                  구조적 판단 · 레드라인 · AI 최종 판정
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Social proof */}
-          <div className="flex items-center justify-center gap-2 mb-5">
-            <div className="h-px flex-1 bg-[#1a1a1a]" />
-            <p className="text-[#333] text-[10px] whitespace-nowrap">
-              91%가 이 세 섹션을 가장 많이 공유했습니다
-            </p>
-            <div className="h-px flex-1 bg-[#1a1a1a]" />
-          </div>
-
-          {/* Price */}
-          <div className="text-center mb-5">
-            <div className="inline-flex items-baseline gap-2 mb-1">
-              <span className="text-[#2a2a2a] text-sm line-through">₩500</span>
-              <span className="text-white text-[2.5rem] font-bold tracking-tight leading-none">₩100</span>
-            </div>
-            <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.2em] mt-1">출시 기념 80% 할인</p>
-          </div>
-
-          {/* CTA */}
-          <button
-            onClick={onPay}
-            className="w-full py-4 gradient-red text-white font-bold text-sm tracking-[0.05em] mb-3 relative overflow-hidden group"
-          >
-            <span className="relative z-10">₩100으로 지금 확인하기</span>
-            <div
-              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              style={{ background: 'rgba(255,255,255,0.06)' }}
-            />
-          </button>
-          <p className="text-center text-[#222] text-[10px]">
-            안전한 결제 · 즉시 잠금 해제 · 100% 환불 보장
-          </p>
         </div>
       </div>
     </div>
@@ -653,16 +667,24 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [aiPhase2, setAiPhase2] = useState<Partial<AIAnalysis> | null>(null);
   const [phase2Loading, setPhase2Loading] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [apiDone, setApiDone] = useState(false);
+  const [, setApiDone] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [showLoading, setShowLoading] = useState(true);
   const [aiError] = useState(false);
   const [toast, setToast] = useState('');
   const [conflictTooltip, setConflictTooltip] = useState<string | null>(null);
 
-  // 유료 전환 검증 상태
-  const [paywallUnlocked, setPaywallUnlocked] = useState(() => {
-    try { return localStorage.getItem('toxic_premium') === '1'; } catch { return false; }
+  // 유료 전환 — 섹션별 독립 잠금
+  const [unlockedSections, setUnlockedSections] = useState<Set<string>>(() => {
+    try {
+      const s = new Set<string>();
+      if (localStorage.getItem('toxic_premium_03') === '1') s.add('03');
+      if (localStorage.getItem('toxic_premium_04') === '1') s.add('04');
+      if (localStorage.getItem('toxic_premium_05') === '1') s.add('05');
+      return s;
+    } catch { return new Set(); }
   });
+  const [activeSection, setActiveSection] = useState<'03' | '04' | '05' | null>(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [showFreeSuccess, setShowFreeSuccess] = useState(false);
 
@@ -682,19 +704,22 @@ export default function StepResult({ myData, targetData, result, relationType, o
     setTimeout(() => setToast(''), 2500);
   };
 
-  const handleOpenPaywall = () => {
-    trackEvent('paywall_click');
+  const handleOpenPaywall = (section: '03' | '04' | '05') => {
+    trackEvent('paywall_click', { section });
+    setActiveSection(section);
     setShowPaywall(true);
   };
 
   const handlePayment = () => {
-    trackEvent('paywall_pay');
+    if (!activeSection) return;
+    trackEvent('paywall_pay', { section: activeSection });
     setShowPaywall(false);
     setShowFreeSuccess(true);
-    try { localStorage.setItem('toxic_premium', '1'); } catch {}
+    const sec = activeSection;
+    try { localStorage.setItem(`toxic_premium_${sec}`, '1'); } catch {}
     setTimeout(() => {
       setShowFreeSuccess(false);
-      setPaywallUnlocked(true);
+      setUnlockedSections(prev => new Set([...prev, sec]));
     }, 3200);
   };
 
@@ -705,12 +730,13 @@ export default function StepResult({ myData, targetData, result, relationType, o
   useEffect(() => {
     (async () => {
       try {
-        const data = await fetchAIPhase1(myData, targetData, relationType, result);
+        const data = await fetchAIPhase1(myData, targetData, relationType, result, setLoadingProgress);
         setAiPhase1(data);
       } catch {
         const localData = generateLocalAnalysis(result, relationType, hasTarget);
         setAiPhase1(localData as AIAnalysis);
       } finally {
+        setLoadingProgress(100);
         setApiDone(true);
         setTimeout(() => setShowLoading(false), 800);
       }
@@ -746,7 +772,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   }, [showLoading]);
 
   if (showLoading) {
-    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} done={apiDone} result={result} />;
+    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} result={result} progress={loadingProgress} />;
   }
 
   const handleSaveImage = async () => {
@@ -785,7 +811,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
     <div className="animate-fade-in max-w-lg mx-auto px-4 py-8 space-y-4">
 
       {/* 결제 팝업 모달 */}
-      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} onPay={handlePayment} />}
+      {showPaywall && activeSection && (
+        <PaywallModal section={activeSection} onClose={() => setShowPaywall(false)} onPay={handlePayment} />
+      )}
 
       {/* 결제 성공 오버레이 */}
       <FreeSuccessOverlay visible={showFreeSuccess} />
@@ -1138,10 +1166,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {/* ════ 03 앞으로 이렇게 해보세요 (유료) ════ */}
           <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="상황별 실전 가이드 · 선긋기 · 현실적 전망" />
 
-          {!paywallUnlocked ? (
+          {!unlockedSections.has('03') ? (
             <LockedPremium
               teaser="이 충돌 구조에서 덜 소모되기 위해 지금 당장 쓸 수 있는 구체적인 방법들이 있습니다. 어떤 상황에서 어떻게 행동하면 되는지, 반드시 지켜야 할 선은 무엇인지—"
-              onUnlock={handleOpenPaywall}
+              onUnlock={() => handleOpenPaywall('03')}
             />
           ) : (
             <>
@@ -1195,10 +1223,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {/* ════ 04 이 관계가 나에게 하는 일 ════ */}
           <SectionHeader number="04" title="이 관계가 나에게 하는 일" subtitle="지금 이 순간 당신에게 일어나고 있는 것" />
 
-          {!paywallUnlocked ? (
+          {!unlockedSections.has('04') ? (
             <LockedPremium
               teaser="지금 이 관계에서 당신은 조금씩 자신을 잃어가고 있습니다. AI가 발견한 경고 신호와 당신이 이 관계로 인해 잃어가고 있는 것들—"
-              onUnlock={handleOpenPaywall}
+              onUnlock={() => handleOpenPaywall('04')}
             />
           ) : phase2Loading ? (
             <>
@@ -1251,10 +1279,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {/* ════ 05 이 관계, 계속 가야 할까? ════ */}
           <SectionHeader number="05" title="이 관계, 계속 가야 할까?" subtitle="사주 구조로 보는 냉철한 판단" />
 
-          {!paywallUnlocked ? (
+          {!unlockedSections.has('05') ? (
             <LockedPremium
               teaser="사주 구조는 이 관계에 대해 분명한 신호를 보내고 있습니다. 계속할 때 반드시 넘어야 할 레드라인과 AI 최종 판정—"
-              onUnlock={handleOpenPaywall}
+              onUnlock={() => handleOpenPaywall('05')}
             />
           ) : phase2Loading ? (
             <Phase2Skeleton />

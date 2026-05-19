@@ -148,6 +148,9 @@ export default function AdminPage() {
       localStorage.removeItem(EVENTS_KEY);
       localStorage.removeItem('toxic_session_times');
       localStorage.removeItem('toxic_premium');
+      localStorage.removeItem('toxic_premium_03');
+      localStorage.removeItem('toxic_premium_04');
+      localStorage.removeItem('toxic_premium_05');
       setEvents([]);
       setSessionTimes([]);
     }

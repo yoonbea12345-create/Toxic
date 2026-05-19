@@ -64,6 +64,56 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+// 천간지지 한자 배경 워터마크
+const HANJA_ITEMS = [
+  { char: '甲', x: 6,  y: 3,  size: '6.5rem', opacity: 0.10, rotate: -12, red: false },
+  { char: '子', x: 83, y: 2,  size: '8.5rem', opacity: 0.07, rotate: 7,   red: true  },
+  { char: '壬', x: 48, y: 8,  size: '5.5rem', opacity: 0.09, rotate: -4,  red: false },
+  { char: '午', x: 68, y: 14, size: '7rem',   opacity: 0.08, rotate: 11,  red: true  },
+  { char: '辰', x: 18, y: 19, size: '10rem',  opacity: 0.06, rotate: -8,  red: false },
+  { char: '乙', x: 91, y: 22, size: '6rem',   opacity: 0.10, rotate: -16, red: false },
+  { char: '丙', x: 4,  y: 32, size: '7.5rem', opacity: 0.08, rotate: 5,   red: true  },
+  { char: '戌', x: 76, y: 36, size: '6rem',   opacity: 0.09, rotate: -13, red: false },
+  { char: '癸', x: 40, y: 43, size: '9rem',   opacity: 0.07, rotate: 8,   red: false },
+  { char: '寅', x: 89, y: 49, size: '5.5rem', opacity: 0.10, rotate: -3,  red: true  },
+  { char: '庚', x: 14, y: 55, size: '11rem',  opacity: 0.05, rotate: 13,  red: false },
+  { char: '丑', x: 58, y: 58, size: '5rem',   opacity: 0.11, rotate: -6,  red: false },
+  { char: '巳', x: 30, y: 64, size: '7rem',   opacity: 0.09, rotate: 9,   red: true  },
+  { char: '己', x: 72, y: 68, size: '6.5rem', opacity: 0.09, rotate: -10, red: false },
+  { char: '酉', x: 5,  y: 73, size: '8rem',   opacity: 0.07, rotate: 4,   red: false },
+  { char: '丁', x: 88, y: 76, size: '5.5rem', opacity: 0.11, rotate: 14,  red: true  },
+  { char: '亥', x: 48, y: 82, size: '9.5rem', opacity: 0.06, rotate: -7,  red: false },
+  { char: '辛', x: 22, y: 86, size: '6rem',   opacity: 0.09, rotate: 6,   red: false },
+  { char: '卯', x: 78, y: 90, size: '7.5rem', opacity: 0.08, rotate: -11, red: true  },
+  { char: '未', x: 10, y: 93, size: '5rem',   opacity: 0.10, rotate: 16,  red: false },
+  { char: '戊', x: 62, y: 96, size: '8rem',   opacity: 0.07, rotate: -5,  red: false },
+  { char: '申', x: 38, y: 98, size: '6rem',   opacity: 0.09, rotate: 9,   red: true  },
+];
+
+function HanjaWatermark() {
+  return (
+    <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
+      {HANJA_ITEMS.map((item, i) => (
+        <span
+          key={i}
+          className="absolute font-display leading-none"
+          style={{
+            left: `${item.x}%`,
+            top: `${item.y}%`,
+            fontSize: item.size,
+            opacity: item.opacity,
+            color: item.red ? '#FF2D55' : '#ffffff',
+            transform: `rotate(${item.rotate}deg)`,
+            lineHeight: 1,
+          }}
+        >
+          {item.char}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function Stars({ count }: { count: number }) {
   return (
     <div className="flex gap-0.5">
@@ -103,6 +153,7 @@ export default function Landing() {
   return (
     <div className="bg-[#0A0A0A] min-h-screen overflow-x-hidden relative">
       <div className="grain-overlay" aria-hidden />
+      <HanjaWatermark />
 
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">

@@ -294,24 +294,70 @@ export default async function handler(req: any, res: any) {
     return res.status(200).json({ data: null });
   }
 
-  try {
-    if (phase === 1) {
-      // Phase 1A + 1B 병렬 실행 (40s → ~20s)
-      const [textA, textB] = await Promise.all([
-        callSonnet(buildPhase1APrompt(myData, targetData, relationType, result), 1600),
-        callSonnet(buildPhase1BPrompt(myData, targetData, relationType, result), 2200),
-      ]);
-      const dataA = extractJson(textA);
-      const dataB = extractJson(textB);
-      return res.status(200).json({ data: { ...dataA, ...dataB } });
-    } else {
-      // Phase 2: Sonnet, 800 토큰
-      const text = await callSonnet(
-        buildPhase2Prompt(myData, targetData, relationType, result),
-        1600,
-      );
-      return res.status(200).json({ data: extractJson(text) });
+  if (phase === 1) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const send = (obj: object) => res.write('data: ' + JSON.stringify(obj) + '\n\n');
+
+    let charsA = 0;
+    let charsB = 0;
+    const MAX_A = 9000;
+    const MAX_B = 12000;
+
+    try {
+      const streamA = client.messages.stream({
+        model: MODEL_SONNET,
+        max_tokens: 6000,
+        system: [SYSTEM_CACHED],
+        messages: [{ role: 'user', content: buildPhase1APrompt(myData, targetData, relationType, result) }],
+      });
+      const streamB = client.messages.stream({
+        model: MODEL_SONNET,
+        max_tokens: 8000,
+        system: [SYSTEM_CACHED],
+        messages: [{ role: 'user', content: buildPhase1BPrompt(myData, targetData, relationType, result) }],
+      });
+
+      streamA.on('text', text => {
+        charsA += text.length;
+        const pct = Math.min(5 + Math.round((charsA / MAX_A) * 42 + (charsB / MAX_B) * 43), 90);
+        send({ type: 'progress', pct });
+      });
+      streamB.on('text', text => {
+        charsB += text.length;
+        const pct = Math.min(5 + Math.round((charsA / MAX_A) * 42 + (charsB / MAX_B) * 43), 90);
+        send({ type: 'progress', pct });
+      });
+
+      const [msgA, msgB] = await Promise.all([streamA.finalMessage(), streamB.finalMessage()]);
+
+      const cA = msgA.content[0];
+      const cB = msgB.content[0];
+      if (cA.type !== 'text') throw new Error('Not text A');
+      if (cB.type !== 'text') throw new Error('Not text B');
+
+      const dataA = extractJson(cA.text);
+      const dataB = extractJson(cB.text);
+      send({ type: 'done', data: { ...dataA, ...dataB } });
+    } catch (err) {
+      console.error('[TOXIC API] phase 1 stream', err);
+      send({ type: 'error', message: 'failed' });
     }
+    res.end();
+    return;
+  }
+
+  try {
+    // Phase 2: Sonnet
+    const text = await callSonnet(
+      buildPhase2Prompt(myData, targetData, relationType, result),
+      5000,
+    );
+    return res.status(200).json({ data: extractJson(text) });
   } catch (err) {
     console.error('[TOXIC API] phase', phase, err);
     return res.status(500).json({ error: 'Analysis failed' });
