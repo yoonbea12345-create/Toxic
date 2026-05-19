@@ -16,6 +16,8 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
   const [selectedMonth, setSelectedMonth] = useState('');
   const [selectedDay, setSelectedDay] = useState('');
   const [unknownTime, setUnknownTime] = useState(false);
+  const [hour, setHour] = useState(0);
+  const [minute, setMinute] = useState(0);
 
   const currentYear = new Date().getFullYear();
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -51,7 +53,8 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
           ? `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`
           : `${selectedYear}-06-01`;
     }
-    onNext({ ...data, birthdate: fullDate, birthtime: unknownTime ? '' : (data.birthtime || '') });
+    const birthtimeStr = unknownTime ? '' : `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    onNext({ ...data, birthdate: fullDate, birthtime: birthtimeStr });
   };
 
   return (
@@ -141,21 +144,63 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
         {/* 태어난 시간 (내 정보만) */}
         {!isTarget && (
           <div>
-            <label className="block text-text-secondary text-xs mb-2 uppercase tracking-wider">태어난 시간</label>
-            <div className="flex gap-2 items-center">
-              <input
-                type="time"
-                value={data.birthtime}
-                onChange={e => setData({ ...data, birthtime: e.target.value })}
-                disabled={unknownTime}
-                className="flex-1 bg-card-bg border border-border rounded-sm px-4 py-3 text-white focus:outline-none focus:border-accent-red transition-colors disabled:opacity-40"
-              />
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-text-secondary text-xs uppercase tracking-wider">태어난 시간</label>
               <button
                 onClick={() => setUnknownTime(!unknownTime)}
-                className={`px-4 py-3 rounded-sm text-sm border transition-all ${unknownTime ? 'border-accent-red text-accent-red bg-accent-red/10' : 'border-border text-text-secondary hover:border-accent-red/50'}`}
+                className={`px-3 py-1.5 text-xs border transition-all rounded-sm ${unknownTime ? 'border-accent-red text-accent-red bg-accent-red/10' : 'border-border text-text-secondary hover:border-accent-red/50'}`}
               >
-                몰라요
+                {unknownTime ? '시간 입력하기' : '몰라요'}
               </button>
+            </div>
+
+            <div className={`transition-opacity duration-200 ${unknownTime ? 'opacity-30 pointer-events-none' : ''}`}>
+              <div className="flex items-end justify-center gap-3">
+                {/* Hour picker */}
+                <div className="flex flex-col items-center gap-1">
+                  <button
+                    onClick={() => setHour(h => (h + 23) % 24)}
+                    className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
+                  >
+                    ▲
+                  </button>
+                  <div className="w-16 h-14 flex items-center justify-center bg-card-bg border border-border text-white text-2xl font-bold rounded-sm">
+                    {String(hour).padStart(2, '0')}
+                  </div>
+                  <button
+                    onClick={() => setHour(h => (h + 1) % 24)}
+                    className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
+                  >
+                    ▼
+                  </button>
+                  <span className="text-text-secondary text-xs mt-0.5">시</span>
+                </div>
+
+                <span className="text-[#333] text-3xl font-bold mb-8">:</span>
+
+                {/* Minute picker */}
+                <div className="flex flex-col items-center gap-1">
+                  <button
+                    onClick={() => setMinute(m => (m + 55) % 60)}
+                    className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
+                  >
+                    ▲
+                  </button>
+                  <div className="w-16 h-14 flex items-center justify-center bg-card-bg border border-border text-white text-2xl font-bold rounded-sm">
+                    {String(minute).padStart(2, '0')}
+                  </div>
+                  <button
+                    onClick={() => setMinute(m => (m + 5) % 60)}
+                    className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
+                  >
+                    ▼
+                  </button>
+                  <span className="text-text-secondary text-xs mt-0.5">분 (5분 단위)</span>
+                </div>
+              </div>
+              <p className="text-center text-[#2a2a2a] text-[11px] mt-3">
+                {hour < 12 ? `오전 ${hour === 0 ? 12 : hour}시` : `오후 ${hour === 12 ? 12 : hour - 12}시`} {String(minute).padStart(2, '0')}분
+              </p>
             </div>
           </div>
         )}

@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import html2canvas from 'html2canvas';
 import type { SajuResult, PersonData, RelationType } from '../utils/saju';
 import { fetchAIPhase1, fetchAIPhase2 } from '../utils/aiAnalysis';
+import { generateLocalAnalysis } from '../utils/localAnalysis';
 import { trackEvent, endSession } from '../utils/analytics';
 import ShareCard from './ShareCard';
 
@@ -81,6 +82,60 @@ const LOADING_STEPS = [
 
 const EXPECTED_MS = 22000;
 
+const SAJU_QUOTES = [
+  '사주(四柱)는 당신의 운명이 아니라, 타고난 기질입니다.',
+  '충(沖)이 있다고 나쁜 관계가 아닙니다. 갈등 방식이 다를 뿐입니다.',
+  '일주(日柱)는 나의 진짜 자아를 담은 기둥입니다.',
+  '갑목(甲木)은 대나무처럼 꺾여도 다시 일어납니다.',
+  '자오충(子午沖)은 물과 불처럼 근본이 다른 충돌입니다.',
+  '년주(年柱)는 내가 살아온 환경의 흔적입니다.',
+  '사주에서 금(金) 기운이 강하면 원칙과 실행력이 뛰어납니다.',
+  '해(害)는 겉으로 드러나지 않지만 서서히 에너지를 갉아먹습니다.',
+  '월주(月柱)는 내가 사회에서 보여주는 얼굴입니다.',
+  '토(土) 기운이 강하면 중심이 굳건하지만 고집이 셀 수 있습니다.',
+  '형(刑)은 충보다 느리게, 하지만 더 깊이 관계를 압박합니다.',
+  '수(水) 기운이 강하면 유연하고 통찰력이 뛰어납니다.',
+  '시주(時柱)는 인생 후반부와 자녀 운을 담습니다.',
+  '화(火) 기운이 강하면 열정적이고 표현력이 풍부합니다.',
+  '합(合)이 있다고 항상 좋은 관계는 아닙니다.',
+  '목(木) 기운이 강하면 성장과 생명력이 넘칩니다.',
+  '극(剋)은 한쪽이 다른 쪽을 눌러도, 결국 양쪽 다 소모됩니다.',
+  '사주 분석의 목적은 운명 알기가 아니라 나 알기입니다.',
+  '겁재(劫財)가 강하면 경쟁심이 강하고 주도권 다툼이 잦습니다.',
+  '인오술(寅午戌) 합은 강한 불의 기운을 만들어냅니다.',
+  '독성지수는 나쁜 사람을 구별하는 지표가 아닙니다.',
+  '신살(神殺)보다 일주의 힘이 관계 전체를 좌우합니다.',
+  '사주는 당신이 어떤 상황에서 강해지는지를 알려줍니다.',
+  '천간(天干)은 드러난 에너지, 지지(地支)는 숨겨진 에너지입니다.',
+  '충이 많다고 불행하지 않습니다. 오히려 자극이 되기도 합니다.',
+  '진술축미(辰戌丑未)는 토(土) 기운의 4가지 얼굴입니다.',
+  '오행(五行) 중 부족한 기운이 인간관계에서 채워지기도 합니다.',
+  '사주에서 수(水)가 없으면 유연성이 부족할 수 있습니다.',
+  '합(合)이 충을 해소하기도 하지만, 더 복잡하게 만들기도 합니다.',
+  '기질은 바꿀 수 없어도, 반응 방식은 바꿀 수 있습니다.',
+  '비견(比肩)이 강하면 독립심이 강하고 자기 방식을 고집합니다.',
+  '사해충(巳亥沖)은 이상과 현실이 충돌하는 구조입니다.',
+  '사주는 갈등의 원인을 설명하지만, 해결책은 당신이 만듭니다.',
+  '식신(食神)이 강하면 창의적이고 표현 욕구가 풍부합니다.',
+  '인신충(寅申沖)은 자유와 규칙이 부딪히는 충돌입니다.',
+  '공망(空亡)이 있으면 그 분야에서 예상치 못한 공백이 생깁니다.',
+  '일간(日干)은 나 자신의 오행 에너지를 나타냅니다.',
+  '묘유충(卯酉沖)은 감성과 현실이 충돌하는 구조입니다.',
+  '사주에서 화(火)가 없으면 열정과 표현력이 부족할 수 있습니다.',
+  '정재(正財)가 강하면 안정적이고 계획적인 성향입니다.',
+  '축미충(丑未沖)은 같은 방향처럼 보이지만 실제로는 반대입니다.',
+  '오행의 균형보다 기운 간의 흐름이 더 중요합니다.',
+  '상관(傷官)이 강하면 창의적이지만 반항적 기질이 있습니다.',
+  '진술충(辰戌沖)은 두 강한 토 기운이 방향을 놓고 충돌합니다.',
+  '사주 분석은 미래를 예측하는 게 아니라, 패턴을 인식하는 겁니다.',
+  '관살(官殺)이 강하면 책임감이 강하고 압박에 예민합니다.',
+  '지지(地支) 충돌이 있어도 천간(天干) 합이 있으면 균형이 잡힙니다.',
+  '편인(偏印)이 강하면 독창적이지만 외로움을 느끼기 쉽습니다.',
+  '사주의 독성지수는 관계의 충돌 에너지를 수치화한 것입니다.',
+  '가장 잘 맞는 사주는 없습니다. 어떤 충돌을 감당할 수 있는지가 중요합니다.',
+  '음양(陰陽)의 균형이 깨지면 관계에서 항상 한쪽이 더 소모됩니다.',
+];
+
 function AILoadingScreen({ hasTarget, score, done, result }: {
   hasTarget: boolean;
   score: number;
@@ -91,6 +146,12 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
   const doneRef = useRef(false);
   const [progress, setProgress] = useState(0);
   const [stepIdx, setStepIdx] = useState(0);
+  const [quoteIdx, setQuoteIdx] = useState(() => Math.floor(Math.random() * SAJU_QUOTES.length));
+
+  useEffect(() => {
+    const iv = setInterval(() => setQuoteIdx(i => (i + 1) % SAJU_QUOTES.length), 5000);
+    return () => clearInterval(iv);
+  }, []);
 
   useEffect(() => {
     const iv = setInterval(() => {
@@ -129,7 +190,7 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: '#0A0A0A' }}>
+      style={{ background: '#131313' }}>
 
       {/* Saju year cards — compact */}
       <div className="flex items-center gap-5 mb-10">
@@ -214,24 +275,17 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
           )}
         </svg>
 
-        {/* Center: hanja + pct */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
+        {/* Center: percentage */}
+        <div className="absolute inset-0 flex items-center justify-center select-none">
           {isDone ? (
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="char-enter">
               <path d="M5 13l4 4L19 7" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           ) : (
-            <span
-              key={step.hanja}
-              className="font-display text-5xl leading-none char-enter"
-              style={{ color }}
-            >
-              {step.hanja}
+            <span className="font-sans font-bold leading-none" style={{ color, fontSize: '2.25rem' }}>
+              {Math.round(progress)}<span style={{ fontSize: '1.25rem' }}>%</span>
             </span>
           )}
-          <span className="font-sans text-[#333] text-xs mt-2">
-            {Math.round(progress)}<span className="text-[10px]">%</span>
-          </span>
         </div>
       </div>
 
@@ -258,6 +312,15 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
           ))}
         </div>
       </div>
+
+      {/* Rotating saju quote */}
+      {!isDone && (
+        <div className="w-72 text-center px-4 mt-4">
+          <p key={quoteIdx} className="char-enter" style={{ color: '#2d2d2d', fontSize: '11px', lineHeight: '1.6' }}>
+            {SAJU_QUOTES[quoteIdx]}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -577,7 +640,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [apiDone, setApiDone] = useState(false);
   const [showLoading, setShowLoading] = useState(true);
-  const [aiError, setAiError] = useState(false);
+  const [aiError] = useState(false);
   const [toast, setToast] = useState('');
   const [conflictTooltip, setConflictTooltip] = useState<string | null>(null);
 
@@ -630,7 +693,8 @@ export default function StepResult({ myData, targetData, result, relationType, o
         const data = await fetchAIPhase1(myData, targetData, relationType, result);
         setAiPhase1(data);
       } catch {
-        setAiError(true);
+        const localData = generateLocalAnalysis(result, relationType, hasTarget);
+        setAiPhase1(localData as AIAnalysis);
       } finally {
         setApiDone(true);
         setTimeout(() => setShowLoading(false), 800);
@@ -646,7 +710,11 @@ export default function StepResult({ myData, targetData, result, relationType, o
         const data = await fetchAIPhase2(myData, targetData, relationType, result);
         setAiPhase2(data);
       } catch {
-        // 조용히 처리
+        const localData = generateLocalAnalysis(result, relationType, hasTarget);
+        setAiPhase2({
+          personalImpact: localData.personalImpact,
+          continuationAssessment: localData.continuationAssessment,
+        });
       } finally {
         setPhase2Loading(false);
       }
