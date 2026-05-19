@@ -579,6 +579,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [showLoading, setShowLoading] = useState(true);
   const [aiError, setAiError] = useState(false);
   const [toast, setToast] = useState('');
+  const [conflictTooltip, setConflictTooltip] = useState<string | null>(null);
 
   // 유료 전환 검증 상태
   const [paywallUnlocked, setPaywallUnlocked] = useState(() => {
@@ -774,25 +775,71 @@ export default function StepResult({ myData, targetData, result, relationType, o
         </button>
       </div>
 
-      {/* 충돌 뱃지 */}
+      {/* 충돌 뱃지 + tooltip */}
       {(result.conflicts.chung.length > 0 || result.conflicts.hyung.length > 0 ||
-        result.conflicts.hae.length > 0 || result.conflicts.pa.length > 0) && (
-        <div className="flex flex-wrap gap-2">
-          {result.conflicts.chung.map(c => (
-            <span key={c.name} className="text-[11px] px-3 py-1 border border-[#FF2D55]/40 text-[#FF2D55] bg-[#FF2D55]/8">충 · {c.name}</span>
-          ))}
-          {result.conflicts.hyung.map(h => (
-            <span key={h.name} className="text-[11px] px-3 py-1 border border-[#BF5AF2]/40 text-[#BF5AF2] bg-[#BF5AF2]/8">형 · {h.name}</span>
-          ))}
-          {result.conflicts.hae.map(h => (
-            <span key={h.name} className="text-[11px] px-3 py-1 border border-[#FF9800]/40 text-[#FF9800] bg-[#FF9800]/8">해 · {h.name}</span>
-          ))}
-          {result.conflicts.pa.map(p => (
-            <span key={p.name} className="text-[11px] px-3 py-1 border border-[#607D8B]/40 text-[#607D8B] bg-[#607D8B]/8">파 · {p.name}</span>
-          ))}
-          {result.conflicts.hap.length > 0 && (
-            <span className="text-[11px] px-3 py-1 border border-[#4CAF50]/40 text-[#4CAF50] bg-[#4CAF50]/8">합 요소 있음</span>
-          )}
+        result.conflicts.hae.length > 0 || result.conflicts.pa.length > 0 || result.conflicts.hap.length > 0) && (
+        <div>
+          <p className="text-[#333] text-[9px] uppercase tracking-[0.2em] mb-2">사주 충돌 구조 — 탭하면 설명</p>
+          <div className="flex flex-wrap gap-2">
+            {result.conflicts.chung.map(c => (
+              <button key={c.name}
+                onClick={() => setConflictTooltip(conflictTooltip === `chung-${c.name}` ? null : `chung-${c.name}`)}
+                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `chung-${c.name}` ? 'border-[#FF2D55] bg-[#FF2D55]/15 text-[#FF2D55]' : 'border-[#FF2D55]/40 text-[#FF2D55] bg-[#FF2D55]/8'}`}>
+                충 · {c.name}
+              </button>
+            ))}
+            {result.conflicts.hyung.map(h => (
+              <button key={h.name}
+                onClick={() => setConflictTooltip(conflictTooltip === `hyung-${h.name}` ? null : `hyung-${h.name}`)}
+                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `hyung-${h.name}` ? 'border-[#BF5AF2] bg-[#BF5AF2]/15 text-[#BF5AF2]' : 'border-[#BF5AF2]/40 text-[#BF5AF2] bg-[#BF5AF2]/8'}`}>
+                형 · {h.name}
+              </button>
+            ))}
+            {result.conflicts.hae.map(h => (
+              <button key={h.name}
+                onClick={() => setConflictTooltip(conflictTooltip === `hae-${h.name}` ? null : `hae-${h.name}`)}
+                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `hae-${h.name}` ? 'border-[#FF9800] bg-[#FF9800]/15 text-[#FF9800]' : 'border-[#FF9800]/40 text-[#FF9800] bg-[#FF9800]/8'}`}>
+                해 · {h.name}
+              </button>
+            ))}
+            {result.conflicts.pa.map(p => (
+              <button key={p.name}
+                onClick={() => setConflictTooltip(conflictTooltip === `pa-${p.name}` ? null : `pa-${p.name}`)}
+                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `pa-${p.name}` ? 'border-[#607D8B] bg-[#607D8B]/15 text-[#607D8B]' : 'border-[#607D8B]/40 text-[#607D8B] bg-[#607D8B]/8'}`}>
+                파 · {p.name}
+              </button>
+            ))}
+            {result.conflicts.hap.length > 0 && (
+              <button
+                onClick={() => setConflictTooltip(conflictTooltip === 'hap' ? null : 'hap')}
+                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === 'hap' ? 'border-[#4CAF50] bg-[#4CAF50]/15 text-[#4CAF50]' : 'border-[#4CAF50]/40 text-[#4CAF50] bg-[#4CAF50]/8'}`}>
+                합 요소 있음
+              </button>
+            )}
+          </div>
+
+          {/* 인라인 tooltip 설명 */}
+          {conflictTooltip && (() => {
+            const type = conflictTooltip.split('-')[0];
+            const name = conflictTooltip.includes('-') ? conflictTooltip.split('-').slice(1).join('-') : '';
+            const COLOR: Record<string, string> = { chung: '#FF2D55', hyung: '#BF5AF2', hae: '#FF9800', pa: '#607D8B', hap: '#4CAF50' };
+            const DESC: Record<string, string> = {
+              chung: `충(沖)은 두 기운이 정반대 방향으로 부딪히는 관계입니다. ${name ? `${name}은` : ''} 서로의 에너지가 충돌해 다툼이 잦고, 예상치 못한 변화가 갑자기 터질 수 있습니다.`,
+              hyung: `형(刑)은 서로를 압박하고 자극하는 관계입니다. ${name ? `${name}은` : ''} 말하지 못한 긴장이 쌓이고, 관계가 점점 답답하게 짓눌리는 느낌이 납니다.`,
+              hae: `해(害)는 서로의 기운을 갉아먹는 관계입니다. ${name ? `${name}은` : ''} 함께 있을수록 서로 지치고 약해지며, 눈에 띄지 않게 서서히 소모됩니다.`,
+              pa: `파(破)는 서로 균열을 만드는 관계입니다. ${name ? `${name}은` : ''} 함께 세운 계획이나 약속이 자꾸 어긋나고, 안정감을 유지하기 어렵습니다.`,
+              hap: '합(合) 요소가 있다는 건 서로 끌어당기는 기운이 있다는 뜻입니다. 매력과 친밀감이 생기지만, 합쳐질수록 오히려 독이 되는 관계일 수 있습니다.',
+            };
+            const c = COLOR[type] ?? '#888';
+            return (
+              <div className="mt-2 px-4 py-3 border animate-fade-in"
+                style={{ borderColor: `${c}30`, background: `${c}08` }}>
+                <p className="text-xs leading-relaxed" style={{ color: c === '#607D8B' ? '#7a99a8' : c }}>
+                  {DESC[type] ?? ''}
+                </p>
+              </div>
+            );
+          })()}
         </div>
       )}
 
