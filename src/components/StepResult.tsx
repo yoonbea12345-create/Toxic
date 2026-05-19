@@ -90,13 +90,16 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
   const startRef = useRef(Date.now());
   const doneRef = useRef(false);
   const [progress, setProgress] = useState(0);
+  const [stepIdx, setStepIdx] = useState(0);
 
   useEffect(() => {
     const iv = setInterval(() => {
       if (doneRef.current) return;
       const elapsed = Date.now() - startRef.current;
-      setProgress(Math.min((elapsed / EXPECTED_MS) * 95, 95));
-    }, 120);
+      const pct = Math.min((elapsed / EXPECTED_MS) * 95, 95);
+      setProgress(pct);
+      setStepIdx(Math.min(Math.floor((pct / 100) * LOADING_STEPS.length), LOADING_STEPS.length - 1));
+    }, 100);
     return () => clearInterval(iv);
   }, []);
 
@@ -104,124 +107,156 @@ function AILoadingScreen({ hasTarget, score, done, result }: {
     if (done && !doneRef.current) {
       doneRef.current = true;
       setProgress(100);
+      setStepIdx(LOADING_STEPS.length - 1);
     }
   }, [done]);
 
-  const color = score >= 80 ? '#FF2D55' : score >= 60 ? '#BF5AF2' : '#F59E0B';
+  const color  = score >= 80 ? '#FF2D55' : score >= 60 ? '#BF5AF2' : '#F59E0B';
+  const color2 = score >= 80 ? '#BF5AF2' : score >= 60 ? '#FF2D55' : '#F59E0B';
+  const step   = LOADING_STEPS[stepIdx];
 
-  const statusMsg =
-    progress < 20  ? '사주 정보를 읽어들이는 중...' :
-    progress < 40  ? '충돌 구조를 계산하는 중...' :
-    progress < 60  ? '감정 패턴을 해석하는 중...' :
-    progress < 80  ? '갈등 시나리오를 분석하는 중...' :
-    progress < 100 ? '최종 결론을 정리하는 중...' :
-    '분석 완료';
+  // SVG ring math
+  const R = 86;
+  const circumference = 2 * Math.PI * R;
+  const strokeDash = (progress / 100) * circumference;
 
-  const myPillars = [
-    result.myYear  && { stem: result.myYear.stem,  branch: result.myYear.branch,  label: '年' },
-    result.myMonth && { stem: result.myMonth.stem, branch: result.myMonth.branch, label: '月' },
-    result.myDay   && { stem: result.myDay.stem,   branch: result.myDay.branch,   label: '日' },
-    result.myHour  && { stem: result.myHour.stem,  branch: result.myHour.branch,  label: '時' },
-  ].filter(Boolean) as { stem: string; branch: string; label: string }[];
+  // Glowing dot position at arc tip
+  const tipAngle = (progress / 100) * 2 * Math.PI - Math.PI / 2;
+  const tipX = 100 + R * Math.cos(tipAngle);
+  const tipY = 100 + R * Math.sin(tipAngle);
 
-  const targetPillars = hasTarget ? [
-    result.targetYear  && { stem: result.targetYear.stem,  branch: result.targetYear.branch,  label: '年' },
-    result.targetMonth && { stem: result.targetMonth.stem, branch: result.targetMonth.branch, label: '月' },
-    result.targetDay   && { stem: result.targetDay.stem,   branch: result.targetDay.branch,   label: '日' },
-  ].filter(Boolean) as { stem: string; branch: string; label: string }[] : [];
+  const isDone = progress >= 100;
 
   return (
-    <div className="min-h-screen flex flex-col justify-center max-w-lg mx-auto px-4 py-10">
-      <div className="flex justify-center items-center gap-8 mb-10">
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-[#333] text-[9px] tracking-[0.2em] uppercase">나</p>
-          <div className="flex gap-1.5">
-            {myPillars.map((p, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <span className="text-[#2a2a2a] text-[8px] mb-1">{p.label}</span>
-                <div className="w-9 h-11 border border-[#1e1e1e] bg-[#0A0A0A] flex flex-col items-center justify-center gap-0.5">
-                  <span className="text-[#FF2D55] text-sm font-bold leading-none">{p.stem}</span>
-                  <span className="text-[#666] text-sm leading-none">{p.branch}</span>
-                </div>
-              </div>
-            ))}
+    <div className="min-h-screen flex flex-col items-center justify-center px-4"
+      style={{ background: '#0A0A0A' }}>
+
+      {/* Saju year cards — compact */}
+      <div className="flex items-center gap-5 mb-10">
+        <div className="flex flex-col items-center gap-1.5">
+          <p className="text-[#2a2a2a] text-[9px] tracking-[0.25em] uppercase">나</p>
+          <div className="w-11 h-13 border border-[#181818] bg-[#080808] flex flex-col items-center justify-center px-2 py-2 gap-0.5">
+            <span className="font-display text-lg leading-none" style={{ color }}>{result.myYear?.stem ?? '?'}</span>
+            <span className="font-display text-lg leading-none text-[#555]">{result.myYear?.branch ?? '?'}</span>
           </div>
+          <p className="text-[#1e1e1e] text-[8px]">年</p>
         </div>
 
-        {hasTarget && targetPillars.length > 0 && (
+        {hasTarget && result.targetYear && (
           <>
-            <div className="flex flex-col items-center pb-3">
-              <span className="text-[#FF2D55]/30 text-2xl">⚡</span>
+            <div className="flex flex-col gap-1 items-center">
+              <div className="w-px h-5 bg-[#1a1a1a]" />
+              <span className="font-display text-xs" style={{ color: `${color}60` }}>VS</span>
+              <div className="w-px h-5 bg-[#1a1a1a]" />
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-[#333] text-[9px] tracking-[0.2em] uppercase">상대</p>
-              <div className="flex gap-1.5">
-                {targetPillars.map((p, i) => (
-                  <div key={i} className="flex flex-col items-center">
-                    <span className="text-[#2a2a2a] text-[8px] mb-1">{p.label}</span>
-                    <div className="w-9 h-11 border border-[#1e1e1e] bg-[#0A0A0A] flex flex-col items-center justify-center gap-0.5">
-                      <span className="text-[#BF5AF2] text-sm font-bold leading-none">{p.stem}</span>
-                      <span className="text-[#666] text-sm leading-none">{p.branch}</span>
-                    </div>
-                  </div>
-                ))}
+            <div className="flex flex-col items-center gap-1.5">
+              <p className="text-[#2a2a2a] text-[9px] tracking-[0.25em] uppercase">상대</p>
+              <div className="w-11 h-13 border border-[#181818] bg-[#080808] flex flex-col items-center justify-center px-2 py-2 gap-0.5">
+                <span className="font-display text-lg leading-none" style={{ color: color2 }}>{result.targetYear.stem}</span>
+                <span className="font-display text-lg leading-none text-[#555]">{result.targetYear.branch}</span>
               </div>
+              <p className="text-[#1e1e1e] text-[8px]">年</p>
             </div>
           </>
         )}
       </div>
 
-      <div className="text-center mb-8">
-        <div className="inline-flex items-baseline gap-1 mb-2">
-          <span className="font-sans text-5xl font-bold tracking-widest text-[#333]">···</span>
+      {/* Circular ring */}
+      <div className="relative mb-8" style={{ width: 200, height: 200 }}>
+        {/* Ambient glow behind ring */}
+        <div className="absolute inset-0 rounded-full ring-glow"
+          style={{ background: `radial-gradient(circle, ${color}18 0%, transparent 70%)` }} />
+
+        <svg width="200" height="200" viewBox="0 0 200 200" style={{ overflow: 'visible' }}>
+          <defs>
+            <linearGradient id="arc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={color} />
+              <stop offset="100%" stopColor={color2} />
+            </linearGradient>
+          </defs>
+
+          {/* Subtle outer tick ring */}
+          {Array.from({ length: 48 }).map((_, i) => {
+            const a = (i / 48) * Math.PI * 2 - Math.PI / 2;
+            const r1 = 96, r2 = 98;
+            return (
+              <line key={i}
+                x1={100 + r1 * Math.cos(a)} y1={100 + r1 * Math.sin(a)}
+                x2={100 + r2 * Math.cos(a)} y2={100 + r2 * Math.sin(a)}
+                stroke={i % 4 === 0 ? '#222' : '#141414'} strokeWidth={i % 4 === 0 ? 1.5 : 1} />
+            );
+          })}
+
+          {/* Track */}
+          <circle cx="100" cy="100" r={R} fill="none" stroke="#111" strokeWidth="2.5" />
+
+          {/* Progress arc */}
+          <circle cx="100" cy="100" r={R} fill="none"
+            stroke="url(#arc-grad)" strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={`${strokeDash} ${circumference - strokeDash}`}
+            transform="rotate(-90 100 100)"
+            style={{
+              transition: isDone ? 'stroke-dasharray 0.6s ease' : 'stroke-dasharray 0.15s linear',
+            }}
+          />
+
+          {/* Glowing tip dot */}
+          {progress > 3 && !isDone && (
+            <circle cx={tipX} cy={tipY} r={4} fill={color}
+              style={{ filter: `drop-shadow(0 0 6px ${color})` }} />
+          )}
+
+          {/* Done checkmark circle */}
+          {isDone && (
+            <circle cx="100" cy="100" r={R} fill="none"
+              stroke={color} strokeWidth="3" opacity="0.6" />
+          )}
+        </svg>
+
+        {/* Center: hanja + pct */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center select-none">
+          {isDone ? (
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="char-enter">
+              <path d="M5 13l4 4L19 7" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <span
+              key={step.hanja}
+              className="font-display text-5xl leading-none char-enter"
+              style={{ color }}
+            >
+              {step.hanja}
+            </span>
+          )}
+          <span className="font-sans text-[#333] text-xs mt-2">
+            {Math.round(progress)}<span className="text-[10px]">%</span>
+          </span>
         </div>
-        <p className="font-sans-kr text-[#555] text-sm">{statusMsg}</p>
       </div>
 
-      <div className="border border-[#141414] bg-[#080808] divide-y divide-[#141414] mb-5">
-        {LOADING_STEPS.map((s, i) => {
-          const isDone    = progress >= s.pctEnd;
-          const isCurrent = !isDone && progress >= s.pctStart;
-          const isPending = progress < s.pctStart;
-          return (
-            <div key={i} className={`flex items-center gap-4 px-5 py-3.5 transition-all duration-500 ${isPending ? 'opacity-15' : 'opacity-100'}`}>
-              <div className={`w-8 h-8 flex-shrink-0 flex items-center justify-center border transition-all duration-500 ${
-                isDone    ? 'border-[#FF2D55]/60 bg-[#FF2D55]/8' :
-                isCurrent ? 'border-[#FF2D55]/30' :
-                            'border-[#1a1a1a]'
-              }`}>
-                {isDone
-                  ? <span className="text-[#FF2D55] text-xs">✓</span>
-                  : <span className={`text-[11px] font-bold ${isCurrent ? 'text-[#FF2D55] animate-pulse' : 'text-[#222]'}`}>{s.hanja}</span>
-                }
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className={`font-sans-kr text-sm font-medium ${isDone || isCurrent ? 'text-white' : 'text-[#222]'}`}>
-                  {s.label}
-                  {isCurrent && <span className="text-[#FF2D55] animate-pulse"> ···</span>}
-                </p>
-                <p className="text-[#2a2a2a] text-[10px] mt-0.5 font-sans-kr">{s.sub}</p>
-              </div>
-              {isDone    && <span className="text-[#FF2D55]/70 text-[10px] flex-shrink-0 font-sans-kr">완료</span>}
-              {isCurrent && <span className="text-[#444] text-[10px] flex-shrink-0 font-sans-kr animate-pulse">분석 중</span>}
-            </div>
-          );
-        })}
-      </div>
+      {/* Status text */}
+      <div className="text-center max-w-[240px]">
+        <p key={step.label} className="text-white text-sm font-medium mb-1.5 char-enter">
+          {isDone ? '분석 완료' : step.label}
+        </p>
+        <p className="text-[#333] text-xs leading-relaxed">
+          {isDone ? '결과를 불러오는 중...' : step.sub}
+        </p>
 
-      <div className="w-full h-[2px] bg-[#111] overflow-hidden mb-2">
-        <div
-          className="h-full"
-          style={{
-            width: `${progress}%`,
-            background: `linear-gradient(90deg, ${color}50, ${color})`,
-            transition: progress >= 100 ? 'width 0.4s ease' : 'width 0.15s linear',
-          }}
-        />
-      </div>
-      <div className="flex justify-between">
-        <p className="font-sans-kr text-[#222] text-[10px]">AI 분석 진행률</p>
-        <p className="font-sans text-[#444] text-[10px]">{Math.round(progress)}%</p>
+        {/* Step progress dots */}
+        <div className="flex items-center justify-center gap-1.5 mt-5">
+          {LOADING_STEPS.map((_, i) => (
+            <div key={i}
+              className="h-px rounded-full transition-all duration-500"
+              style={{
+                width: i === stepIdx ? 20 : 8,
+                background: i < stepIdx ? color : i === stepIdx ? color : '#1a1a1a',
+                opacity: i > stepIdx ? 0.3 : 1,
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -307,6 +342,230 @@ function Phase2Skeleton() {
   );
 }
 
+// ── 잠금 아이콘 SVG ─────────────────────────────────────────────────
+function LockIcon({ size = 20, color = '#FF2D55' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="5" y="11" width="14" height="10" rx="1" stroke={color} strokeWidth="1.5" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke={color} strokeWidth="1.5" />
+      <circle cx="12" cy="16" r="1.5" fill={color} />
+    </svg>
+  );
+}
+
+// ── 결제 팝업 모달 ───────────────────────────────────────────────────
+function PaywallModal({ onClose, onPay }: { onClose: () => void; onPay: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.96)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="w-full max-w-sm mx-4 mb-safe relative animate-fade-in"
+        style={{ background: 'linear-gradient(160deg, #0E0003 0%, #0A0A0A 60%, #080810 100%)' }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-7 h-7 flex items-center justify-center text-[#333] hover:text-[#666] transition-colors text-base leading-none z-10"
+        >
+          ✕
+        </button>
+
+        <div className="border border-[#FF2D55]/20 p-6">
+          {/* Lock icon */}
+          <div className="flex justify-center mb-4">
+            <div
+              className="w-14 h-14 border border-[#FF2D55]/40 flex items-center justify-center"
+              style={{ background: 'rgba(255,45,85,0.08)' }}
+            >
+              <LockIcon size={24} />
+            </div>
+          </div>
+
+          {/* Title */}
+          <p className="text-center text-[#FF2D55] text-[10px] uppercase tracking-[0.35em] mb-2">PREMIUM ANALYSIS</p>
+          <h2 className="text-center text-white text-xl font-bold leading-tight mb-2">
+            사주 AI 심층 분석
+          </h2>
+          <p className="text-center text-[#444] text-xs leading-relaxed mb-6 px-2">
+            가장 많은 사람들이 보고 싶어하는 분석입니다.<br />
+            이 관계, 당신에게 무슨 일이 일어나고 있나요?
+          </p>
+
+          {/* What you get */}
+          <div className="border border-[#1a1a1a] bg-[#080808] divide-y divide-[#111] mb-5">
+            <div className="flex items-start gap-3 p-4">
+              <span
+                className="text-[9px] font-bold px-1.5 py-0.5 border border-[#FF2D55]/50 text-[#FF2D55] flex-shrink-0 mt-0.5"
+                style={{ background: 'rgba(255,45,85,0.08)' }}
+              >
+                04
+              </span>
+              <div>
+                <p className="text-white text-sm font-semibold mb-0.5">이 관계가 나에게 하는 일</p>
+                <p className="text-[#444] text-[11px] leading-relaxed">
+                  경고 신호 3가지 · 내가 잃어가는 것 · 감정 소모 분석
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-4">
+              <span
+                className="text-[9px] font-bold px-1.5 py-0.5 border border-[#FF2D55]/50 text-[#FF2D55] flex-shrink-0 mt-0.5"
+                style={{ background: 'rgba(255,45,85,0.08)' }}
+              >
+                05
+              </span>
+              <div>
+                <p className="text-white text-sm font-semibold mb-0.5">이 관계, 계속 가야 할까?</p>
+                <p className="text-[#444] text-[11px] leading-relaxed">
+                  구조적 판단 · 레드라인 · AI 최종 판정
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Social proof */}
+          <div className="flex items-center justify-center gap-2 mb-5">
+            <div className="h-px flex-1 bg-[#1a1a1a]" />
+            <p className="text-[#333] text-[10px] whitespace-nowrap">
+              87%가 이 두 섹션을 가장 많이 공유했습니다
+            </p>
+            <div className="h-px flex-1 bg-[#1a1a1a]" />
+          </div>
+
+          {/* Price */}
+          <div className="text-center mb-5">
+            <div className="inline-flex items-baseline gap-2 mb-1">
+              <span className="text-[#2a2a2a] text-sm line-through">₩500</span>
+              <span className="text-white text-[2.5rem] font-bold tracking-tight leading-none">₩100</span>
+            </div>
+            <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.2em] mt-1">출시 기념 80% 할인</p>
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={onPay}
+            className="w-full py-4 gradient-red text-white font-bold text-sm tracking-[0.05em] mb-3 relative overflow-hidden group"
+          >
+            <span className="relative z-10">₩100으로 지금 확인하기</span>
+            <div
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              style={{ background: 'rgba(255,255,255,0.06)' }}
+            />
+          </button>
+          <p className="text-center text-[#222] text-[10px]">
+            안전한 결제 · 즉시 잠금 해제 · 100% 환불 보장
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── 잠긴 섹션 티저 ───────────────────────────────────────────────────
+function LockedPremium({ teaser, onUnlock }: { teaser: string; onUnlock: () => void }) {
+  return (
+    <div
+      className="border border-[#FF2D55]/15 overflow-hidden relative"
+      style={{ background: 'linear-gradient(160deg, #0D0003 0%, #0A0A0A 100%)' }}
+    >
+      {/* Blurred preview content */}
+      <div
+        className="px-5 pt-5 pb-3 select-none pointer-events-none"
+        style={{ filter: 'blur(5px)', opacity: 0.2 }}
+      >
+        <p className="text-[#888] text-sm leading-relaxed mb-3">{teaser}</p>
+        <div className="space-y-2">
+          <div className="h-2.5 bg-[#2a2a2a] rounded w-full" />
+          <div className="h-2.5 bg-[#2a2a2a] rounded w-4/5" />
+          <div className="h-2.5 bg-[#2a2a2a] rounded w-3/5" />
+        </div>
+      </div>
+
+      {/* Fade gradient */}
+      <div
+        className="h-10 -mt-10 relative z-10"
+        style={{ background: 'linear-gradient(to bottom, transparent, #0A0A0A)' }}
+      />
+
+      {/* Lock CTA */}
+      <div className="px-5 pb-5 relative z-10">
+        <div className="text-center mb-4">
+          <div
+            className="inline-flex items-center justify-center w-10 h-10 border border-[#FF2D55]/40 mb-3"
+            style={{ background: 'rgba(255,45,85,0.08)' }}
+          >
+            <LockIcon size={18} />
+          </div>
+          <p className="text-white text-sm font-bold mb-1.5">잠긴 심층 분석</p>
+          <p className="text-[#444] text-xs leading-relaxed">
+            사주 AI가 가장 날카롭게 분석한 구간입니다<br />
+            ₩100으로 잠금을 해제할 수 있습니다
+          </p>
+        </div>
+
+        <button
+          onClick={onUnlock}
+          className="w-full py-3.5 gradient-red text-white text-xs font-bold tracking-[0.08em] relative overflow-hidden group"
+        >
+          <span className="relative z-10">잠금 해제하기 — ₩100</span>
+          <div
+            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+            style={{ background: 'rgba(255,255,255,0.06)' }}
+          />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── 결제 성공 오버레이 ───────────────────────────────────────────────
+function FreeSuccessOverlay({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-6"
+      style={{ background: 'rgba(0,0,0,0.97)' }}
+    >
+      <div
+        className="w-full max-w-xs text-center border border-[#FF2D55]/25 px-8 py-10 animate-fade-in"
+        style={{ background: 'linear-gradient(160deg, #0E0003 0%, #0A0A0A 100%)' }}
+      >
+        <div
+          className="w-16 h-16 border border-[#FF2D55]/40 flex items-center justify-center mx-auto mb-5"
+          style={{ background: 'rgba(255,45,85,0.08)' }}
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <path d="M5 13l4 4L19 7" stroke="#FF2D55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.35em] mb-4">SPECIAL OFFER</p>
+        <p className="text-white text-xl font-bold leading-snug mb-3">
+          사용자님만을 위해<br />
+          100회 무료로<br />
+          해드릴게요!
+        </p>
+        <p className="text-[#444] text-xs leading-relaxed">
+          잠금이 해제됩니다...
+        </p>
+        <div className="mt-5 w-full h-px bg-[#1a1a1a] overflow-hidden">
+          <div
+            className="h-full bg-[#FF2D55]"
+            style={{ width: '100%', animation: 'progress-fill 2.8s linear forwards' }}
+          />
+        </div>
+      </div>
+      <style>{`
+        @keyframes progress-fill {
+          from { width: 0% }
+          to { width: 100% }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 // ───────────────────────────────────────────
 // 메인 컴포넌트
 // ───────────────────────────────────────────
@@ -320,6 +579,13 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [showLoading, setShowLoading] = useState(true);
   const [aiError, setAiError] = useState(false);
   const [toast, setToast] = useState('');
+
+  // 유료 전환 검증 상태
+  const [paywallUnlocked, setPaywallUnlocked] = useState(() => {
+    try { return localStorage.getItem('toxic_premium') === '1'; } catch { return false; }
+  });
+  const [showPaywall, setShowPaywall] = useState(false);
+  const [showFreeSuccess, setShowFreeSuccess] = useState(false);
 
   const ai: AIAnalysis = { ...aiPhase1, ...aiPhase2 };
 
@@ -335,6 +601,22 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
+  };
+
+  const handleOpenPaywall = () => {
+    trackEvent('paywall_click');
+    setShowPaywall(true);
+  };
+
+  const handlePayment = () => {
+    trackEvent('paywall_pay');
+    setShowPaywall(false);
+    setShowFreeSuccess(true);
+    try { localStorage.setItem('toxic_premium', '1'); } catch {}
+    setTimeout(() => {
+      setShowFreeSuccess(false);
+      setPaywallUnlocked(true);
+    }, 3200);
   };
 
   const hasTarget = Boolean(targetData.birthdate);
@@ -379,6 +661,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
     if (!showLoading) {
       endSession();
       trackEvent('result_view', { toxicScore: result.toxicScore, relationType });
+      trackEvent('paywall_impression');
     }
   }, [showLoading]);
 
@@ -416,6 +699,12 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   return (
     <div className="animate-fade-in max-w-lg mx-auto px-4 py-8 space-y-4">
+
+      {/* 결제 팝업 모달 */}
+      {showPaywall && <PaywallModal onClose={() => setShowPaywall(false)} onPay={handlePayment} />}
+
+      {/* 결제 성공 오버레이 */}
+      <FreeSuccessOverlay visible={showFreeSuccess} />
 
       {/* 토스트 알림 */}
       {toast && (
@@ -534,7 +823,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {/* ════ 01 나와 안맞는 이유 ════ */}
           <SectionHeader number="01" title="나와 안맞는 이유" subtitle="사주 구조에서 비롯된 근본적인 충돌 원인" />
 
-          {/* 미리보기: 핵심 갈등 구조 */}
           <Card accent="#FF2D55">
             <SubLabel text="핵심 갈등 구조" />
             {ai.coreConflict ? (
@@ -550,7 +838,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
             )}
           </Card>
 
-          {/* 펼침: 충돌 분석 + 감정 패턴 + 에너지 역학 + 숨겨진 역학 */}
           {isOpen('s01') && (
             <div className="space-y-3">
               {(ai.conflictAnalysis?.chung || ai.conflictAnalysis?.hyung ||
@@ -645,7 +932,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {/* ════ 02 어떤 상황에서 안맞는지 ════ */}
           <SectionHeader number="02" title="어떤 상황에서 안맞는지" subtitle="실제로 충돌이 터지는 구체적 시나리오" />
 
-          {/* 미리보기: 첫 번째 시나리오 */}
           {ai.conflictScenarios && ai.conflictScenarios.length > 0 ? (
             <Card>
               <div className="flex items-start gap-3">
@@ -666,7 +952,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-          {/* 펼침: 나머지 시나리오 + 트리거 + 관계별 특이점 */}
           {isOpen('s02') && (
             <div className="space-y-3">
               {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
@@ -723,7 +1008,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {/* ════ 03 앞으로 이렇게 해보세요 ════ */}
           <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="부딪히지 않기 위한 현실적 가이드" />
 
-          {/* 미리보기: 마음가짐 */}
           {ai.avoidanceGuide ? (
             <Card accent="#FF2D55">
               <SubLabel text="마음가짐" />
@@ -738,7 +1022,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-          {/* 펼침: 실전 팁 + 선긋기 + 현실적 전망 */}
           {isOpen('s03') && ai.avoidanceGuide && (
             <div className="space-y-3">
               <Card>
@@ -773,7 +1056,12 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {/* ════ 04 이 관계가 나에게 하는 일 ════ */}
           <SectionHeader number="04" title="이 관계가 나에게 하는 일" subtitle="지금 이 순간 당신에게 일어나고 있는 것" />
 
-          {phase2Loading ? (
+          {!paywallUnlocked ? (
+            <LockedPremium
+              teaser="지금 이 관계에서 당신은 조금씩 자신을 잃어가고 있습니다. AI가 발견한 경고 신호와 당신이 이 관계로 인해 잃어가고 있는 것들—"
+              onUnlock={handleOpenPaywall}
+            />
+          ) : phase2Loading ? (
             <>
               <Phase2Skeleton />
               <p className="text-center text-[#333] text-[11px] font-sans-kr animate-pulse py-1">
@@ -782,7 +1070,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </>
           ) : (
             <>
-              {/* 미리보기: 나에게 미치는 영향 */}
               {ai.personalImpact ? (
                 <Card accent="#BF5AF2">
                   <SubLabel text="지금 나에게 미치는 영향" />
@@ -797,7 +1084,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 </Card>
               )}
 
-              {/* 펼침: 경고 신호 + 잃어가는 것 */}
               {isOpen('s04') && ai.personalImpact && (
                 <div className="space-y-3">
                   {ai.personalImpact.warningSignals?.length > 0 && (
@@ -826,11 +1112,15 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {/* ════ 05 이 관계, 계속 가야 할까? ════ */}
           <SectionHeader number="05" title="이 관계, 계속 가야 할까?" subtitle="사주 구조로 보는 냉철한 판단" />
 
-          {phase2Loading ? (
+          {!paywallUnlocked ? (
+            <LockedPremium
+              teaser="사주 구조는 이 관계에 대해 분명한 신호를 보내고 있습니다. 계속할 때 반드시 넘어야 할 레드라인과 AI 최종 판정—"
+              onUnlock={handleOpenPaywall}
+            />
+          ) : phase2Loading ? (
             <Phase2Skeleton />
           ) : (
             <>
-              {/* 미리보기: 최종 판정 */}
               {ai.continuationAssessment ? (
                 <div className="border border-[#FF2D55] p-5"
                   style={{ background: 'linear-gradient(135deg, #0D0005 0%, #0A0A0A 100%)' }}>
@@ -849,7 +1139,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 </div>
               )}
 
-              {/* 펼침: 구조적 분석 + 필요한 것 + 레드라인 */}
               {isOpen('s05') && ai.continuationAssessment && (
                 <div className="space-y-3">
                   <Card>
@@ -880,7 +1169,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
           <SectionHeader number="01" title="내 사주 기질" subtitle="충돌 구조의 근원" />
 
-          {/* 미리보기: 핵심 기질 */}
           <Card accent="#FF2D55">
             <SubLabel text="나의 사주 기질" />
             {ai.myCharacter ? (
@@ -902,7 +1190,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
             )}
           </Card>
 
-          {/* 펼침: 위험 유형 + 숨겨진 패턴 */}
           {isOpen('s01') && (
             <div className="space-y-3">
               {ai.dangerTypes && ai.dangerTypes.length > 0 && (
@@ -935,7 +1222,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
           <SectionHeader number="02" title="어떤 상황에서 안맞는지" subtitle="내가 자주 반복하는 갈등 패턴" />
 
-          {/* 미리보기: 첫 번째 시나리오 */}
           {ai.conflictScenarios && ai.conflictScenarios.length > 0 ? (
             <Card>
               <div className="flex items-start gap-3">
@@ -954,7 +1240,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-          {/* 펼침: 나머지 시나리오 + 트리거 + 반복 패턴 */}
           {isOpen('s02') && (
             <div className="space-y-3">
               {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
@@ -994,7 +1279,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
           <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="내 패턴을 이해하고 충돌 줄이기" />
 
-          {/* 미리보기: 마음가짐 */}
           {ai.avoidanceGuide ? (
             <Card accent="#FF2D55">
               <SubLabel text="마음가짐" />
@@ -1009,7 +1293,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-          {/* 펼침: 실전 팁 + 선긋기 */}
           {isOpen('s03') && ai.avoidanceGuide && (
             <div className="space-y-3">
               <Card>

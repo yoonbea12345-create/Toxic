@@ -24,6 +24,11 @@ interface Stats {
   shareAttempts: number;
   completionRate: number;
   dropoff: { landing: number; step1: number; step2: number; step3: number };
+  paywallImpressions: number;
+  paywallClicks: number;
+  paywallPays: number;
+  paywallCTR: number;
+  paywallConversion: number;
 }
 
 function computeStats(events: EventRecord[]): Stats {
@@ -37,6 +42,9 @@ function computeStats(events: EventRecord[]): Stats {
   const skips = count('step_complete_skip-target');
   const resets = count('reset');
   const shares = count('share');
+  const paywallImpressions = count('paywall_impression');
+  const paywallClicks = count('paywall_click');
+  const paywallPays = count('paywall_pay');
 
   const scores = events
     .filter(e => e.event === 'step_complete_target-info' || e.event === 'step_complete_skip-target')
@@ -67,6 +75,11 @@ function computeStats(events: EventRecord[]): Stats {
     relationBreakdown,
     shareAttempts: shares,
     completionRate: results ? Math.round((results / total) * 100) : 0,
+    paywallImpressions,
+    paywallClicks,
+    paywallPays,
+    paywallCTR: paywallImpressions ? Math.round((paywallClicks / paywallImpressions) * 100) : 0,
+    paywallConversion: paywallClicks ? Math.round((paywallPays / paywallClicks) * 100) : 0,
     dropoff: {
       landing: 100,
       step1: landing ? Math.round((s1 / landing) * 100) : 0,
@@ -231,6 +244,20 @@ export default function AdminPage() {
                 ))}
             </div>
           )}
+
+          {/* 유료 전환 검증 */}
+          <div>
+            <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유료 전환 검증 (04·05 섹션)</p>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <StatCard label="페이월 노출" value={stats.paywallImpressions} sub="결과 화면 진입 수" color="#fff" />
+              <StatCard label="페이월 클릭" value={stats.paywallClicks} sub="잠금 해제 버튼" color="#FF9800" />
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <StatCard label="결제 클릭" value={stats.paywallPays} sub="₩100 버튼" color="#FF2D55" />
+              <StatCard label="클릭율(CTR)" value={`${stats.paywallCTR}%`} sub="노출→클릭" color="#BF5AF2" />
+              <StatCard label="전환율" value={`${stats.paywallConversion}%`} sub="클릭→결제" color="#4CAF50" />
+            </div>
+          </div>
 
           {/* 기타 행동 */}
           <div>
