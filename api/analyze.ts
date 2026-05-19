@@ -1,11 +1,14 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// prompt-caching-2024-07-31 beta header required for cache_control support
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  defaultHeaders: { 'anthropic-beta': 'prompt-caching-2024-07-31' },
+});
 
 const MODEL_SONNET = 'claude-sonnet-4-6';
 const MODEL_HAIKU  = 'claude-haiku-4-5-20251001';
 
-// 시스템 프롬프트는 캐싱 적용 (5분 TTL, 반복 호출 시 입력 처리 시간 단축)
 const SYSTEM_CACHED: Anthropic.TextBlockParam & { cache_control: { type: 'ephemeral' } } = {
   type: 'text',
   text: `당신은 사주명리학 전문가입니다. TOXIC — "왜 안맞는지" — 사주로 날카롭고 구체적으로 설명합니다.
