@@ -4,12 +4,12 @@ interface StepRelationProps {
   onNext: (relation: RelationType) => void;
 }
 
-const relations: { type: RelationType; emoji: string; label: string; desc: string }[] = [
-  { type: '연인', emoji: '💔', label: '연인 / 전 연인', desc: '왜 그렇게 터졌는지' },
-  { type: '친구', emoji: '👥', label: '친구', desc: '왜 멀어졌는지 모르겠는' },
-  { type: '직장', emoji: '😤', label: '직장 상사 / 동료', desc: '왜 저 사람이랑만 안맞는지' },
-  { type: '가족', emoji: '👨‍👩‍👧', label: '가족', desc: '사랑하는데 왜 항상 상처받는지' },
-  { type: '기타', emoji: '🌀', label: '그냥 싫은 사람', desc: '이유도 모르게 불편한 그 사람' },
+const relations: { type: RelationType; hanja: string; label: string; desc: string }[] = [
+  { type: '연인', hanja: '縁', label: '연인 / 전 연인', desc: '왜 그렇게 터졌는지' },
+  { type: '친구', hanja: '友', label: '친구', desc: '왜 멀어졌는지 모르겠는' },
+  { type: '직장', hanja: '業', label: '직장 상사 / 동료', desc: '왜 저 사람이랑만 안맞는지' },
+  { type: '가족', hanja: '家', label: '가족', desc: '사랑하는데 왜 항상 상처받는지' },
+  { type: '기타', hanja: '怨', label: '그냥 싫은 사람', desc: '이유도 모르게 불편한 그 사람' },
 ];
 
 export default function StepRelation({ onNext }: StepRelationProps) {
@@ -22,13 +22,13 @@ export default function StepRelation({ onNext }: StepRelationProps) {
       </div>
 
       <div className="space-y-3">
-        {relations.map(({ type, emoji, label, desc }) => (
+        {relations.map(({ type, hanja, label, desc }) => (
           <button
             key={type}
             onClick={() => onNext(type)}
             className="w-full bg-card-bg border border-border rounded-sm p-4 text-left flex items-center gap-4 hover:border-accent-red hover:bg-accent-red/5 transition-all group"
           >
-            <span className="text-2xl">{emoji}</span>
+            <span className="font-display text-xl text-[#FF2D55]/50 group-hover:text-[#FF2D55] transition-colors w-8 text-center flex-shrink-0">{hanja}</span>
             <div className="flex-1">
               <div className="font-medium text-white group-hover:text-accent-red transition-colors">{label}</div>
               <div className="text-text-secondary text-sm mt-0.5">{desc}</div>

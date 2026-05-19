@@ -78,6 +78,7 @@ export default function Landing() {
   const heroRef = useRef<HTMLDivElement>(null);
   const [reviews] = useState(() => shuffle(ALL_REVIEWS));
   const [reviewPage, setReviewPage] = useState(0);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const totalPages = Math.ceil(reviews.length / 5);
 
   useEffect(() => {
@@ -85,7 +86,7 @@ export default function Landing() {
     if (!el) return;
     const onScroll = () => {
       const y = window.scrollY;
-      el.style.opacity = String(Math.max(0, 1 - y / 400));
+      el.style.opacity = String(Math.max(0, 1 - y / 150));
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -136,7 +137,7 @@ export default function Landing() {
             <span className="text-[#FF2D55]">안 맞는 걸까</span>
           </h1>
 
-          <p className="font-sans-kr text-[#777] text-sm leading-relaxed mb-1">
+          <p className="font-sans-kr text-[#888] text-sm leading-relaxed mb-1">
             지금 떠오르는 그 한 명 — 전 연인, 상사, 가족 누구든.
           </p>
           <p className="font-sans-kr text-white text-base leading-relaxed mb-12">
@@ -215,8 +216,8 @@ export default function Landing() {
             </div>
           </div>
 
-          <p className="font-sans-kr text-center text-[#555] text-xs">
-            힘든 관계의 <span className="text-[#888]">이유</span>와 <span className="text-[#FF2D55]">구조적 원인</span> 분석
+          <p className="font-sans-kr text-center text-[#777] text-xs">
+            힘든 관계의 <span className="text-[#999]">이유</span>와 <span className="text-[#FF2D55]">구조적 원인</span> 분석
           </p>
         </div>
       </section>
@@ -341,51 +342,59 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          STORY 3 — 가족
+          STORY 3 — 가족 (차별화 레이아웃)
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06]">
+      <section className="relative border-t border-white/[0.06] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 30% 70%, rgba(255,45,85,0.07) 0%, transparent 50%)' }} />
-        <div className="max-w-xl mx-auto relative z-10">
+          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.06) 0%, transparent 60%)' }} />
+
+        {/* 대형 한자 배경 */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
+          aria-hidden>
+          <span className="font-display text-[28vw] leading-none text-white/[0.018]">家</span>
+        </div>
+
+        <div className="max-w-xl mx-auto px-5 py-24 relative z-10">
           <div className="flex items-center gap-3 mb-10">
             <div className="w-6 h-px bg-[#FF2D55]" />
             <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr">가족</p>
           </div>
 
-          <h2 className="font-display leading-[1.08] text-white mb-2"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
-            엄마랑 나는
-          </h2>
-          <h2 className="font-display leading-[1.08] mb-12"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
-            왜 맨날 <span className="text-[#FF2D55]">부딪힐까</span>
-          </h2>
-
-          <div className="relative mb-10">
-            <div className="font-display text-[6rem] text-[#FF2D55]/10 leading-none absolute -top-6 -left-2 select-none pointer-events-none">"</div>
-            <div className="pl-8 pt-4">
-              <p className="font-sans-kr text-white text-base leading-relaxed mb-2">사랑하는데 자꾸 상처받는 사이.</p>
-              <p className="font-sans-kr text-[#888] text-base leading-relaxed">
-                가족이라 <span className="text-white">더 어려운</span> 거예요.
-                억압이 아니라 <span className="text-[#FF2D55] font-bold">오행의 흐름</span>입니다.
-              </p>
-            </div>
+          {/* 중앙 인용구 포맷 */}
+          <div className="text-center mb-14">
+            <p className="font-display leading-[1.08] text-white mb-3"
+              style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+              사랑하는데
+            </p>
+            <p className="font-display leading-[1.08] mb-3"
+              style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+              <span className="text-[#FF2D55]">왜 이렇게 아플까</span>
+            </p>
+            <p className="font-sans-kr text-[#777] text-sm mt-6 leading-relaxed">
+              억압이 아니에요. 오행의 흐름입니다.
+            </p>
           </div>
 
-          <div className="border border-[#1e1e1e] p-6 mb-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#FF2D55]/[0.04] pointer-events-none select-none">剋</div>
-            <div className="flex items-start gap-5 relative">
-              <div className="border border-[#FF2D55] text-[#FF2D55] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
-                극<br /><span className="text-[10px] opacity-60">剋</span>
+          {/* 세 가지 오행 관계 카드 (가로 나열) */}
+          <div className="grid grid-cols-3 gap-2 mb-12">
+            {[
+              { hanja: '剋', name: '극', desc: '에너지 소모' },
+              { hanja: '沖', name: '충', desc: '방향 충돌' },
+              { hanja: '刑', name: '형', desc: '누적 갈등' },
+            ].map(({ hanja, name, desc }) => (
+              <div key={hanja} className="border border-[#1e1e1e] p-4 text-center bg-[#0A0A0A]">
+                <span className="font-display text-[#FF2D55]/60 text-3xl leading-none block mb-2">{hanja}</span>
+                <p className="font-sans-kr text-white text-xs font-bold">{name}</p>
+                <p className="font-sans-kr text-[#555] text-[10px] mt-1">{desc}</p>
               </div>
-              <div>
-                <p className="font-sans-kr text-white text-sm font-bold mb-2">오행 극 — 에너지 소모 구조</p>
-                <p className="font-sans-kr text-[#666] text-xs leading-relaxed">
-                  한 사람의 기운이 다른 사람을 지속 소모.<br />
-                  이건 성격이 아니라 구조입니다.
-                </p>
-              </div>
-            </div>
+            ))}
+          </div>
+
+          <div className="border-l-[2px] border-[#FF2D55] pl-6 py-4 bg-[#0D0D0D] mb-10">
+            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">가족이라 더 어렵고, 더 오래 아파요</p>
+            <p className="font-sans-kr text-white text-sm leading-relaxed">
+              이건 성격 문제가 아니라 <span className="text-[#FF2D55] font-bold">구조의 문제</span>입니다.
+            </p>
           </div>
 
           <button onClick={() => navigate('/app')}
@@ -412,16 +421,17 @@ export default function Landing() {
           {/* 숫자 stats */}
           <div className="grid grid-cols-3 gap-px bg-[#1a1a1a] border border-[#1a1a1a] mb-12">
             {[
-              { num: '4.4', unit: '/ 5', label: '평균 만족도' },
-              { num: '1분', unit: '', label: '분석 소요 시간' },
-              { num: '100%', unit: '', label: '무료' },
-            ].map(({ num, unit, label }) => (
+              { num: '4.4', unit: '/ 5', label: '평균 만족도', sub: '실제 리뷰 54개 기준' },
+              { num: '1분', unit: '', label: '분석 소요 시간', sub: '입력 후 AI 분석' },
+              { num: '100%', unit: '', label: '무료', sub: '광고 없음' },
+            ].map(({ num, unit, label, sub }) => (
               <div key={label} className="bg-[#0A0A0A] py-7 text-center">
                 <div className="flex items-end justify-center gap-1 mb-1">
                   <span className="font-display text-white text-3xl leading-none">{num}</span>
-                  {unit && <span className="font-display text-[#555] text-sm mb-0.5">{unit}</span>}
+                  {unit && <span className="font-display text-[#666] text-sm mb-0.5">{unit}</span>}
                 </div>
-                <p className="font-sans-kr text-[#555] text-[10px]">{label}</p>
+                <p className="font-sans-kr text-[#777] text-[10px]">{label}</p>
+                <p className="font-sans-kr text-[#444] text-[9px] mt-0.5">{sub}</p>
               </div>
             ))}
           </div>
@@ -446,22 +456,25 @@ export default function Landing() {
           <div className="flex items-center justify-center gap-3">
             <button
               onClick={() => setReviewPage(p => (p - 1 + totalPages) % totalPages)}
-              className="text-[#444] hover:text-[#FF2D55] transition-colors text-sm px-2"
+              className="text-[#555] hover:text-[#FF2D55] transition-colors text-base px-4 py-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="이전 리뷰"
             >
               ←
             </button>
-            <div className="flex gap-1.5">
+            <div className="flex gap-2">
               {Array.from({ length: totalPages }).map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setReviewPage(i)}
-                  className={`rounded-full transition-all duration-300 ${i === reviewPage ? 'bg-[#FF2D55] w-4 h-1.5' : 'bg-[#333] w-1.5 h-1.5'}`}
+                  className={`rounded-full transition-all duration-300 min-w-[16px] min-h-[16px] flex items-center justify-center ${i === reviewPage ? 'bg-[#FF2D55] w-4 h-2' : 'bg-[#444] w-2 h-2'}`}
+                  aria-label={`${i + 1}번째 페이지`}
                 />
               ))}
             </div>
             <button
               onClick={() => setReviewPage(p => (p + 1) % totalPages)}
-              className="text-[#444] hover:text-[#FF2D55] transition-colors text-sm px-2"
+              className="text-[#555] hover:text-[#FF2D55] transition-colors text-base px-4 py-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="다음 리뷰"
             >
               →
             </button>
@@ -512,21 +525,21 @@ export default function Landing() {
             <div className="border-t border-[#1a1a1a] pt-5 mb-5">
               <p className="font-sans-kr text-[#555] text-[11px] uppercase tracking-wider mb-4">충돌 분석 결과</p>
               <div className="flex items-end gap-2 mb-3">
-                <span className="font-display text-[#FF2D55] text-6xl leading-none">97</span>
+                <span className="font-display text-[#FF2D55] text-6xl leading-none">72</span>
                 <div className="mb-2">
                   <span className="font-display text-[#FF2D55] text-2xl">%</span>
-                  <p className="font-sans-kr text-[#555] text-[10px]">독성 지수</p>
+                  <p className="font-sans-kr text-[#777] text-[10px]">독성 지수</p>
                 </div>
                 <div className="ml-auto bg-[#FF2D55]/10 border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] px-3 py-1.5 font-bold font-sans-kr self-end mb-1">
-                  위험도 MAX
+                  위험도 HIGH
                 </div>
               </div>
               <div className="w-full h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden mb-5">
                 <div className="h-full rounded-full"
-                  style={{ width: '97%', background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
+                  style={{ width: '72%', background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {['#인신충', '#에너지소모', '#충돌구조', '#독성MAX'].map(tag => (
+                {['#인신충', '#에너지소모', '#충돌구조', '#중간위험'].map(tag => (
                   <span key={tag} className="text-[10px] text-[#FF2D55] bg-[#FF2D55]/8 border border-[#FF2D55]/20 px-2 py-0.5 font-sans-kr">
                     {tag}
                   </span>
@@ -539,7 +552,7 @@ export default function Landing() {
               className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 transition-opacity tracking-wide"
               style={{ boxShadow: '0 0 40px rgba(255,45,85,0.3)' }}
             >
-              바로 분석하기 →
+              지금 분석하기 →
             </button>
           </div>
 
@@ -578,7 +591,7 @@ export default function Landing() {
             className="w-full bg-[#FF2D55] text-white font-display text-2xl py-6 hover:opacity-90 transition-opacity tracking-wide mb-4"
             style={{ boxShadow: '0 0 100px rgba(255,45,85,0.4)' }}
           >
-            내 사주 분석하기 →
+            지금 분석하기 →
           </button>
           <p className="font-sans-kr text-[#444] text-xs">무료 · 1분 · 지금 바로</p>
         </div>
@@ -588,11 +601,62 @@ export default function Landing() {
       <footer className="border-t border-white/[0.06] py-12 px-5">
         <div className="max-w-xl mx-auto flex flex-col items-center gap-4">
           <img src="/logo.svg" alt="TOXIC" className="h-10 object-contain opacity-60" />
-          <p className="font-sans-kr text-[#444] text-xs">사주로 보는 관계의 본질</p>
+          <p className="font-sans-kr text-[#555] text-xs">사주로 보는 관계의 본질</p>
           <div className="w-px h-4 bg-[#222]" />
-          <p className="font-sans-kr text-[#333] text-xs">© 2025 TOXIC. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowPrivacy(true)}
+              className="font-sans-kr text-[#444] text-xs hover:text-[#666] transition-colors"
+            >
+              개인정보처리방침
+            </button>
+            <span className="text-[#222] text-xs">·</span>
+            <p className="font-sans-kr text-[#333] text-xs">© 2025 TOXIC. All rights reserved.</p>
+          </div>
         </div>
       </footer>
+
+      {/* 개인정보처리방침 모달 */}
+      {showPrivacy && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/80 flex items-end sm:items-center justify-center px-4 pb-0 sm:pb-4 animate-fade-in"
+          onClick={() => setShowPrivacy(false)}
+        >
+          <div
+            className="bg-[#0D0D0D] border border-[#222] w-full max-w-lg max-h-[80vh] overflow-y-auto p-6 sm:rounded-sm"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-display text-white text-xl">개인정보처리방침</h2>
+              <button onClick={() => setShowPrivacy(false)} className="text-[#555] hover:text-white text-xl px-2">✕</button>
+            </div>
+            <div className="space-y-5 font-sans-kr text-[#888] text-sm leading-relaxed">
+              <div>
+                <p className="text-white text-xs font-bold mb-2 uppercase tracking-wider">수집하는 정보</p>
+                <p>TOXIC은 사주 분석을 위해 생년월일, 출생 시간, 성별을 입력받습니다. 이름은 선택 사항입니다. 수집된 정보는 서버에 저장되지 않으며, 분석 완료 후 즉시 파기됩니다.</p>
+              </div>
+              <div>
+                <p className="text-white text-xs font-bold mb-2 uppercase tracking-wider">정보 이용 목적</p>
+                <p>입력된 생년월일 정보는 사주 분석 결과 생성에만 사용됩니다. 마케팅, 제3자 제공, 프로파일링 등의 목적으로 사용되지 않습니다.</p>
+              </div>
+              <div>
+                <p className="text-white text-xs font-bold mb-2 uppercase tracking-wider">정보 보관 및 파기</p>
+                <p>TOXIC은 개인정보를 별도의 데이터베이스에 저장하지 않습니다. AI 분석 요청 시 Anthropic API에 전송되며, Anthropic의 개인정보처리방침을 따릅니다.</p>
+              </div>
+              <div>
+                <p className="text-white text-xs font-bold mb-2 uppercase tracking-wider">문의</p>
+                <p>개인정보 관련 문의사항은 서비스 내 문의 채널을 통해 접수해주세요.</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPrivacy(false)}
+              className="mt-6 w-full py-3 border border-[#333] text-[#666] text-sm hover:border-[#555] hover:text-white transition-colors"
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

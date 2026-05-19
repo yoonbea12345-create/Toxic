@@ -109,8 +109,14 @@ body {
   100% { opacity: 0; transform: translateY(-12px); }
 }
 .animate-fade-up    { animation: fadeUp 0.5s ease forwards; }
+.animate-fade-in    { animation: fadeIn 0.45s ease forwards; }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 .char-animate       { animation: float-char 1.5s ease-in-out infinite; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
 /* ── select 스타일 ── */
 select {

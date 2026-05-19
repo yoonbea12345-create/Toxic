@@ -50,8 +50,7 @@ export default function AppPage() {
     setStep('my-info');
   };
 
-  const stepNumber = { 'my-info': 1, 'relation': 2, 'target-info': 3, 'result': 4 };
-  const showProgress = step !== 'result';
+  const stepNumber = { 'my-info': 1, 'relation': 2, 'target-info': 3, 'result': 3 };
 
   return (
     <div className="min-h-screen bg-bg">
@@ -59,7 +58,7 @@ export default function AppPage() {
         <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity">
           <img src="/logo.svg" alt="TOXIC" className="h-14 object-contain" />
         </button>
-        {showProgress && (
+        {step !== 'result' && (
           <div className="flex gap-1.5">
             {[1, 2, 3].map(n => (
               <div
@@ -69,12 +68,20 @@ export default function AppPage() {
             ))}
           </div>
         )}
+        {step === 'result' && (
+          <div className="flex gap-1.5">
+            {[1, 2, 3].map(n => (
+              <div key={n} className="h-1 w-6 rounded-full bg-accent-red" />
+            ))}
+          </div>
+        )}
       </header>
 
       <main>
         {step === 'my-info' && (
           <StepInput
             title="먼저 내 사주를 분석할게요"
+            stepNumber={1}
             onNext={handleMyInfo}
           />
         )}
@@ -85,6 +92,7 @@ export default function AppPage() {
           <StepInput
             title="상대방 정보를 입력해주세요"
             subtitle="아는 만큼만 입력해도 분석 가능해요"
+            stepNumber={3}
             onNext={handleTargetInfo}
             onSkip={handleSkipTarget}
             isTarget

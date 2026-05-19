@@ -4,12 +4,13 @@ import type { PersonData } from '../utils/saju';
 interface StepInputProps {
   title: string;
   subtitle?: string;
+  stepNumber?: number;
   onNext: (data: PersonData) => void;
   onSkip?: () => void;
   isTarget?: boolean;
 }
 
-export default function StepInput({ title, subtitle, onNext, onSkip, isTarget = false }: StepInputProps) {
+export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip, isTarget = false }: StepInputProps) {
   const [data, setData] = useState<PersonData>({ name: '', birthdate: '', birthtime: '', gender: '여' });
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
@@ -17,7 +18,6 @@ export default function StepInput({ title, subtitle, onNext, onSkip, isTarget = 
   const [unknownTime, setUnknownTime] = useState(false);
 
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
   const getDays = (year: string, month: string) => {
@@ -57,7 +57,7 @@ export default function StepInput({ title, subtitle, onNext, onSkip, isTarget = 
   return (
     <div className="animate-fade-in max-w-lg mx-auto px-4 py-8">
       <div className="mb-8">
-        <p className="text-text-secondary text-sm mb-2 font-sans">{isTarget ? 'STEP 3' : 'STEP 1'}</p>
+        <p className="text-text-secondary text-sm mb-2 font-sans">STEP {stepNumber ?? (isTarget ? 3 : 1)}</p>
         <h2 className="font-serif-kr text-2xl font-bold text-white leading-tight">{title}</h2>
         {subtitle && <p className="text-text-secondary mt-2 text-sm">{subtitle}</p>}
       </div>
@@ -96,14 +96,15 @@ export default function StepInput({ title, subtitle, onNext, onSkip, isTarget = 
           </div>
 
           <div className="grid grid-cols-3 gap-2">
-            <select
+            <input
+              type="number"
+              placeholder="출생 연도"
+              min={1924}
+              max={currentYear}
               value={selectedYear}
               onChange={e => { setSelectedYear(e.target.value); setSelectedDay(''); }}
-              className="bg-card-bg border border-border rounded-sm px-3 py-3 text-white focus:outline-none focus:border-accent-red transition-colors appearance-none cursor-pointer"
-            >
-              <option value="">년도</option>
-              {years.map(y => <option key={y} value={y}>{y}년</option>)}
-            </select>
+              className="bg-card-bg border border-border rounded-sm px-3 py-3 text-white placeholder-text-secondary focus:outline-none focus:border-accent-red transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
             <select
               value={selectedMonth}
               onChange={e => { setSelectedMonth(e.target.value); setSelectedDay(''); }}
