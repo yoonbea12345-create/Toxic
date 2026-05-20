@@ -268,6 +268,21 @@ function AILoadingScreen({ hasTarget, score, result, progress }: {
         </div>
       </div>
 
+      {/* 진행중 표시 — 항상 살아있는 느낌 */}
+      {!isDone && (
+        <div className="flex items-center gap-2 mb-4">
+          <span className="inline-flex gap-1">
+            {[0, 1, 2].map(i => (
+              <span key={i} className="w-1 h-1 rounded-full"
+                style={{ background: color, animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+            ))}
+          </span>
+          <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: `${color}99` }}>
+            분석 진행 중
+          </span>
+        </div>
+      )}
+
       {/* Status text */}
       <div className="text-center max-w-[240px]">
         <p key={step.label} className="text-white text-sm font-medium mb-1.5 char-enter">
@@ -300,6 +315,13 @@ function AILoadingScreen({ hasTarget, score, result, progress }: {
           </p>
         </div>
       )}
+
+      <style>{`
+        @keyframes bounce {
+          0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+          40% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -717,37 +739,37 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const hasTarget = Boolean(targetData.birthdate);
   const accuracyInfo = ACCURACY_LABELS[result.accuracyLevel] ?? ACCURACY_LABELS.year;
 
-  // 디스플레이 진행 애니메이션: 0→80% 빠르게(ease-out), 80%→95% 멈추지 않는 슬로우 크리프
+  // MINT 방식 로딩: gap*coeff + 최소 floor → 수학적으로 절대 멈추지 않음
   useEffect(() => {
-    let animId: number;
-    const startTime = performance.now();
+    const startTime = Date.now();
+    setDisplayProgress(4);
 
-    const tick = () => {
-      const elapsed = performance.now() - startTime;
-      const isApiDone = apiProgressRef.current >= 100;
-
+    const iv = setInterval(() => {
+      if (apiProgressRef.current >= 100) {
+        setDisplayProgress(100);
+        return;
+      }
       setDisplayProgress(prev => {
-        if (isApiDone) return 100;
+        if (prev >= 99) return prev;
+        const elapsed = Date.now() - startTime;
 
-        if (prev < 80) {
-          // ease-out: 3.5초 안에 0→80%
-          const t = Math.min(elapsed / 3500, 1);
-          const eased = 1 - Math.pow(1 - t, 2.5);
-          return Math.max(prev, eased * 80);
+        // Phase 1: 3.5초 안에 4→72% (ease-out 빠른 초반)
+        if (elapsed < 3500 && prev < 72) {
+          const t = elapsed / 3500;
+          return Math.max(prev, 4 + (1 - Math.pow(1 - t, 2.2)) * 68);
         }
 
-        // 80%+: 최소 0.02/frame 전진 (절대 멈추지 않음), 상한 95%
-        const minNext = prev + 0.02;
-        const apiNext = apiProgressRef.current * 0.95;
-        const slowTarget = Math.min(Math.max(minNext, apiNext), 95);
-        return Math.min(prev + 0.4, slowTarget);
+        // Phase 2: API 실제 진행 추적 + 최소 0.08/tick 보장 (절대 멈추지 않음)
+        const apiTarget = apiProgressRef.current * 0.9;
+        if (apiTarget > prev) {
+          return prev + Math.min((apiTarget - prev) * 0.3, 3);
+        }
+        const gap = 93 - prev;
+        return prev + Math.max(gap > 0 ? gap * 0.05 : 0, 0.08);
       });
+    }, 250);
 
-      animId = requestAnimationFrame(tick);
-    };
-
-    animId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animId);
+    return () => clearInterval(iv);
   }, []);
 
   // apiProgress → ref 동기화

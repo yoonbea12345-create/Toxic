@@ -2,11 +2,20 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { startSession } from '../utils/analytics';
 
+// ── 9개 트리거: 연인 3 / 직장 3 / 가족 3 ─────────────────────────────
 const TRIGGERS = [
-  '월요일 아침만 되면 숨 막힌다면',
-  '좋아했는데 자꾸 상처받는다면',
+  // 직장
+  '저 팀장이 왜 나만 싫어하는지 모르겠다면',
+  '회의 때마다 같은 사람이랑 또 충돌했다면',
+  '퇴사하고 싶은데 그 사람 때문인지 내 탓인지 모르겠다면',
+  // 연인
+  '좋아했는데 자꾸 상처만 받는다면',
   '헤어졌는데 자꾸 그 사람이 생각난다면',
-  '맨날 같은 패턴으로 싸운다면',
+  '맨날 같은 이유로 싸운다면',
+  // 가족
+  '부모님이랑 항상 부딪히는 이유를 모르겠다면',
+  '가족인데 왜 이렇게 불편한지 이해 안 된다면',
+  // 공통
   '이유도 모르게 그냥 안 맞는 느낌이라면',
 ];
 
@@ -24,43 +33,33 @@ const ALL_REVIEWS = [
   { q: '직장 동료랑 의견 충돌이 잦아서 해봤는데 충(沖) 관계라고 나왔어요. 이제 그냥 거리 두기로 했어요', r: '38세 남성', tag: '직장', stars: 4 },
   { q: '재미로 해봤는데 생각보다 깊은 내용이 나와서 놀랐어요. 저장해두고 종종 다시 읽어요', r: '27세 여성', tag: '연인', stars: 5 },
   { q: '남편이랑 항상 반복되는 싸움 패턴이 사주로 설명이 되니까 신기하고 좀 위로됐어요', r: '40대 여성', tag: '연인', stars: 5 },
-  { q: '역산 모드가 좀 더 보완됐으면 좋겠어요. 생년월일 없는 상대 분석은 좀 아쉬웠음', r: '25세 남성', tag: '연인', stars: 3 },
   { q: '완전 믿지는 않지만 갈등 트리거 부분이 실제로 맞아서 신기했음. 나만 아는 내 패턴이 나와있음', r: '30세 여성', tag: '직장', stars: 4 },
   { q: '오빠랑 맨날 싸우는 이유 봤는데 너무 정확해서 오빠한테도 보내줬어요. 오빠가 읽고 아무 말도 못했대요 ㅋ', r: '23세 여성', tag: '가족', stars: 5 },
   { q: '상대방 생년월일 대략만 알아도 분석이 가능한 게 좋았어요. 실용적이에요', r: '33세 여성', tag: '연인', stars: 4 },
   { q: '결과 캡처해서 친구들이랑 같이 서로 봤는데 분위기 확 풀렸어요. 아이스브레이킹용 굿', r: '21세 여성', tag: '친구', stars: 4 },
   { q: '솔직히 사주는 반신반의인데 갈등 구조를 다르게 보게 해줘서 유익했어요. 갈등=구조 관점이 신선했어요', r: '44세 남성', tag: '직장', stars: 4 },
   { q: '1년 넘게 이유 모르고 힘들었는데 구조적 이유가 있었다는 게 오히려 편하게 받아들여져요', r: '29세 여성', tag: '연인', stars: 5 },
-  { q: '앱이 깔끔하고 빠르게 나와서 좋은데 내용이 이렇게 많을 줄 몰랐어요. 다 읽는 데 한참 걸렸어요', r: '26세 남성', tag: '직장', stars: 3 },
-  { q: '사주 잘 모르는 사람도 쉽게 이해할 수 있게 풀어줘서 좋아요. 어렵지 않아요', r: '31세 여성', tag: '친구', stars: 4 },
   { q: '퇴사 고민 중인데 팀장이랑 분석해봤어요. 결과 보고 퇴사 결심이 서버렸음 ㅋㅋ 면죄부 받은 느낌', r: '28세 여성', tag: '직장', stars: 5 },
   { q: '어머니랑 제 오행 관계 보고 많이 이해됐어요. 미움이 아니라 구조가 문제였던 거더라고요', r: '37세 남성', tag: '가족', stars: 5 },
-  { q: '결과 내용이 좀 길긴 한데 다 읽을 만해요. 구체적이어서 좋아요. 이런 구체성은 처음 봤어요', r: '22세 여성', tag: '연인', stars: 4 },
   { q: '처음엔 그냥 재미용이었는데 내용이 너무 구체적으로 우리 상황을 설명해서 당황했어요. 찝찝하게 정확해요', r: '34세 여성', tag: '연인', stars: 5 },
   { q: '친구 관계도 사주로 보니까 진짜 이해가 되는 부분이 있음. 신박했어요. 인간관계 전반에 적용 가능할 듯', r: '20세 여성', tag: '친구', stars: 4 },
   { q: '연애 상담이랑 비슷한 느낌인데 훨씬 직접적으로 말해줘서 좋았어요. 돌려 말하지 않아서 시원함', r: '30세 여성', tag: '연인', stars: 5 },
-  { q: '내용이 좀 AI스럽긴 한데 틀린 말은 없어서 그냥 인정함. 갈등 구조 분석 부분은 꽤 날카로움', r: '27세 남성', tag: '직장', stars: 3 },
   { q: '갈등 시나리오 부분이 소름이었어요. 실제로 있었던 상황이랑 너무 비슷해서 스크린샷 찍었어요', r: '25세 여성', tag: '연인', stars: 5 },
   { q: '남동생이랑 왜 항상 같은 패턴으로 싸우는지 알 것 같아졌어요. 충(沖)이 있었음', r: '33세 여성', tag: '가족', stars: 4 },
   { q: '이 서비스 보고 관계에서 기대치를 조정하게 됐어요. 구조적으로 무리한 기대를 했던 거더라고요', r: '41세 여성', tag: '연인', stars: 5 },
   { q: '단순 운세 앱이랑은 차원이 달라요. 왜 안맞는지 이유를 분석해줘서 실용적이에요', r: '36세 남성', tag: '직장', stars: 5 },
-  { q: '점만 보는 거랑 달리 갈등 패턴을 분석해주니까 실생활에 적용해볼 수 있어서 좋아요', r: '28세 여성', tag: '가족', stars: 4 },
   { q: '솔직히 이 정도면 유료로 해도 낼 것 같음. 무료인 이유가 뭔지 모르겠어요', r: '32세 여성', tag: '연인', stars: 5 },
-  { q: '일부 내용은 좀 과하게 느껴지기도 했지만 전반적으로 도움됐어요. 이해의 폭이 넓어진 느낌', r: '25세 남성', tag: '친구', stars: 3 },
   { q: '오랫동안 정리 못한 감정이 이 분석 보고 좀 정리됐어요. 카타르시스 있었어요', r: '29세 여성', tag: '연인', stars: 5 },
   { q: '전 남자친구 분석했더니 그 관계가 좀 이해됐어요. 미련보다 후련함이 남았어요', r: '27세 여성', tag: '연인', stars: 5 },
   { q: '팀장님이 왜 저만 싫어하는 것 같은지 구조적으로 나오니까 나름 위안이 됐어요', r: '31세 남성', tag: '직장', stars: 4 },
-  { q: '용어들이 처음에 낯설었는데 설명이 잘 되어 있어서 이해하는 데 무리 없었어요', r: '23세 여성', tag: '친구', stars: 4 },
   { q: '부모님과의 관계를 다시 생각해보는 계기가 됐어요. 성격 문제가 아닌 구조 문제로 보게 됨', r: '38세 여성', tag: '가족', stars: 5 },
   { q: '연인 분석하고 나서 직장 관계도 궁금해졌어요. 다 돌려봤습니다. 중독성 있음', r: '30세 남성', tag: '연인', stars: 4 },
   { q: '사주로 보는 충돌 구조가 이렇게 구체적일 줄 몰랐어요. 이론이 아니라 실제 상황으로 나오네요', r: '24세 여성', tag: '연인', stars: 5 },
-  { q: '친구한테 보내줬더니 우리 사이 얘기를 드디어 꺼낼 수 있었어요. 고마운 서비스', r: '22세 여성', tag: '친구', stars: 5 },
   { q: '현실적 전망 부분이 너무 날카로워서 당황함. 좋은 말 해줄 줄 알았는데 직접적이에요', r: '35세 여성', tag: '연인', stars: 4 },
-  { q: '사주에 이렇게 구체적인 갈등 분석이 있는지 몰랐어요. 전통 사주를 현대적으로 잘 해석했네요', r: '43세 남성', tag: '가족', stars: 4 },
+  { q: '그냥 재미로 하려다가 너무 현실적으로 정확해서 좀 슬퍼짐. 위로는 없고 팩트만 있음', r: '28세 여성', tag: '연인', stars: 5 },
   { q: '무료인데 내용이 이 정도면 진짜 잘 만든 서비스예요. 광고도 없고 깔끔해서 더 신뢰가 가요', r: '26세 여성', tag: '연인', stars: 5 },
   { q: '앱이 깔끔해서 스크린샷 찍어 친구들한테 공유했어요. 다들 자기 것도 해보겠다고 했음', r: '21세 여성', tag: '친구', stars: 4 },
-  { q: '그냥 재미로 하려다가 너무 현실적으로 정확해서 좀 슬퍼짐. 위로는 없고 팩트만 있음', r: '28세 여성', tag: '연인', stars: 5 },
-  { q: '사주 전통 방식과 현대적 해석을 잘 조합한 것 같아요. 이런 서비스가 있다는 게 신기해요', r: '39세 남성', tag: '직장', stars: 4 },
+  { q: '사주에 이렇게 구체적인 갈등 분석이 있는지 몰랐어요. 전통 사주를 현대적으로 잘 해석했네요', r: '43세 남성', tag: '가족', stars: 4 },
 ];
 
 function shuffle<T>(arr: T[]): T[] {
@@ -72,7 +71,6 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-// 천간지지 한자 배경 워터마크
 const HANJA_ITEMS = [
   { char: '甲', x: 6,  y: 3,  size: '6.5rem', opacity: 0.10, rotate: -12, red: false },
   { char: '子', x: 83, y: 2,  size: '8.5rem', opacity: 0.07, rotate: 7,   red: true  },
@@ -102,19 +100,13 @@ function HanjaWatermark() {
   return (
     <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
       {HANJA_ITEMS.map((item, i) => (
-        <span
-          key={i}
-          className="absolute font-display leading-none"
+        <span key={i} className="absolute font-display leading-none"
           style={{
-            left: `${item.x}%`,
-            top: `${item.y}%`,
-            fontSize: item.size,
-            opacity: item.opacity,
+            left: `${item.x}%`, top: `${item.y}%`,
+            fontSize: item.size, opacity: item.opacity,
             color: item.red ? '#FF2D55' : '#ffffff',
-            transform: `rotate(${item.rotate}deg)`,
-            lineHeight: 1,
-          }}
-        >
+            transform: `rotate(${item.rotate}deg)`, lineHeight: 1,
+          }}>
           {item.char}
         </span>
       ))}
@@ -125,7 +117,7 @@ function HanjaWatermark() {
 function Stars({ count }: { count: number }) {
   return (
     <div className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map(i => (
+      {[1,2,3,4,5].map(i => (
         <span key={i} className={`text-[10px] ${i <= count ? 'text-[#FF2D55]' : 'text-[#333]'}`}>★</span>
       ))}
     </div>
@@ -139,13 +131,7 @@ export default function Landing() {
   const [reviewPage, setReviewPage] = useState(0);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const totalPages = Math.ceil(reviews.length / 5);
-
   const [triggerIdx, setTriggerIdx] = useState(0);
-
-  const goToApp = () => {
-    try { sessionStorage.removeItem('toxic_session'); } catch {}
-    navigate('/app');
-  };
 
   useEffect(() => { startSession(); }, []);
 
@@ -153,8 +139,7 @@ export default function Landing() {
     const el = heroRef.current;
     if (!el) return;
     const onScroll = () => {
-      const y = window.scrollY;
-      el.style.opacity = String(Math.max(0, 1 - y / 150));
+      el.style.opacity = String(Math.max(0, 1 - window.scrollY / 150));
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -166,9 +151,14 @@ export default function Landing() {
   }, [totalPages]);
 
   useEffect(() => {
-    const t = setInterval(() => setTriggerIdx(i => (i + 1) % TRIGGERS.length), 3200);
+    const t = setInterval(() => setTriggerIdx(i => (i + 1) % TRIGGERS.length), 3000);
     return () => clearInterval(t);
-  }, [TRIGGERS.length]);
+  }, []);
+
+  const goToApp = () => {
+    try { sessionStorage.removeItem('toxic_session'); } catch {}
+    navigate('/app');
+  };
 
   return (
     <div className="bg-[#0A0A0A] min-h-screen overflow-x-hidden relative">
@@ -179,17 +169,15 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-xl mx-auto px-5 h-14 flex items-center justify-between">
           <img src="/logo.svg" alt="TOXIC" className="h-16 object-contain" />
-          <button
-            onClick={goToApp}
-            className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 hover:opacity-90 transition-opacity font-sans-kr tracking-wider font-bold"
-          >
+          <button onClick={goToApp}
+            className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 hover:opacity-90 transition-opacity font-sans-kr tracking-wider font-bold">
             분석 시작 →
           </button>
         </div>
       </nav>
 
       {/* ══════════════════════════════════════
-          HERO — "왜 안맞는지" FIRST
+          01. HERO
       ══════════════════════════════════════ */}
       <section className="relative min-h-screen flex flex-col justify-center px-5 pt-28 pb-20 max-w-xl mx-auto">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
@@ -203,7 +191,6 @@ export default function Landing() {
             </span>
           </div>
 
-          {/* 메인 훅 — 안맞는 이유가 FIRST */}
           <h1 className="font-display leading-[1.02] text-white mb-6"
             style={{ fontSize: 'clamp(3.2rem, 14vw, 6rem)' }}>
             그 사람이랑<br />
@@ -223,7 +210,6 @@ export default function Landing() {
             사주에 <span className="text-[#FF2D55] font-bold">이미 답이 있었습니다.</span>
           </p>
 
-          {/* 신뢰 지표 */}
           <div className="flex items-center gap-3 mb-8">
             <div className="flex gap-0.5">
               {[1,2,3,4,5].map(i => <span key={i} className={`text-xs ${i <= 4 ? 'text-[#FF2D55]' : 'text-[#333]'}`}>★</span>)}
@@ -233,11 +219,9 @@ export default function Landing() {
             <p className="font-sans-kr text-[#555] text-[11px]">무료</p>
           </div>
 
-          <button
-            onClick={goToApp}
+          <button onClick={goToApp}
             className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 transition-opacity mb-3"
-            style={{ boxShadow: '0 0 60px rgba(255,45,85,0.35)' }}
-          >
+            style={{ boxShadow: '0 0 60px rgba(255,45,85,0.35)' }}>
             그 사람 생일 넣어보기 →
           </button>
           <p className="font-sans-kr text-[#555] text-xs text-center mb-1">
@@ -248,17 +232,82 @@ export default function Landing() {
           </p>
         </div>
 
-        <div
-          ref={heroRef}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        >
+        <div ref={heroRef}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
           <span className="text-[#444] text-[10px] uppercase tracking-[0.3em] font-sans-kr">scroll</span>
           <div className="w-px h-12 bg-gradient-to-b from-[#FF2D55]/60 to-transparent animate-pulse" />
         </div>
       </section>
 
       {/* ══════════════════════════════════════
-          RESULT PREVIEW — 실제 스크린샷
+          02. 페르소나 퀵 셀렉트
+      ══════════════════════════════════════ */}
+      <section className="relative px-5 py-16 border-t border-white/[0.06]">
+        <div className="max-w-xl mx-auto">
+          <p className="font-sans-kr text-[#555] text-xs text-center mb-2 uppercase tracking-[0.2em]">어떤 관계든 분석 가능</p>
+          <h2 className="font-display text-white text-center mb-8"
+            style={{ fontSize: 'clamp(1.8rem, 7vw, 2.8rem)' }}>
+            지금 머릿속에 떠오르는<br />
+            <span className="text-[#FF2D55]">딱 그 한 명</span>
+          </h2>
+
+          <div className="space-y-3">
+            {/* 연인 카드 */}
+            <button onClick={goToApp}
+              className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF2D55]/40 transition-colors group">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[#FF2D55] text-xs border border-[#FF2D55]/30 px-2 py-0.5 font-sans-kr">연인 · 전 연인</span>
+                  </div>
+                  <p className="font-sans-kr text-white text-sm font-bold mb-1">끌렸는데 왜 이렇게 자꾸 다쳤는지</p>
+                  <p className="font-sans-kr text-[#555] text-xs leading-relaxed">
+                    헤어진 이유 · 반복되는 싸움 패턴 · 미련이 안 없어지는 이유
+                  </p>
+                </div>
+                <span className="text-[#333] group-hover:text-[#FF2D55] transition-colors text-lg ml-3 flex-shrink-0">→</span>
+              </div>
+            </button>
+
+            {/* 직장 카드 */}
+            <button onClick={goToApp}
+              className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF2D55]/40 transition-colors group">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[#BF5AF2] text-xs border border-[#BF5AF2]/30 px-2 py-0.5 font-sans-kr">직장 · 상사 · 동료</span>
+                  </div>
+                  <p className="font-sans-kr text-white text-sm font-bold mb-1">내 잘못인지 그 사람 문제인지</p>
+                  <p className="font-sans-kr text-[#555] text-xs leading-relaxed">
+                    팀장이 나만 미워하는 이유 · 회의 때 충돌 · 퇴사 전 구조 파악
+                  </p>
+                </div>
+                <span className="text-[#333] group-hover:text-[#FF2D55] transition-colors text-lg ml-3 flex-shrink-0">→</span>
+              </div>
+            </button>
+
+            {/* 가족 카드 */}
+            <button onClick={goToApp}
+              className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF2D55]/40 transition-colors group">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[#FF2D55] text-xs border border-[#FF2D55]/30 px-2 py-0.5 font-sans-kr">가족 · 부모 · 형제</span>
+                  </div>
+                  <p className="font-sans-kr text-white text-sm font-bold mb-1">사랑하는데 왜 이렇게 아픈지</p>
+                  <p className="font-sans-kr text-[#555] text-xs leading-relaxed">
+                    성격 차이 아님 · 오행 구조 충돌 · 평생 반복되는 패턴의 원인
+                  </p>
+                </div>
+                <span className="text-[#333] group-hover:text-[#FF2D55] transition-colors text-lg ml-3 flex-shrink-0">→</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          03. 실제 결과 프리뷰
       ══════════════════════════════════════ */}
       <section className="relative py-20 border-t border-white/[0.06] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none"
@@ -279,29 +328,18 @@ export default function Landing() {
           </p>
         </div>
 
-        {/* 스크린샷 + FOMO 블러 */}
         <div className="max-w-[360px] mx-auto px-5 relative">
-          {/* 폰 프레임 */}
           <div className="relative overflow-hidden rounded-[2rem] border border-white/[0.08]"
             style={{ boxShadow: '0 0 0 1px rgba(255,45,85,0.18), 0 40px 100px rgba(0,0,0,0.9), 0 0 80px rgba(255,45,85,0.1)' }}>
 
-            {/* 스크린샷 1 — 결과 상단 */}
-            <img
-              src="/result-preview-1.png"
-              alt="TOXIC 사주 분석 결과 — 독성 지수 99점"
+            <img src="/result-preview-1.png" alt="TOXIC 사주 분석 결과 — 독성 지수 99점"
               className="w-full block"
-              style={{ maxHeight: '520px', objectFit: 'cover', objectPosition: 'top' }}
-            />
+              style={{ maxHeight: '520px', objectFit: 'cover', objectPosition: 'top' }} />
 
-            {/* 스크린샷 2 — 분석 내용 (아래로 이어짐) */}
-            <img
-              src="/result-preview-2.png"
-              alt="TOXIC 사주 분석 — 상세 내용"
+            <img src="/result-preview-2.png" alt="TOXIC 사주 분석 — 상세 내용"
               className="w-full block"
-              style={{ maxHeight: '300px', objectFit: 'cover', objectPosition: 'top' }}
-            />
+              style={{ maxHeight: '300px', objectFit: 'cover', objectPosition: 'top' }} />
 
-            {/* 블러 페이드 + CTA */}
             <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end pt-48"
               style={{ background: 'linear-gradient(to bottom, transparent 0%, rgba(10,0,5,0.85) 35%, #0A0005 60%)' }}>
               <div className="px-5 pb-6 pt-4">
@@ -309,8 +347,7 @@ export default function Landing() {
                   <span className="w-1 h-1 rounded-full bg-[#FF2D55] animate-pulse" />
                   <p className="font-sans-kr text-[#FF2D55] text-[10px] uppercase tracking-[0.25em]">내 결과는 다릅니다</p>
                 </div>
-                <button
-                  onClick={goToApp}
+                <button onClick={goToApp}
                   className="w-full bg-[#FF2D55] text-white font-display text-lg py-5 hover:opacity-90 transition-opacity tracking-wide"
                   style={{ boxShadow: '0 0 60px rgba(255,45,85,0.6)' }}>
                   그 사람 생일 넣어보기 →
@@ -319,7 +356,6 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* 글로우 */}
           <div className="absolute -inset-8 pointer-events-none"
             style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.08) 0%, transparent 70%)' }} />
         </div>
@@ -332,7 +368,249 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          PROBLEM — 기존 앱 vs TOXIC
+          04. STORY — 연인
+      ══════════════════════════════════════ */}
+      <section className="relative px-5 py-24 border-t border-white/[0.06]">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 15% 60%, rgba(255,45,85,0.09) 0%, transparent 50%)' }} />
+        <div className="max-w-xl mx-auto relative z-10">
+          <div className="flex items-center gap-3 mb-10">
+            <div className="w-6 h-px bg-[#FF2D55]" />
+            <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr">연인 · 전 연인</p>
+          </div>
+
+          <h2 className="font-display leading-[1.08] text-white mb-2"
+            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            헤어진 이유를
+          </h2>
+          <h2 className="font-display leading-[1.08] text-[#FF2D55] mb-6"
+            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            이제야 알았다
+          </h2>
+
+          <p className="font-sans-kr text-[#666] text-sm leading-relaxed mb-10">
+            좋아했는데 왜 자꾸 다쳤는지.<br />
+            노력했는데 왜 계속 같은 자리인지.<br />
+            <span className="text-[#888]">그 답이 사주에 있었습니다.</span>
+          </p>
+
+          <div className="bg-[#0D0D0D] border-l-[2px] border-[#FF2D55] pl-6 py-5 mb-8">
+            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">끌렸는데 자꾸 다쳤다면</p>
+            <p className="font-sans-kr text-white text-sm leading-relaxed">
+              사주에선 <span className="text-[#FF2D55] font-bold">충(沖)</span>일 수 있어요.
+              서로 끌리지만 방향이 정반대인 구조. 노력해도 해결이 안 되는 이유가 여기 있습니다.
+            </p>
+          </div>
+
+          <div className="border border-[#1e1e1e] p-6 mb-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#FF2D55]/[0.04] pointer-events-none select-none">沖</div>
+            <div className="flex items-start gap-5 relative">
+              <div className="border border-[#FF2D55] text-[#FF2D55] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
+                충<br /><span className="text-[10px] opacity-60">沖</span>
+              </div>
+              <div>
+                <p className="font-sans-kr text-white text-sm font-bold mb-2">자오충(子午沖) — 강한 에너지 충돌</p>
+                <p className="font-sans-kr text-[#666] text-xs leading-relaxed">
+                  서로 끌리지만 결국 폭발하는 구조.<br />
+                  처음엔 운명처럼 느껴지지만 근본 방향이 반대입니다.<br />
+                  <span className="text-[#444]">싸움이 반복되는 건 당신 잘못이 아닙니다.</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 공감 후기 */}
+          <div className="border border-[#1a1a1a] p-4 mb-8 bg-[#0A0A0A]">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-1.5 py-0.5 font-sans-kr">연인</span>
+              <div className="flex gap-0.5">{[1,2,3,4,5].map(i=><span key={i} className="text-[10px] text-[#FF2D55]">★</span>)}</div>
+            </div>
+            <p className="font-sans-kr text-[#888] text-xs leading-relaxed">
+              "연애 3년 내내 왜 싸웠는지 1분 만에 나왔어요. 이걸 3년 전에 알았더라면..."
+            </p>
+            <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 24세 여성</p>
+          </div>
+
+          <button onClick={goToApp}
+            className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 transition-colors tracking-wide">
+            전 연인 분석하기 →
+          </button>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          05. STORY — 직장인 (강화)
+      ══════════════════════════════════════ */}
+      <section className="relative px-5 py-24 border-t border-white/[0.06]">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 85% 40%, rgba(191,90,242,0.08) 0%, transparent 50%)' }} />
+        <div className="max-w-xl mx-auto relative z-10">
+          <div className="flex items-center gap-3 mb-10">
+            <div className="w-6 h-px bg-[#BF5AF2]" />
+            <p className="text-[#BF5AF2] text-[10px] uppercase tracking-[0.25em] font-sans-kr">직장 상사 · 동료</p>
+          </div>
+
+          <h2 className="font-display leading-[1.08] text-white mb-2"
+            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            저 팀장이랑
+          </h2>
+          <h2 className="font-display leading-[1.08] mb-6"
+            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            왜 이렇게 <span className="text-[#FF2D55]">안 맞지?</span>
+          </h2>
+
+          <p className="font-sans-kr text-[#666] text-sm leading-relaxed mb-10">
+            내 성격 문제인지, 그 사람이 이상한 건지.<br />
+            회의 때마다 충돌, 칭찬은 없고 지적만 있고.<br />
+            <span className="text-[#888]">퇴사 전에 구조부터 파악해보세요.</span>
+          </p>
+
+          {/* 직장인 공감 트리거 3개 */}
+          <div className="space-y-3 mb-10">
+            {[
+              { icon: '⚡', text: '팀장이 나만 콕 찍어서 지적하는 것 같다면' },
+              { icon: '🔁', text: '회의 때마다 같은 사람이랑 의견 충돌한다면' },
+              { icon: '🚪', text: '퇴사하고 싶은데 그 사람 때문인지 내 탓인지 모르겠다면' },
+            ].map(({ icon, text }) => (
+              <div key={text} className="flex items-center gap-3 border border-[#1a1a1a] px-4 py-3 bg-[#0D0D0D]">
+                <span className="text-base flex-shrink-0">{icon}</span>
+                <p className="font-sans-kr text-[#777] text-sm">{text}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-[#0D0D0D] border-l-[2px] border-[#BF5AF2] pl-6 py-5 mb-8">
+            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">말투도 기준도 매번 어긋난다면</p>
+            <p className="font-sans-kr text-white text-sm leading-relaxed">
+              성격 차이가 아니라 <span className="text-[#BF5AF2] font-bold">사주 구조 문제</span>일 수 있어요.
+              이건 노력으로 바꿀 수 없는 기질의 충돌입니다.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 mb-8">
+            {[
+              { num: '3', unit: '개월', desc: '평균 갈등 인지 시점' },
+              { num: '78', unit: '%', desc: '직장 스트레스 = 관계 문제' },
+              { num: '1', unit: '분', desc: '분석 소요 시간' },
+            ].map(({ num, unit, desc }) => (
+              <div key={desc} className="border border-[#1e1e1e] p-4 text-center">
+                <div className="flex items-end justify-center gap-0.5 mb-1">
+                  <span className="font-display text-[#FF2D55] text-3xl leading-none">{num}</span>
+                  <span className="font-display text-[#FF2D55] text-sm mb-0.5">{unit}</span>
+                </div>
+                <p className="font-sans-kr text-[#555] text-[10px] leading-tight">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="border border-[#1e1e1e] p-6 mb-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#BF5AF2]/[0.04] pointer-events-none select-none">刑</div>
+            <div className="flex items-start gap-5 relative">
+              <div className="border border-[#BF5AF2] text-[#BF5AF2] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
+                형<br /><span className="text-[10px] opacity-60">刑</span>
+              </div>
+              <div>
+                <p className="font-sans-kr text-white text-sm font-bold mb-2">인사신형(寅巳申刑) — 누적 충돌</p>
+                <p className="font-sans-kr text-[#666] text-xs leading-relaxed">
+                  갑자기 폭발하지 않아요.<br />
+                  서서히, 조용히, 확실하게 쌓이는 불편함.<br />
+                  <span className="text-[#444]">이 구조를 알면 대응 방식이 달라집니다.</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 공감 후기 */}
+          <div className="border border-[#1a1a1a] p-4 mb-8 bg-[#0A0A0A]">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] text-[#BF5AF2] border border-[#BF5AF2]/30 px-1.5 py-0.5 font-sans-kr">직장</span>
+              <div className="flex gap-0.5">{[1,2,3,4,5].map(i=><span key={i} className="text-[10px] text-[#FF2D55]">★</span>)}</div>
+            </div>
+            <p className="font-sans-kr text-[#888] text-xs leading-relaxed">
+              "퇴사 고민 중인데 팀장이랑 분석해봤어요. 결과 보고 퇴사 결심이 서버렸음 ㅋㅋ 면죄부 받은 느낌"
+            </p>
+            <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 28세 여성</p>
+          </div>
+
+          <button onClick={goToApp}
+            className="w-full border border-[#BF5AF2]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#BF5AF2]/10 transition-colors tracking-wide">
+            직장 관계 분석하기 →
+          </button>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          06. STORY — 가족
+      ══════════════════════════════════════ */}
+      <section className="relative border-t border-white/[0.06] overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.06) 0%, transparent 60%)' }} />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden>
+          <span className="font-display text-[28vw] leading-none text-white/[0.018]">家</span>
+        </div>
+
+        <div className="max-w-xl mx-auto px-5 py-24 relative z-10">
+          <div className="flex items-center gap-3 mb-10">
+            <div className="w-6 h-px bg-[#FF2D55]" />
+            <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr">가족</p>
+          </div>
+
+          <div className="text-center mb-10">
+            <p className="font-display leading-[1.08] text-white mb-3"
+              style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+              사랑하는데
+            </p>
+            <p className="font-display leading-[1.08] mb-3"
+              style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+              <span className="text-[#FF2D55]">왜 이렇게 아플까</span>
+            </p>
+            <p className="font-sans-kr text-[#777] text-sm mt-6 leading-relaxed">
+              억압이 아니에요. 오행의 흐름입니다.<br />
+              <span className="text-[#555]">성격 문제로 봤던 것이 구조로 보이기 시작합니다.</span>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 mb-10">
+            {[
+              { hanja: '剋', name: '극', desc: '에너지 소모' },
+              { hanja: '沖', name: '충', desc: '방향 충돌' },
+              { hanja: '刑', name: '형', desc: '누적 갈등' },
+            ].map(({ hanja, name, desc }) => (
+              <div key={hanja} className="border border-[#1e1e1e] p-4 text-center bg-[#0A0A0A]">
+                <span className="font-display text-[#FF2D55]/60 text-3xl leading-none block mb-2">{hanja}</span>
+                <p className="font-sans-kr text-white text-xs font-bold">{name}</p>
+                <p className="font-sans-kr text-[#555] text-[10px] mt-1">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="border-l-[2px] border-[#FF2D55] pl-6 py-4 bg-[#0D0D0D] mb-8">
+            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">가족이라 더 어렵고, 더 오래 아파요</p>
+            <p className="font-sans-kr text-white text-sm leading-relaxed">
+              이건 성격 문제가 아니라 <span className="text-[#FF2D55] font-bold">구조의 문제</span>입니다.
+            </p>
+          </div>
+
+          <div className="border border-[#1a1a1a] p-4 mb-8 bg-[#0A0A0A]">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-1.5 py-0.5 font-sans-kr">가족</span>
+              <div className="flex gap-0.5">{[1,2,3,4,5].map(i=><span key={i} className="text-[10px] text-[#FF2D55]">★</span>)}</div>
+            </div>
+            <p className="font-sans-kr text-[#888] text-xs leading-relaxed">
+              "엄마랑 나 오행이 정반대라고 나와서 오히려 마음이 편해졌어요. 내 탓이 아니었구나"
+            </p>
+            <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 32세 여성</p>
+          </div>
+
+          <button onClick={goToApp}
+            className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 transition-colors tracking-wide">
+            가족 관계 분석하기 →
+          </button>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          07. 기존 앱 vs TOXIC
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
@@ -386,202 +664,73 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          STORY 1 — 연인
+          08. HOW IT WORKS — 3단계
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 15% 60%, rgba(255,45,85,0.09) 0%, transparent 50%)' }} />
+          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.05) 0%, transparent 60%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-6 h-px bg-[#FF2D55]" />
-            <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr">연인 · 전 연인</p>
-          </div>
-
-          <h2 className="font-display leading-[1.08] text-white mb-2"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
-            헤어진 이유를
-          </h2>
-          <h2 className="font-display leading-[1.08] text-[#FF2D55] mb-12"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
-            이제야 알았다
+          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr text-center mb-3">어떻게 작동하나요</p>
+          <h2 className="font-display text-white text-center mb-12"
+            style={{ fontSize: 'clamp(2rem, 8vw, 3.2rem)' }}>
+            딱 <span className="text-[#FF2D55]">1분</span>이면 됩니다
           </h2>
 
-          <div className="bg-[#0D0D0D] border-l-[2px] border-[#FF2D55] pl-6 py-5 mb-10">
-            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">좋아했는데 자꾸 다쳤다면</p>
-            <p className="font-sans-kr text-white text-sm leading-relaxed">
-              사주에선 <span className="text-[#FF2D55] font-bold">충(沖)</span>일 수 있어요.
-              서로 끌리지만 방향이 정반대인 구조.
-            </p>
-          </div>
-
-          <div className="border border-[#1e1e1e] p-6 mb-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#FF2D55]/[0.04] pointer-events-none select-none">沖</div>
-            <div className="flex items-start gap-5 relative">
-              <div className="border border-[#FF2D55] text-[#FF2D55] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
-                충<br /><span className="text-[10px] opacity-60">沖</span>
-              </div>
-              <div>
-                <p className="font-sans-kr text-white text-sm font-bold mb-2">자오충(子午沖) — 강한 에너지 충돌</p>
-                <p className="font-sans-kr text-[#666] text-xs leading-relaxed">
-                  서로 끌리지만 결국 폭발하는 구조.<br />
-                  처음엔 운명처럼 느껴지지만 근본 방향이 반대입니다.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <button onClick={goToApp}
-            className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 transition-colors tracking-wide">
-            전 연인 분석하기 →
-          </button>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════
-          STORY 2 — 직장
-      ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06]">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 85% 40%, rgba(191,90,242,0.08) 0%, transparent 50%)' }} />
-        <div className="max-w-xl mx-auto relative z-10">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-6 h-px bg-[#BF5AF2]" />
-            <p className="text-[#BF5AF2] text-[10px] uppercase tracking-[0.25em] font-sans-kr">직장 상사 · 동료</p>
-          </div>
-
-          <h2 className="font-display leading-[1.08] text-white mb-2"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
-            저 팀장이랑
-          </h2>
-          <h2 className="font-display leading-[1.08] mb-12"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
-            왜 이렇게 <span className="text-[#FF2D55]">안 맞지?</span>
-          </h2>
-
-          <div className="grid grid-cols-3 gap-3 mb-10">
+          <div className="space-y-4">
             {[
-              { num: '3', unit: '개월', desc: '평균 갈등 인지 시점' },
-              { num: '78', unit: '%', desc: '직장 스트레스 = 관계 문제' },
-              { num: '1', unit: '분', desc: '분석 소요 시간' },
-            ].map(({ num, unit, desc }) => (
-              <div key={desc} className="border border-[#1e1e1e] p-4 text-center">
-                <div className="flex items-end justify-center gap-0.5 mb-1">
-                  <span className="font-display text-[#FF2D55] text-3xl leading-none">{num}</span>
-                  <span className="font-display text-[#FF2D55] text-sm mb-0.5">{unit}</span>
+              {
+                step: '01',
+                title: '생년월일 입력',
+                desc: '내 정보와 그 사람의 생년월일을 입력해요. 생일을 정확히 몰라도 대략적인 나이만 알아도 됩니다.',
+                sub: '시간 불명 · 이름 불필요',
+              },
+              {
+                step: '02',
+                title: 'AI 사주 분석',
+                desc: '사주팔자를 기반으로 충(沖)·형(刑)·해(害)·극(剋) 관계를 계산하고 AI가 실제 갈등 패턴을 도출합니다.',
+                sub: '전통 사주 + AI 해석',
+              },
+              {
+                step: '03',
+                title: '갈등 구조 결과',
+                desc: '왜 안 맞는지, 어떤 상황에서 충돌하는지, 앞으로 어떻게 해야 하는지 — 구체적인 가이드가 나옵니다.',
+                sub: '5개 섹션 · 상세 분석',
+              },
+            ].map(({ step, title, desc, sub }) => (
+              <div key={step} className="flex gap-5">
+                <div className="flex-shrink-0">
+                  <span className="font-display text-[#FF2D55]/30 text-4xl leading-none">{step}</span>
                 </div>
-                <p className="font-sans-kr text-[#555] text-[10px] leading-tight">{desc}</p>
+                <div className="border-l border-[#1a1a1a] pl-5 pb-4">
+                  <p className="font-sans-kr text-white text-sm font-bold mb-1">{title}</p>
+                  <p className="font-sans-kr text-[#666] text-xs leading-relaxed mb-2">{desc}</p>
+                  <span className="text-[#333] text-[10px] border border-[#1e1e1e] px-2 py-0.5 font-sans-kr">{sub}</span>
+                </div>
               </div>
             ))}
           </div>
 
-          <div className="bg-[#0D0D0D] border-l-[2px] border-[#BF5AF2] pl-6 py-5 mb-10">
-            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">말투도 기준도 매번 어긋난다면</p>
-            <p className="font-sans-kr text-white text-sm leading-relaxed">
-              성격 차이가 아니라 <span className="text-[#BF5AF2] font-bold">구조 문제</span>일 수 있어요.
-            </p>
-          </div>
-
-          <div className="border border-[#1e1e1e] p-6 mb-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#BF5AF2]/[0.04] pointer-events-none select-none">刑</div>
-            <div className="flex items-start gap-5 relative">
-              <div className="border border-[#BF5AF2] text-[#BF5AF2] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
-                형<br /><span className="text-[10px] opacity-60">刑</span>
-              </div>
-              <div>
-                <p className="font-sans-kr text-white text-sm font-bold mb-2">인사신형(寅巳申刑) — 누적 충돌</p>
-                <p className="font-sans-kr text-[#666] text-xs leading-relaxed">
-                  갑자기 폭발하지 않아요.<br />
-                  서서히, 조용히, 확실하게 쌓이는 불편함.
-                </p>
-              </div>
-            </div>
-          </div>
-
           <button onClick={goToApp}
-            className="w-full border border-[#BF5AF2]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#BF5AF2]/10 transition-colors tracking-wide">
-            직장 관계 분석하기 →
+            className="w-full mt-10 bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 transition-opacity tracking-wide"
+            style={{ boxShadow: '0 0 40px rgba(255,45,85,0.25)' }}>
+            지금 바로 분석하기 →
           </button>
         </div>
       </section>
 
       {/* ══════════════════════════════════════
-          STORY 3 — 가족 (차별화 레이아웃)
-      ══════════════════════════════════════ */}
-      <section className="relative border-t border-white/[0.06] overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.06) 0%, transparent 60%)' }} />
-
-        {/* 대형 한자 배경 */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
-          aria-hidden>
-          <span className="font-display text-[28vw] leading-none text-white/[0.018]">家</span>
-        </div>
-
-        <div className="max-w-xl mx-auto px-5 py-24 relative z-10">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-6 h-px bg-[#FF2D55]" />
-            <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr">가족</p>
-          </div>
-
-          {/* 중앙 인용구 포맷 */}
-          <div className="text-center mb-14">
-            <p className="font-display leading-[1.08] text-white mb-3"
-              style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-              사랑하는데
-            </p>
-            <p className="font-display leading-[1.08] mb-3"
-              style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-              <span className="text-[#FF2D55]">왜 이렇게 아플까</span>
-            </p>
-            <p className="font-sans-kr text-[#777] text-sm mt-6 leading-relaxed">
-              억압이 아니에요. 오행의 흐름입니다.
-            </p>
-          </div>
-
-          {/* 세 가지 오행 관계 카드 (가로 나열) */}
-          <div className="grid grid-cols-3 gap-2 mb-12">
-            {[
-              { hanja: '剋', name: '극', desc: '에너지 소모' },
-              { hanja: '沖', name: '충', desc: '방향 충돌' },
-              { hanja: '刑', name: '형', desc: '누적 갈등' },
-            ].map(({ hanja, name, desc }) => (
-              <div key={hanja} className="border border-[#1e1e1e] p-4 text-center bg-[#0A0A0A]">
-                <span className="font-display text-[#FF2D55]/60 text-3xl leading-none block mb-2">{hanja}</span>
-                <p className="font-sans-kr text-white text-xs font-bold">{name}</p>
-                <p className="font-sans-kr text-[#555] text-[10px] mt-1">{desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="border-l-[2px] border-[#FF2D55] pl-6 py-4 bg-[#0D0D0D] mb-10">
-            <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">가족이라 더 어렵고, 더 오래 아파요</p>
-            <p className="font-sans-kr text-white text-sm leading-relaxed">
-              이건 성격 문제가 아니라 <span className="text-[#FF2D55] font-bold">구조의 문제</span>입니다.
-            </p>
-          </div>
-
-          <button onClick={goToApp}
-            className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 transition-colors tracking-wide">
-            가족 관계 분석하기 →
-          </button>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════
-          SOCIAL PROOF — 후기 슬라이드 (5개씩, 30초)
+          09. SOCIAL PROOF — 후기
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,45,85,0.06) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
-
           <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr text-center mb-3">실제 반응</p>
           <h2 className="font-display text-white text-center mb-12"
             style={{ fontSize: 'clamp(2rem, 8vw, 3rem)' }}>
             사람들이 뭐라 했냐면
           </h2>
 
-          {/* 숫자 stats */}
           <div className="grid grid-cols-3 gap-px bg-[#1a1a1a] border border-[#1a1a1a] mb-12">
             {[
               { num: '4.4', unit: '/ 5', label: '평균 만족도', sub: '실제 리뷰 54개 기준' },
@@ -599,7 +748,6 @@ export default function Landing() {
             ))}
           </div>
 
-          {/* 후기 슬라이드 — 5개씩 */}
           <div key={reviewPage} className="animate-fade-in space-y-3 mb-8">
             {reviews.slice(reviewPage * 5, reviewPage * 5 + 5).map((review, i) => (
               <div key={i} className="border border-[#1a1a1a] p-5">
@@ -615,55 +763,36 @@ export default function Landing() {
             ))}
           </div>
 
-          {/* 페이지 인디케이터 + 수동 이동 */}
           <div className="flex items-center justify-center gap-3">
-            <button
-              onClick={() => setReviewPage(p => (p - 1 + totalPages) % totalPages)}
+            <button onClick={() => setReviewPage(p => (p - 1 + totalPages) % totalPages)}
               className="text-[#555] hover:text-[#FF2D55] transition-colors text-base px-4 py-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="이전 리뷰"
-            >
-              ←
-            </button>
+              aria-label="이전 리뷰">←</button>
             <div className="flex gap-2">
               {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setReviewPage(i)}
+                <button key={i} onClick={() => setReviewPage(i)}
                   className={`rounded-full transition-all duration-300 min-w-[16px] min-h-[16px] flex items-center justify-center ${i === reviewPage ? 'bg-[#FF2D55] w-4 h-2' : 'bg-[#444] w-2 h-2'}`}
-                  aria-label={`${i + 1}번째 페이지`}
-                />
+                  aria-label={`${i + 1}번째 페이지`} />
               ))}
             </div>
-            <button
-              onClick={() => setReviewPage(p => (p + 1) % totalPages)}
+            <button onClick={() => setReviewPage(p => (p + 1) % totalPages)}
               className="text-[#555] hover:text-[#FF2D55] transition-colors text-base px-4 py-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="다음 리뷰"
-            >
-              →
-            </button>
+              aria-label="다음 리뷰">→</button>
           </div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════
-          OFFER — Mock UI
+          10. FINAL OFFER — mock UI
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06]">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.08) 0%, transparent 55%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
-
-          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr text-center mb-3">
-            TOXIC SAJU ANALYSIS
-          </p>
+          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr text-center mb-3">TOXIC SAJU ANALYSIS</p>
           <h2 className="font-display leading-[1.05] text-white text-center mb-1"
-            style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>
-            그 사람
-          </h2>
+            style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>그 사람</h2>
           <h2 className="font-display leading-[1.05] text-[#FF2D55] text-center mb-10"
-            style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>
-            생일 넣어봐
-          </h2>
+            style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>생일 넣어봐</h2>
 
           <p className="font-sans-kr text-center text-[#666] text-sm mb-10">
             딱 한 명 떠오른다면 지금.<br />
@@ -710,11 +839,9 @@ export default function Landing() {
               </div>
             </div>
 
-            <button
-              onClick={goToApp}
+            <button onClick={goToApp}
               className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 transition-opacity tracking-wide"
-              style={{ boxShadow: '0 0 40px rgba(255,45,85,0.3)' }}
-            >
+              style={{ boxShadow: '0 0 40px rgba(255,45,85,0.3)' }}>
               지금 분석하기 →
             </button>
           </div>
@@ -727,13 +854,12 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          FINAL CTA
+          11. FINAL CTA
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-28 border-t border-white/[0.06] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(255,45,85,0.15) 0%, transparent 55%)' }} />
         <div className="max-w-xl mx-auto text-center relative z-10">
-
           <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr mb-8">지금 바로</p>
 
           <h2 className="font-display leading-[1.05] text-white mb-2"
@@ -749,11 +875,9 @@ export default function Landing() {
             사주에 이미 답이 있었습니다.
           </p>
 
-          <button
-            onClick={goToApp}
+          <button onClick={goToApp}
             className="w-full bg-[#FF2D55] text-white font-display text-2xl py-6 hover:opacity-90 transition-opacity tracking-wide mb-4"
-            style={{ boxShadow: '0 0 100px rgba(255,45,85,0.4)' }}
-          >
+            style={{ boxShadow: '0 0 100px rgba(255,45,85,0.4)' }}>
             지금 분석하기 →
           </button>
           <p className="font-sans-kr text-[#444] text-xs">무료 · 1분 · 지금 바로</p>
@@ -767,10 +891,8 @@ export default function Landing() {
           <p className="font-sans-kr text-[#555] text-xs">사주로 보는 관계의 본질</p>
           <div className="w-px h-4 bg-[#222]" />
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowPrivacy(true)}
-              className="font-sans-kr text-[#444] text-xs hover:text-[#666] transition-colors"
-            >
+            <button onClick={() => setShowPrivacy(true)}
+              className="font-sans-kr text-[#444] text-xs hover:text-[#666] transition-colors">
               개인정보처리방침
             </button>
             <span className="text-[#222] text-xs">·</span>
@@ -781,14 +903,10 @@ export default function Landing() {
 
       {/* 개인정보처리방침 모달 */}
       {showPrivacy && (
-        <div
-          className="fixed inset-0 z-[9999] bg-black/80 flex items-end sm:items-center justify-center px-4 pb-0 sm:pb-4 animate-fade-in"
-          onClick={() => setShowPrivacy(false)}
-        >
-          <div
-            className="bg-[#0D0D0D] border border-[#222] w-full max-w-lg max-h-[80vh] overflow-y-auto p-6 sm:rounded-sm"
-            onClick={e => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-[9999] bg-black/80 flex items-end sm:items-center justify-center px-4 pb-0 sm:pb-4 animate-fade-in"
+          onClick={() => setShowPrivacy(false)}>
+          <div className="bg-[#0D0D0D] border border-[#222] w-full max-w-lg max-h-[80vh] overflow-y-auto p-6 sm:rounded-sm"
+            onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-display text-white text-xl">개인정보처리방침</h2>
               <button onClick={() => setShowPrivacy(false)} className="text-[#555] hover:text-white text-xl px-2">✕</button>
@@ -811,10 +929,8 @@ export default function Landing() {
                 <p>개인정보 관련 문의사항은 서비스 내 문의 채널을 통해 접수해주세요.</p>
               </div>
             </div>
-            <button
-              onClick={() => setShowPrivacy(false)}
-              className="mt-6 w-full py-3 border border-[#333] text-[#666] text-sm hover:border-[#555] hover:text-white transition-colors"
-            >
+            <button onClick={() => setShowPrivacy(false)}
+              className="mt-6 w-full py-3 border border-[#333] text-[#666] text-sm hover:border-[#555] hover:text-white transition-colors">
               닫기
             </button>
           </div>
