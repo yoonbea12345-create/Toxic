@@ -2,6 +2,14 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { startSession } from '../utils/analytics';
 
+const TRIGGERS = [
+  '월요일 아침만 되면 숨 막힌다면',
+  '좋아했는데 자꾸 상처받는다면',
+  '헤어졌는데 자꾸 그 사람이 생각난다면',
+  '맨날 같은 패턴으로 싸운다면',
+  '이유도 모르게 그냥 안 맞는 느낌이라면',
+];
+
 const ALL_REVIEWS = [
   { q: '전 남친이랑 왜 그렇게 싸웠는지 사주 보고 처음으로 이해됐어요. 충(沖) 구조라고 나왔는데 우리 싸움 패턴이랑 너무 똑같았어요', r: '26세 여성', tag: '연인', stars: 5 },
   { q: '팀장이랑 항상 부딪히는 이유가 인사형(刑) 충돌이었다는 거 소름. 이제 그냥 내 스타일대로 거리 둡니다', r: '직장인 남성', tag: '직장', stars: 5 },
@@ -132,6 +140,13 @@ export default function Landing() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const totalPages = Math.ceil(reviews.length / 5);
 
+  const [triggerIdx, setTriggerIdx] = useState(0);
+
+  const goToApp = () => {
+    try { sessionStorage.removeItem('toxic_session'); } catch {}
+    navigate('/app');
+  };
+
   useEffect(() => { startSession(); }, []);
 
   useEffect(() => {
@@ -150,6 +165,11 @@ export default function Landing() {
     return () => clearInterval(t);
   }, [totalPages]);
 
+  useEffect(() => {
+    const t = setInterval(() => setTriggerIdx(i => (i + 1) % TRIGGERS.length), 3200);
+    return () => clearInterval(t);
+  }, [TRIGGERS.length]);
+
   return (
     <div className="bg-[#0A0A0A] min-h-screen overflow-x-hidden relative">
       <div className="grain-overlay" aria-hidden />
@@ -160,7 +180,7 @@ export default function Landing() {
         <div className="max-w-xl mx-auto px-5 h-14 flex items-center justify-between">
           <img src="/logo.svg" alt="TOXIC" className="h-16 object-contain" />
           <button
-            onClick={() => navigate('/app')}
+            onClick={goToApp}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 hover:opacity-90 transition-opacity font-sans-kr tracking-wider font-bold"
           >
             분석 시작 →
@@ -191,21 +211,36 @@ export default function Landing() {
             <span className="text-[#FF2D55]">안 맞는 걸까</span>
           </h1>
 
-          <p className="font-sans-kr text-[#888] text-sm leading-relaxed mb-1">
-            지금 떠오르는 그 한 명 — 전 연인, 상사, 가족 누구든.
-          </p>
+          {/* 감정 트리거 rotator */}
+          <div className="flex items-center gap-2.5 mb-3 h-5 overflow-hidden">
+            <span className="text-[#FF2D55] text-xs flex-shrink-0">▸</span>
+            <p key={triggerIdx} className="font-sans-kr text-[#666] text-sm animate-fade-in">
+              {TRIGGERS[triggerIdx]}
+            </p>
+          </div>
+
           <p className="font-sans-kr text-white text-base leading-relaxed mb-12">
             사주에 <span className="text-[#FF2D55] font-bold">이미 답이 있었습니다.</span>
           </p>
 
+          {/* 신뢰 지표 */}
+          <div className="flex items-center gap-3 mb-8">
+            <div className="flex gap-0.5">
+              {[1,2,3,4,5].map(i => <span key={i} className={`text-xs ${i <= 4 ? 'text-[#FF2D55]' : 'text-[#333]'}`}>★</span>)}
+            </div>
+            <p className="font-sans-kr text-[#555] text-[11px]">4.4점 · 54개 리뷰</p>
+            <span className="text-[#222]">·</span>
+            <p className="font-sans-kr text-[#555] text-[11px]">무료</p>
+          </div>
+
           <button
-            onClick={() => navigate('/app')}
-            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 transition-opacity mb-4"
+            onClick={goToApp}
+            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 transition-opacity mb-3"
             style={{ boxShadow: '0 0 60px rgba(255,45,85,0.35)' }}
           >
             그 사람 생일 넣어보기 →
           </button>
-          <p className="font-sans-kr text-[#555] text-xs text-center mb-2">
+          <p className="font-sans-kr text-[#555] text-xs text-center mb-1">
             무료 · 1분 · 전 연인 · 친구 · 직장 · 가족 다 가능
           </p>
           <p className="font-sans-kr text-[#444] text-xs text-center">
@@ -219,6 +254,80 @@ export default function Landing() {
         >
           <span className="text-[#444] text-[10px] uppercase tracking-[0.3em] font-sans-kr">scroll</span>
           <div className="w-px h-12 bg-gradient-to-b from-[#FF2D55]/60 to-transparent animate-pulse" />
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          RESULT PREVIEW — 실제 스크린샷
+      ══════════════════════════════════════ */}
+      <section className="relative py-20 border-t border-white/[0.06] overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,45,85,0.14) 0%, transparent 55%)' }} />
+
+        <div className="max-w-xl mx-auto px-5 relative z-10">
+          <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr text-center mb-3">실제 분석 결과</p>
+          <h2 className="font-display leading-[1.08] text-white text-center mb-1"
+            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+            생일 하나로
+          </h2>
+          <h2 className="font-display leading-[1.08] text-[#FF2D55] text-center mb-3"
+            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+            이게 다 나와요
+          </h2>
+          <p className="font-sans-kr text-[#555] text-center text-sm mb-10">
+            소름 돋는다는 반응이 나오는 이유 — 직접 보세요
+          </p>
+        </div>
+
+        {/* 스크린샷 + FOMO 블러 */}
+        <div className="max-w-[360px] mx-auto px-5 relative">
+          {/* 폰 프레임 */}
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/[0.08]"
+            style={{ boxShadow: '0 0 0 1px rgba(255,45,85,0.18), 0 40px 100px rgba(0,0,0,0.9), 0 0 80px rgba(255,45,85,0.1)' }}>
+
+            {/* 스크린샷 1 — 결과 상단 */}
+            <img
+              src="/result-preview-1.png"
+              alt="TOXIC 사주 분석 결과 — 독성 지수 99점"
+              className="w-full block"
+              style={{ maxHeight: '520px', objectFit: 'cover', objectPosition: 'top' }}
+            />
+
+            {/* 스크린샷 2 — 분석 내용 (아래로 이어짐) */}
+            <img
+              src="/result-preview-2.png"
+              alt="TOXIC 사주 분석 — 상세 내용"
+              className="w-full block"
+              style={{ maxHeight: '300px', objectFit: 'cover', objectPosition: 'top' }}
+            />
+
+            {/* 블러 페이드 + CTA */}
+            <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end pt-48"
+              style={{ background: 'linear-gradient(to bottom, transparent 0%, rgba(10,0,5,0.85) 35%, #0A0005 60%)' }}>
+              <div className="px-5 pb-6 pt-4">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <span className="w-1 h-1 rounded-full bg-[#FF2D55] animate-pulse" />
+                  <p className="font-sans-kr text-[#FF2D55] text-[10px] uppercase tracking-[0.25em]">내 결과는 다릅니다</p>
+                </div>
+                <button
+                  onClick={goToApp}
+                  className="w-full bg-[#FF2D55] text-white font-display text-lg py-5 hover:opacity-90 transition-opacity tracking-wide"
+                  style={{ boxShadow: '0 0 60px rgba(255,45,85,0.6)' }}>
+                  그 사람 생일 넣어보기 →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 글로우 */}
+          <div className="absolute -inset-8 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.08) 0%, transparent 70%)' }} />
+        </div>
+
+        <div className="max-w-xl mx-auto px-5 mt-6">
+          <p className="font-sans-kr text-center text-[#444] text-[11px]">
+            무료 · 생년월일만 있으면 됩니다 · 1분
+          </p>
         </div>
       </section>
 
@@ -321,7 +430,7 @@ export default function Landing() {
             </div>
           </div>
 
-          <button onClick={() => navigate('/app')}
+          <button onClick={goToApp}
             className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 transition-colors tracking-wide">
             전 연인 분석하기 →
           </button>
@@ -388,7 +497,7 @@ export default function Landing() {
             </div>
           </div>
 
-          <button onClick={() => navigate('/app')}
+          <button onClick={goToApp}
             className="w-full border border-[#BF5AF2]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#BF5AF2]/10 transition-colors tracking-wide">
             직장 관계 분석하기 →
           </button>
@@ -451,7 +560,7 @@ export default function Landing() {
             </p>
           </div>
 
-          <button onClick={() => navigate('/app')}
+          <button onClick={goToApp}
             className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 transition-colors tracking-wide">
             가족 관계 분석하기 →
           </button>
@@ -577,23 +686,23 @@ export default function Landing() {
             </div>
 
             <div className="border-t border-[#1a1a1a] pt-5 mb-5">
-              <p className="font-sans-kr text-[#555] text-[11px] uppercase tracking-wider mb-4">충돌 분석 결과</p>
+              <p className="font-sans-kr text-[#555] text-[11px] uppercase tracking-wider mb-4">종합 궁합 분석 결과</p>
               <div className="flex items-end gap-2 mb-3">
-                <span className="font-display text-[#FF2D55] text-6xl leading-none">72</span>
+                <span className="font-display text-[#FF2D55] text-6xl leading-none">97</span>
                 <div className="mb-2">
                   <span className="font-display text-[#FF2D55] text-2xl">%</span>
                   <p className="font-sans-kr text-[#777] text-[10px]">독성 지수</p>
                 </div>
-                <div className="ml-auto bg-[#FF2D55]/10 border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] px-3 py-1.5 font-bold font-sans-kr self-end mb-1">
-                  위험도 HIGH
+                <div className="ml-auto bg-[#FF2D55] text-white text-[10px] px-3 py-1.5 font-bold font-sans-kr self-end mb-1">
+                  ⚠ 위험도 MAX
                 </div>
               </div>
               <div className="w-full h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden mb-5">
                 <div className="h-full rounded-full"
-                  style={{ width: '72%', background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
+                  style={{ width: '97%', background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 80%, #FF2D55 100%)', boxShadow: '0 0 8px rgba(255,45,85,0.6)' }} />
               </div>
               <div className="flex flex-wrap gap-1.5">
-                {['#인신충', '#에너지소모', '#충돌구조', '#중간위험'].map(tag => (
+                {['#집착주의', '#감정소모', '#헤어나다후폭풍', '#미련주의'].map(tag => (
                   <span key={tag} className="text-[10px] text-[#FF2D55] bg-[#FF2D55]/8 border border-[#FF2D55]/20 px-2 py-0.5 font-sans-kr">
                     {tag}
                   </span>
@@ -602,7 +711,7 @@ export default function Landing() {
             </div>
 
             <button
-              onClick={() => navigate('/app')}
+              onClick={goToApp}
               className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 transition-opacity tracking-wide"
               style={{ boxShadow: '0 0 40px rgba(255,45,85,0.3)' }}
             >
@@ -641,7 +750,7 @@ export default function Landing() {
           </p>
 
           <button
-            onClick={() => navigate('/app')}
+            onClick={goToApp}
             className="w-full bg-[#FF2D55] text-white font-display text-2xl py-6 hover:opacity-90 transition-opacity tracking-wide mb-4"
             style={{ boxShadow: '0 0 100px rgba(255,45,85,0.4)' }}
           >

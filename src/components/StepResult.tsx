@@ -463,90 +463,75 @@ function PaywallModal({ section, onClose, onPay }: {
           ✕
         </button>
 
-        <div className="border border-[#FF2D55]/20">
-          {/* Top accent gradient line */}
-          <div className="h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,45,85,0.7), transparent)' }} />
+        <div className="border border-[#FF2D55]/25">
+          <div className="h-0.5" style={{ background: 'linear-gradient(90deg, transparent, #FF2D55, transparent)' }} />
 
-          <div className="p-6">
-            {/* Badge row */}
-            <div className="flex items-center gap-2 mb-5">
-              <span
-                className="text-[9px] font-bold tracking-[0.2em] px-2.5 py-1 border border-[#FF2D55]/50 text-[#FF2D55]"
-                style={{ background: 'rgba(255,45,85,0.08)' }}
-              >
+          <div className="p-6 pb-5">
+
+            {/* 섹션 라벨 */}
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-[9px] font-bold tracking-[0.2em] px-2.5 py-1 border border-[#FF2D55]/40 text-[#FF2D55]"
+                style={{ background: 'rgba(255,45,85,0.07)' }}>
                 SECTION {section}
               </span>
               <div className="h-px flex-1 bg-[#111]" />
-              <div
-                className="w-9 h-9 border border-[#FF2D55]/30 flex items-center justify-center flex-shrink-0"
-                style={{ background: 'rgba(255,45,85,0.06)' }}
-              >
-                <LockIcon size={16} />
-              </div>
+              <LockIcon size={14} />
             </div>
 
-            {/* Section title */}
-            <h2 className="text-white text-xl font-bold leading-snug mb-1">{c.title}</h2>
-            <p className="text-[#FF2D55] text-xs mb-2 font-medium">{c.hook}</p>
-            <p className="text-[#444] text-xs leading-relaxed mb-5">{c.desc}</p>
+            {/* 제목 + 한 줄 훅 */}
+            <h2 className="text-white text-lg font-bold leading-snug mb-1">{c.title}</h2>
+            <p className="text-[#FF2D55] text-xs font-medium mb-4">{c.hook}</p>
 
-            {/* Benefits */}
-            <div className="space-y-2.5 mb-5">
-              {c.benefits.map((b, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <div
-                    className="w-4 h-4 flex items-center justify-center flex-shrink-0 mt-0.5 rounded-full border border-[#FF2D55]/40"
-                    style={{ background: 'rgba(255,45,85,0.08)' }}
-                  >
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#FF2D55]" />
-                  </div>
-                  <p className="text-[#666] text-xs leading-relaxed">{b}</p>
+            {/* 핵심 혜택 — 간결하게 3개만 */}
+            <div className="space-y-2 mb-5">
+              {c.benefits.slice(0, 3).map((b, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">✓</span>
+                  <p className="text-[#777] text-xs leading-relaxed">{b}</p>
                 </div>
               ))}
             </div>
 
-            {/* Social proof */}
-            <div className="border border-[#141414] bg-[#080808] px-4 py-3 mb-5">
-              <p className="text-[#333] text-[10px] leading-relaxed text-center">{c.social}</p>
-            </div>
+            {/* ── 가격 — 핵심 훅 ── */}
+            <div className="border border-[#FF2D55]/20 px-4 py-4 mb-4 relative overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, rgba(255,45,85,0.07) 0%, transparent 70%)' }}>
+              <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none"
+                style={{ background: 'radial-gradient(circle at top right, rgba(255,45,85,0.15), transparent)' }} />
 
-            {/* Price row */}
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-[#2a2a2a] text-[10px] uppercase tracking-widest mb-1">이 섹션만 잠금 해제</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-[#2a2a2a] text-sm line-through">₩500</span>
-                  <span className="text-white text-2xl font-bold tracking-tight">₩100</span>
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <p className="text-[#333] text-[10px] uppercase tracking-widest mb-1">이 섹션 잠금 해제</p>
+                  <div className="flex items-end gap-2">
+                    <span className="text-[#333] text-sm line-through">₩9,900</span>
+                    <span className="text-white font-display leading-none" style={{ fontSize: '2.8rem' }}>₩100</span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1.5 mt-1">
+                  <span className="text-[10px] font-bold px-2 py-1 bg-[#FF2D55] text-white">99% OFF</span>
+                  <p className="text-[#444] text-[9px] text-right">출시 기념 특가</p>
                 </div>
               </div>
-              <div className="text-right">
-                <span
-                  className="text-[10px] font-bold px-2 py-1 border border-[#FF2D55]/40 text-[#FF2D55]"
-                  style={{ background: 'rgba(255,45,85,0.08)' }}
-                >
-                  출시 기념 80% OFF
-                </span>
-              </div>
+
+              <p className="text-[#444] text-[10px]">편의점 껌 한 통보다 싸요 — 사주 AI 핵심 분석</p>
             </div>
 
             {/* CTA */}
             <button
               onClick={onPay}
-              className="w-full py-4 gradient-red text-white font-bold text-sm tracking-[0.05em] mb-3 relative overflow-hidden group"
+              className="w-full py-4 gradient-red text-white font-bold text-base tracking-wide mb-3 relative overflow-hidden group"
+              style={{ boxShadow: '0 0 40px rgba(255,45,85,0.35)' }}
             >
-              <span className="relative z-10">₩100으로 이 섹션 잠금 해제</span>
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                style={{ background: 'rgba(255,255,255,0.06)' }}
-              />
+              <span className="relative z-10">₩100으로 지금 바로 열기 →</span>
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+                style={{ background: 'rgba(255,255,255,0.07)' }} />
             </button>
 
-            <div className="flex items-center justify-center gap-3 text-[#1e1e1e] text-[10px]">
-              <span>🔒 안전한 결제</span>
+            <div className="flex items-center justify-center gap-3 text-[#252525] text-[10px]">
+              <span>🔒 즉시 잠금 해제</span>
               <span>·</span>
-              <span>즉시 잠금 해제</span>
+              <span>안전 결제</span>
               <span>·</span>
-              <span>100% 환불 보장</span>
+              <span>100% 환불</span>
             </div>
           </div>
         </div>
@@ -559,54 +544,56 @@ function PaywallModal({ section, onClose, onPay }: {
 function LockedPremium({ teaser, onUnlock }: { teaser: string; onUnlock: () => void }) {
   return (
     <div
-      className="border border-[#FF2D55]/15 overflow-hidden relative"
+      className="border border-[#FF2D55]/20 overflow-hidden relative"
       style={{ background: 'linear-gradient(160deg, #0D0003 0%, #0A0A0A 100%)' }}
     >
-      {/* Blurred preview content */}
-      <div
-        className="px-5 pt-5 pb-3 select-none pointer-events-none"
-        style={{ filter: 'blur(5px)', opacity: 0.2 }}
-      >
+      {/* Blurred preview */}
+      <div className="px-5 pt-5 pb-3 select-none pointer-events-none"
+        style={{ filter: 'blur(5px)', opacity: 0.25 }}>
         <p className="text-[#888] text-sm leading-relaxed mb-3">{teaser}</p>
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <div className="h-2.5 bg-[#2a2a2a] rounded w-full" />
+          <div className="h-2.5 bg-[#2a2a2a] rounded w-11/12" />
           <div className="h-2.5 bg-[#2a2a2a] rounded w-4/5" />
           <div className="h-2.5 bg-[#2a2a2a] rounded w-3/5" />
         </div>
       </div>
 
-      {/* Fade gradient */}
-      <div
-        className="h-10 -mt-10 relative z-10"
-        style={{ background: 'linear-gradient(to bottom, transparent, #0A0A0A)' }}
-      />
+      {/* Fade */}
+      <div className="h-10 -mt-10 relative z-10"
+        style={{ background: 'linear-gradient(to bottom, transparent, #0A0A0A)' }} />
 
       {/* Lock CTA */}
       <div className="px-5 pb-5 relative z-10">
-        <div className="text-center mb-4">
-          <div
-            className="inline-flex items-center justify-center w-10 h-10 border border-[#FF2D55]/40 mb-3"
-            style={{ background: 'rgba(255,45,85,0.08)' }}
-          >
-            <LockIcon size={18} />
+        {/* Value frame */}
+        <div className="flex items-center gap-3 border border-[#1e1e1e] bg-[#080808] px-4 py-3 mb-4">
+          <div className="flex items-center justify-center w-8 h-8 border border-[#FF2D55]/30 flex-shrink-0"
+            style={{ background: 'rgba(255,45,85,0.07)' }}>
+            <LockIcon size={15} />
           </div>
-          <p className="text-white text-sm font-bold mb-1.5">잠긴 심층 분석</p>
-          <p className="text-[#444] text-xs leading-relaxed">
-            사주 AI가 가장 날카롭게 분석한 구간입니다<br />
-            ₩100으로 잠금을 해제할 수 있습니다
-          </p>
+          <div className="flex-1 min-w-0">
+            <p className="text-white text-xs font-bold leading-tight">AI가 가장 날카롭게 분석한 구간</p>
+            <p className="text-[#444] text-[10px] mt-0.5">사주 구조 기반 실전 인사이트</p>
+          </div>
+          <div className="flex-shrink-0 text-right">
+            <p className="text-[#333] text-[9px] line-through">₩9,900</p>
+            <p className="text-white text-lg font-bold leading-none">₩100</p>
+          </div>
         </div>
 
         <button
           onClick={onUnlock}
-          className="w-full py-3.5 gradient-red text-white text-xs font-bold tracking-[0.08em] relative overflow-hidden group"
+          className="w-full py-4 gradient-red text-white font-bold text-sm tracking-wide relative overflow-hidden group"
+          style={{ boxShadow: '0 0 30px rgba(255,45,85,0.25)' }}
         >
-          <span className="relative z-10">잠금 해제하기 — ₩100</span>
-          <div
-            className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            style={{ background: 'rgba(255,255,255,0.06)' }}
-          />
+          <span className="relative z-10">₩100으로 이 분석 보기 →</span>
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+            style={{ background: 'rgba(255,255,255,0.06)' }} />
         </button>
+
+        <p className="text-center text-[#222] text-[10px] mt-2.5">
+          커피 한 모금값 · 즉시 열림 · 100% 환불
+        </p>
       </div>
     </div>
   );
@@ -668,7 +655,11 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [phase2Loading, setPhase2Loading] = useState(true);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [, setApiDone] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
+  // apiProgress: 실제 API 스트림 진행 (0-100)
+  // displayProgress: 사용자에게 보이는 진행 (0→80 빠르게, 80→100 천천히)
+  const [apiProgress, setApiProgress] = useState(0);
+  const [displayProgress, setDisplayProgress] = useState(0);
+  const apiProgressRef = useRef(0);
   const [showLoading, setShowLoading] = useState(true);
   const [aiError] = useState(false);
   const [toast, setToast] = useState('');
@@ -726,19 +717,59 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const hasTarget = Boolean(targetData.birthdate);
   const accuracyInfo = ACCURACY_LABELS[result.accuracyLevel] ?? ACCURACY_LABELS.year;
 
+  // 디스플레이 진행 애니메이션: 0→80% 빠르게(ease-out), 80%→95% 멈추지 않는 슬로우 크리프
+  useEffect(() => {
+    let animId: number;
+    const startTime = performance.now();
+
+    const tick = () => {
+      const elapsed = performance.now() - startTime;
+      const isApiDone = apiProgressRef.current >= 100;
+
+      setDisplayProgress(prev => {
+        if (isApiDone) return 100;
+
+        if (prev < 80) {
+          // ease-out: 3.5초 안에 0→80%
+          const t = Math.min(elapsed / 3500, 1);
+          const eased = 1 - Math.pow(1 - t, 2.5);
+          return Math.max(prev, eased * 80);
+        }
+
+        // 80%+: 최소 0.02/frame 전진 (절대 멈추지 않음), 상한 95%
+        const minNext = prev + 0.02;
+        const apiNext = apiProgressRef.current * 0.95;
+        const slowTarget = Math.min(Math.max(minNext, apiNext), 95);
+        return Math.min(prev + 0.4, slowTarget);
+      });
+
+      animId = requestAnimationFrame(tick);
+    };
+
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  // apiProgress → ref 동기화
+  useEffect(() => { apiProgressRef.current = apiProgress; }, [apiProgress]);
+
   // Phase 1: 로딩 화면 중 실행
   useEffect(() => {
     (async () => {
       try {
-        const data = await fetchAIPhase1(myData, targetData, relationType, result, setLoadingProgress);
+        const data = await fetchAIPhase1(myData, targetData, relationType, result, (pct) => {
+          setApiProgress(pct);
+          apiProgressRef.current = pct;
+        });
         setAiPhase1(data);
       } catch {
         const localData = generateLocalAnalysis(result, relationType, hasTarget);
         setAiPhase1(localData as AIAnalysis);
       } finally {
-        setLoadingProgress(100);
+        apiProgressRef.current = 100;
+        setApiProgress(100);
         setApiDone(true);
-        setTimeout(() => setShowLoading(false), 800);
+        setTimeout(() => setShowLoading(false), 900);
       }
     })();
   }, []);
@@ -772,7 +803,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   }, [showLoading]);
 
   if (showLoading) {
-    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} result={result} progress={loadingProgress} />;
+    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} result={result} progress={displayProgress} />;
   }
 
   const handleSaveImage = async () => {
