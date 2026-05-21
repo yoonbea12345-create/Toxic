@@ -780,8 +780,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
   // apiProgress → ref 동기화
   useEffect(() => { apiProgressRef.current = apiProgress; }, [apiProgress]);
 
-  // Phase 1: 로딩 화면 중 실행
+  // Phase 1: 로딩 화면 중 실행 (최소 3초 보장)
   useEffect(() => {
+    const startedAt = Date.now();
     (async () => {
       try {
         const data = await fetchAIPhase1(myData, targetData, relationType, result, (pct) => {
@@ -796,7 +797,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
         apiProgressRef.current = 100;
         setApiProgress(100);
         setApiDone(true);
-        setTimeout(() => setShowLoading(false), 900);
+        const elapsed = Date.now() - startedAt;
+        const delay = Math.max(0, 3000 - elapsed) + 900;
+        setTimeout(() => setShowLoading(false), delay);
       }
     })();
   }, []);
