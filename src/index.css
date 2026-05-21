@@ -150,10 +150,46 @@ select {
 /* ── 스크롤 페이드업 (IntersectionObserver) ── */
 .fade-section {
   opacity: 0;
-  transform: translateY(1.5rem);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  transform: translateY(1.8rem);
+  transition: opacity 0.65s cubic-bezier(0.22,1,0.36,1), transform 0.65s cubic-bezier(0.22,1,0.36,1);
 }
 .fade-section.fade-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ── 섹션 레이블 (MINT 패턴) ── */
+.section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+/* ── 스텝 배지 (pill) ── */
+.step-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.2rem 0.7rem;
+  border-radius: 9999px;
+  margin-bottom: 0.5rem;
+}
+
+/* ── CTA 버튼 그림자 강화 ── */
+.cta-glow-red {
+  box-shadow: 0 0 60px rgba(255,45,85,0.4), 0 8px 32px rgba(255,45,85,0.2);
+}
+
+/* ── 카드 hover 트랜지션 강화 ── */
+.card-hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.card-hover:hover {
+  box-shadow: 0 4px 24px rgba(255,45,85,0.08);
+}
+.card-hover:active {
+  transform: scale(0.985);
 }
