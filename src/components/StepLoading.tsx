@@ -32,7 +32,7 @@ export default function StepLoading() {
       {visibleChars.map(({ char, x, y, id }) => (
         <span
           key={id}
-          className="absolute font-serif-kr text-3xl font-bold char-animate pointer-events-none select-none"
+          className="absolute font-display text-3xl font-bold char-animate pointer-events-none select-none"
           style={{
             left: `${x}%`,
             top: `${y}%`,
@@ -47,7 +47,7 @@ export default function StepLoading() {
       <div className="relative z-10 text-center">
         <div className="mb-8">
           <div className="w-16 h-16 rounded-full gradient-red flex items-center justify-center mx-auto mb-4 animate-pulse-glow">
-            <span className="font-serif-kr text-2xl font-black text-white">☯</span>
+            <span className="font-display text-2xl font-black text-white">☯</span>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&family=Noto+Serif+KR:wght@700;900&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -53,7 +53,6 @@ body {
 
 /* ── 폰트 유틸 ── */
 .font-display    { font-family: 'Black Han Sans', sans-serif; }
-.font-serif-kr   { font-family: 'Noto Serif KR', serif; }
 .font-sans-kr    { font-family: 'Noto Sans KR', sans-serif; }
 
 /* ── 브러시 언더라인 ── */
@@ -146,4 +145,15 @@ select {
   background-image: none;
   -webkit-appearance: none;
   appearance: none;
+}
+
+/* ── 스크롤 페이드업 (IntersectionObserver) ── */
+.fade-section {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.fade-section.fade-visible {
+  opacity: 1;
+  transform: translateY(0);
 }

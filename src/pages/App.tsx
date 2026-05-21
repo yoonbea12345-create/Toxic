@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trackEvent } from '../utils/analytics';
+import { saveHistory } from '../utils/history';
 import type { PersonData, RelationType, SajuResult } from '../utils/saju';
 import { analyzeSaju } from '../utils/saju';
 import StepInput from '../components/StepInput';
@@ -47,6 +48,13 @@ export default function AppPage() {
     setResult(res);
     setStep('result');
     saveSession({ step: 'result', myData, relationType, targetData: data, result: res });
+    saveHistory({
+      myName: myData.name || '나',
+      targetName: data.name || '상대',
+      score: res.toxicScore,
+      relationType,
+      conflictType: res.conflictType,
+    });
     trackEvent('step_complete_target-info', { toxicScore: res.toxicScore });
   };
 
@@ -58,6 +66,13 @@ export default function AppPage() {
     setResult(res);
     setStep('result');
     saveSession({ step: 'result', myData, relationType, targetData: emptyTarget, result: res });
+    saveHistory({
+      myName: myData.name || '나',
+      targetName: '',
+      score: res.toxicScore,
+      relationType,
+      conflictType: res.conflictType,
+    });
     trackEvent('step_complete_skip-target', { toxicScore: res.toxicScore });
   };
 

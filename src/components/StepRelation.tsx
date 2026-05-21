@@ -17,7 +17,7 @@ export default function StepRelation({ onNext }: StepRelationProps) {
     <div className="animate-fade-in max-w-lg mx-auto px-4 py-8">
       <div className="mb-8">
         <p className="text-text-secondary text-sm mb-2 font-sans">STEP 2</p>
-        <h2 className="font-serif-kr text-2xl font-bold text-white leading-tight">어떤 관계인가요?</h2>
+        <h2 className="font-display text-2xl text-white leading-tight">어떤 관계인가요?</h2>
         <p className="text-text-secondary mt-2 text-sm">분석 결과가 관계 유형에 맞게 해석됩니다</p>
       </div>
 

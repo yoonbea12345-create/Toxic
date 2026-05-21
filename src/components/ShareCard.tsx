@@ -20,7 +20,7 @@ const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(({ myName, result }
       </div>
 
       <p className="text-[#8E8E93] text-xs mb-1 uppercase tracking-widest">나의 천적 분석 결과</p>
-      <h3 className="text-white font-bold text-lg mb-1" style={{ fontFamily: 'Noto Serif KR, serif' }}>
+      <h3 className="text-white font-bold text-lg mb-1 font-display">
         {result.conflictType}
       </h3>
       <p className="text-[#8E8E93] text-xs mb-5 leading-relaxed">{result.conflictSummary}</p>

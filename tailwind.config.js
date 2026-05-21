@@ -16,7 +16,6 @@ export default {
       },
       fontFamily: {
         display: ['"Black Han Sans"', 'sans-serif'],
-        serif:   ['"Noto Serif KR"', 'serif'],
         sans:    ['"Noto Sans KR"', 'Inter', 'system-ui', 'sans-serif'],
       },
     },

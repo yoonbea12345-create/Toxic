@@ -34,6 +34,11 @@ interface Stats {
 
 function computeStats(events: EventRecord[]): Stats {
   const count = (name: string) => events.filter(e => e.event === name).length;
+  const reviewSubmits = count('review_submit');
+  const avgReviewStars = (() => {
+    const rs = events.filter(e => e.event === 'review_submit').map(e => Number(e.props?.stars)).filter(n => n > 0);
+    return rs.length ? (rs.reduce((a, b) => a + b, 0) / rs.length).toFixed(1) : '—';
+  })();
 
   const landing = count('page_view_landing');
   const s1 = count('step_complete_my-info');
@@ -207,7 +212,7 @@ export default function AdminPage() {
           <p className="text-[#FF2D55] text-[10px] uppercase tracking-widest mb-1">TOXIC ADMIN</p>
           <h1 className="text-white text-2xl font-bold">시장검증 대시보드</h1>
           {fetchState === 'loading' && <p className="text-[#444] text-xs mt-1">데이터 불러오는 중...</p>}
-          {fetchState === 'error' && <p className="text-[#FF9800] text-xs mt-1">서버 연결 실패 — 로컬 데이터 표시 중</p>}
+          {fetchState === 'error' && <p className="text-[#FF9800] text-xs mt-1">서버 연결 실패 — 로컬 데이터 표시 중 (Vercel에 ADMIN_SECRET=1229 env 설정 필요)</p>}
         </div>
         <div className="flex gap-2">
           <button onClick={handleClear}
@@ -287,6 +292,15 @@ export default function AdminPage() {
               <StatCard label="상대 생략" value={stats.skipTarget} sub="역산 모드" color="#888" />
               <StatCard label="공유 시도" value={stats.shareAttempts} sub="카카오·링크·이미지" color="#4CAF50" />
               <StatCard label="재분석" value={stats.resets} sub="처음부터 다시" color="#888" />
+            </div>
+          </div>
+
+          {/* 후기 */}
+          <div>
+            <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유저 후기</p>
+            <div className="grid grid-cols-2 gap-3">
+              <StatCard label="후기 제출" value={reviewSubmits} sub="결과 페이지 제출 수" color="#4CAF50" />
+              <StatCard label="평균 별점" value={avgReviewStars} sub="/ 5.0" color="#F59E0B" />
             </div>
           </div>
 

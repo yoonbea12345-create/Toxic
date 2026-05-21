@@ -4,6 +4,7 @@ import type { SajuResult, PersonData, RelationType } from '../utils/saju';
 import { fetchAIPhase1, fetchAIPhase2 } from '../utils/aiAnalysis';
 import { generateLocalAnalysis } from '../utils/localAnalysis';
 import { trackEvent, endSession } from '../utils/analytics';
+import { loadHistory } from '../utils/history';
 import ShareCard from './ShareCard';
 
 interface StepResultProps {
@@ -686,6 +687,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [aiError] = useState(false);
   const [toast, setToast] = useState('');
   const [conflictTooltip, setConflictTooltip] = useState<string | null>(null);
+  const [reviewStars, setReviewStars] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [recentHistory] = useState(() => loadHistory().slice(1, 4));
 
   // 유료 전환 — 섹션별 독립 잠금
   const [unlockedSections, setUnlockedSections] = useState<Set<string>>(() => {
@@ -857,7 +862,28 @@ export default function StepResult({ myData, targetData, result, relationType, o
         },
         buttons: [{ title: '나도 분석하기', link: { mobileWebUrl: 'https://toxic.kr', webUrl: 'https://toxic.kr' } }],
       });
+    } else {
+      navigator.clipboard.writeText('https://toxic.kr').catch(() => {});
+      showToast('카카오 미연결 — 링크를 복사했어요');
     }
+  };
+
+  const handleSubmitReview = async () => {
+    if (reviewStars === 0) return;
+    trackEvent('review_submit', { stars: reviewStars, relationType, score: result.toxicScore });
+    fetch('/api/review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stars: reviewStars, comment: reviewText, relationType, score: result.toxicScore }),
+    }).catch(() => {});
+    try {
+      const raw = localStorage.getItem('toxic_user_reviews');
+      const list = raw ? JSON.parse(raw) : [];
+      list.push({ stars: reviewStars, comment: reviewText, ts: Date.now() });
+      localStorage.setItem('toxic_user_reviews', JSON.stringify(list.slice(-50)));
+    } catch {}
+    setReviewSubmitted(true);
+    showToast('후기 감사합니다!');
   };
 
   return (
@@ -1554,6 +1580,64 @@ export default function StepResult({ myData, targetData, result, relationType, o
           <ShareCard ref={shareCardRef} myName={myData.name} result={result} />
         </div>
       </div>
+
+      {/* 리뷰 */}
+      {!reviewSubmitted ? (
+        <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D]">
+          <p className="text-[#555] text-[10px] uppercase tracking-[0.25em] mb-4">분석이 도움됐나요?</p>
+          <div className="flex justify-center gap-3 mb-4">
+            {[1,2,3,4,5].map(n => (
+              <button key={n} onClick={() => setReviewStars(n)}
+                className={`text-2xl transition-colors ${n <= reviewStars ? 'text-[#FF2D55]' : 'text-[#2a2a2a] hover:text-[#555]'}`}>
+                ★
+              </button>
+            ))}
+          </div>
+          {reviewStars > 0 && (
+            <>
+              <textarea
+                value={reviewText}
+                onChange={e => setReviewText(e.target.value)}
+                placeholder="한 줄 후기 (선택)"
+                className="w-full bg-[#111] border border-[#1e1e1e] text-white text-sm px-4 py-3 resize-none focus:outline-none focus:border-[#FF2D55]/40 mb-3 font-sans-kr"
+                rows={2}
+                maxLength={200}
+              />
+              <button onClick={handleSubmitReview}
+                className="w-full py-3 gradient-red text-white text-sm font-medium">
+                후기 남기기
+              </button>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D] text-center">
+          <p className="text-[#FF2D55] text-sm mb-1">감사합니다</p>
+          <p className="text-[#444] text-xs">후기가 서비스 개선에 큰 도움이 됩니다</p>
+        </div>
+      )}
+
+      {/* 이전 분석 히스토리 */}
+      {recentHistory.length > 0 && (
+        <div className="border border-[#1e1e1e] p-5">
+          <p className="text-[#333] text-[10px] uppercase tracking-[0.25em] mb-3">이전 분석</p>
+          <div className="space-y-0">
+            {recentHistory.map(h => (
+              <div key={h.id} className="flex items-center justify-between py-3 border-b border-[#111] last:border-0">
+                <div>
+                  <p className="text-[#666] text-xs">
+                    {h.myName} {h.targetName ? `· ${h.targetName}` : '(역산)'} <span className="text-[#333]">— {h.relationType}</span>
+                  </p>
+                  <p className="text-[#2a2a2a] text-[10px] mt-0.5">{new Date(h.date).toLocaleDateString('ko-KR')}</p>
+                </div>
+                <span className="font-bold text-sm" style={{ color: h.score >= 80 ? '#FF2D55' : h.score >= 60 ? '#BF5AF2' : '#F59E0B' }}>
+                  {h.score}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <button onClick={onReset}
         className="w-full py-4 border border-[#1e1e1e] text-[#555] hover:border-[#FF2D55]/40 hover:text-white transition-all text-sm">

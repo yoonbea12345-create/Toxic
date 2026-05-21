@@ -130,10 +130,22 @@ export default function Landing() {
   const [reviews] = useState(() => shuffle(ALL_REVIEWS));
   const [reviewPage, setReviewPage] = useState(0);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const totalPages = Math.ceil(reviews.length / 5);
+  const totalPages = Math.ceil(reviews.length / 3);
   const [triggerIdx, setTriggerIdx] = useState(0);
 
   useEffect(() => { startSession(); }, []);
+
+  // 스크롤 페이드업 — IntersectionObserver
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('fade-visible'); obs.unobserve(e.target); }
+      }),
+      { threshold: 0.1 }
+    );
+    document.querySelectorAll('.fade-section').forEach(el => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     const el = heroRef.current;
@@ -220,12 +232,12 @@ export default function Landing() {
           </div>
 
           <button onClick={goToApp}
-            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 transition-opacity mb-3"
+            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 active:scale-[0.98] transition-all mb-3"
             style={{ boxShadow: '0 0 60px rgba(255,45,85,0.35)' }}>
             그 사람 생일 넣어보기 →
           </button>
           <p className="font-sans-kr text-[#555] text-xs text-center mb-1">
-            무료 · 1분 · 전 연인 · 친구 · 직장 · 가족 다 가능
+            무료 · 1분 · 가입 불필요 · 전 연인 · 친구 · 직장 · 가족 다 가능
           </p>
           <p className="font-sans-kr text-[#444] text-xs text-center">
             생일 몰라도 괜찮아요 — <span className="text-[#666]">대략적인 나이만 알아도 분석 가능해요</span>
@@ -240,11 +252,78 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
+          01b. 공감 — 카카오톡 대화 목업
+      ══════════════════════════════════════ */}
+      <section className="relative px-5 py-20 border-t border-white/[0.06] fade-section">
+        <div className="max-w-xl mx-auto">
+          <p className="font-sans-kr text-[#555] text-[10px] uppercase tracking-[0.3em] text-center mb-10">이 대화, 익숙하지 않나요?</p>
+
+          {/* 카톡 스타일 대화창 */}
+          <div className="border border-[#1e1e1e] overflow-hidden max-w-sm mx-auto mb-10" style={{ background: '#111' }}>
+            <div className="px-4 py-3 border-b border-[#1e1e1e] flex items-center gap-2">
+              <div className="flex gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#FF2D55]/50" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#444]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[#444]" />
+              </div>
+              <p className="font-sans-kr text-[#444] text-[10px] flex-1 text-center">카카오톡</p>
+            </div>
+
+            <div className="px-4 py-5 space-y-4">
+              <div className="flex gap-2 items-end">
+                <div className="w-7 h-7 rounded-full bg-[#222] flex-shrink-0 flex items-center justify-center text-[11px]">🙁</div>
+                <div className="bg-[#1e1e1e] border border-[#2a2a2a] px-3 py-2.5 max-w-[75%] rounded-tr-lg rounded-br-lg rounded-tl-sm">
+                  <p className="font-sans-kr text-[#ccc] text-xs leading-relaxed">오늘도 또 싸웠어... 왜 항상 이렇지</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 items-end justify-end">
+                <div className="bg-[#FF2D55]/80 px-3 py-2.5 max-w-[75%] rounded-tl-lg rounded-bl-lg rounded-tr-sm">
+                  <p className="font-sans-kr text-white text-xs leading-relaxed">또?? 무슨 일인데</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 items-end">
+                <div className="w-7 h-7 rounded-full bg-[#222] flex-shrink-0" />
+                <div className="bg-[#1e1e1e] border border-[#2a2a2a] px-3 py-2.5 max-w-[75%] rounded-tr-lg rounded-br-lg rounded-tl-sm">
+                  <p className="font-sans-kr text-[#ccc] text-xs leading-relaxed">그냥... 매번 같은 패턴이야. 분명 좋아하는데 왜 이렇게 자꾸 다치는지</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 items-end justify-end">
+                <div className="bg-[#FF2D55]/80 px-3 py-2.5 max-w-[75%] rounded-tl-lg rounded-bl-lg rounded-tr-sm">
+                  <p className="font-sans-kr text-white text-xs leading-relaxed">헤어지고도 자꾸 생각나지 않아?</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2 items-end">
+                <div className="w-7 h-7 rounded-full bg-[#222] flex-shrink-0" />
+                <div className="bg-[#1e1e1e] border border-[#2a2a2a] px-3 py-2.5 max-w-[75%] rounded-tr-lg rounded-br-lg rounded-tl-sm">
+                  <p className="font-sans-kr text-[#ccc] text-xs leading-relaxed">ㅇㅇ 그게 더 이상해... 이유를 모르겠어</p>
+                </div>
+              </div>
+
+              <div className="border-t border-[#1e1e1e] pt-4 mt-2">
+                <p className="font-sans-kr text-[#FF2D55] text-[10px] text-center">사주에 이미 이유가 있었습니다</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center">
+            <p className="font-display text-white mb-3" style={{ fontSize: 'clamp(1.8rem, 7vw, 2.6rem)' }}>
+              반복되는 갈등엔<br /><span className="text-[#FF2D55]">구조가 있습니다</span>
+            </p>
+            <p className="font-sans-kr text-[#555] text-sm">노력 부족이 아니에요. 애초에 충돌할 수밖에 없는 사주 구조였습니다.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
           02. 페르소나 퀵 셀렉트
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-16 border-t border-white/[0.06]">
+      <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="max-w-xl mx-auto">
-          <p className="font-sans-kr text-[#555] text-xs text-center mb-2 uppercase tracking-[0.2em]">어떤 관계든 분석 가능</p>
+          <p className="font-sans-kr text-[#555] text-[10px] text-center mb-2 uppercase tracking-[0.3em]">어떤 관계든 분석 가능</p>
           <h2 className="font-display text-white text-center mb-8"
             style={{ fontSize: 'clamp(1.8rem, 7vw, 2.8rem)' }}>
             지금 머릿속에 떠오르는<br />
@@ -309,7 +388,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           03. 실제 결과 프리뷰
       ══════════════════════════════════════ */}
-      <section className="relative py-20 border-t border-white/[0.06] overflow-hidden">
+      <section className="relative py-20 border-t border-white/[0.06] overflow-hidden fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,45,85,0.14) 0%, transparent 55%)' }} />
 
@@ -348,7 +427,7 @@ export default function Landing() {
                   <p className="font-sans-kr text-[#FF2D55] text-[10px] uppercase tracking-[0.25em]">내 결과는 다릅니다</p>
                 </div>
                 <button onClick={goToApp}
-                  className="w-full bg-[#FF2D55] text-white font-display text-lg py-5 hover:opacity-90 transition-opacity tracking-wide"
+                  className="w-full bg-[#FF2D55] text-white font-display text-lg py-5 hover:opacity-90 active:scale-[0.98] transition-all tracking-wide"
                   style={{ boxShadow: '0 0 60px rgba(255,45,85,0.6)' }}>
                   그 사람 생일 넣어보기 →
                 </button>
@@ -370,7 +449,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           04. STORY — 연인
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06]">
+      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 15% 60%, rgba(255,45,85,0.09) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -432,7 +511,7 @@ export default function Landing() {
           </div>
 
           <button onClick={goToApp}
-            className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 transition-colors tracking-wide">
+            className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 active:scale-[0.98] transition-all tracking-wide">
             전 연인 분석하기 →
           </button>
         </div>
@@ -441,7 +520,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           05. STORY — 직장인 (강화)
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06]">
+      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 85% 40%, rgba(191,90,242,0.08) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -533,7 +612,7 @@ export default function Landing() {
           </div>
 
           <button onClick={goToApp}
-            className="w-full border border-[#BF5AF2]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#BF5AF2]/10 transition-colors tracking-wide">
+            className="w-full border border-[#BF5AF2]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#BF5AF2]/10 active:scale-[0.98] transition-all tracking-wide">
             직장 관계 분석하기 →
           </button>
         </div>
@@ -542,7 +621,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           06. STORY — 가족
       ══════════════════════════════════════ */}
-      <section className="relative border-t border-white/[0.06] overflow-hidden">
+      <section className="relative border-t border-white/[0.06] overflow-hidden fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.06) 0%, transparent 60%)' }} />
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden>
@@ -603,7 +682,7 @@ export default function Landing() {
           </div>
 
           <button onClick={goToApp}
-            className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 transition-colors tracking-wide">
+            className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 active:scale-[0.98] transition-all tracking-wide">
             가족 관계 분석하기 →
           </button>
         </div>
@@ -612,7 +691,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           07. 기존 앱 vs TOXIC
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06]">
+      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 80% 50%, rgba(191,90,242,0.08) 0%, transparent 55%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -666,7 +745,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           08. HOW IT WORKS — 3단계
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06]">
+      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.05) 0%, transparent 60%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -676,7 +755,7 @@ export default function Landing() {
             딱 <span className="text-[#FF2D55]">1분</span>이면 됩니다
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-0">
             {[
               {
                 step: '01',
@@ -696,13 +775,19 @@ export default function Landing() {
                 desc: '왜 안 맞는지, 어떤 상황에서 충돌하는지, 앞으로 어떻게 해야 하는지 — 구체적인 가이드가 나옵니다.',
                 sub: '5개 섹션 · 상세 분석',
               },
-            ].map(({ step, title, desc, sub }) => (
-              <div key={step} className="flex gap-5">
-                <div className="flex-shrink-0">
-                  <span className="font-display text-[#FF2D55]/30 text-4xl leading-none">{step}</span>
+            ].map(({ step, title, desc, sub }, idx, arr) => (
+              <div key={step} className="flex gap-5 items-start">
+                <div className="flex flex-col items-center flex-shrink-0 pt-1">
+                  <span className="font-display text-[#FF2D55] text-3xl leading-none">{step}</span>
+                  {idx < arr.length - 1 && (
+                    <div className="w-px mt-3 mb-0" style={{
+                      height: '4rem',
+                      background: 'linear-gradient(to bottom, rgba(255,45,85,0.5), transparent)',
+                    }} />
+                  )}
                 </div>
-                <div className="border-l border-[#1a1a1a] pl-5 pb-4">
-                  <p className="font-sans-kr text-white text-sm font-bold mb-1">{title}</p>
+                <div className="pb-10 pt-1">
+                  <p className="font-sans-kr text-white text-sm font-bold mb-1.5">{title}</p>
                   <p className="font-sans-kr text-[#666] text-xs leading-relaxed mb-2">{desc}</p>
                   <span className="text-[#333] text-[10px] border border-[#1e1e1e] px-2 py-0.5 font-sans-kr">{sub}</span>
                 </div>
@@ -711,7 +796,7 @@ export default function Landing() {
           </div>
 
           <button onClick={goToApp}
-            className="w-full mt-10 bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 transition-opacity tracking-wide"
+            className="w-full mt-10 bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-[0.98] transition-all tracking-wide"
             style={{ boxShadow: '0 0 40px rgba(255,45,85,0.25)' }}>
             지금 바로 분석하기 →
           </button>
@@ -721,7 +806,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           09. SOCIAL PROOF — 후기
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06]">
+      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,45,85,0.06) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -749,7 +834,7 @@ export default function Landing() {
           </div>
 
           <div key={reviewPage} className="animate-fade-in space-y-3 mb-8">
-            {reviews.slice(reviewPage * 5, reviewPage * 5 + 5).map((review, i) => (
+            {reviews.slice(reviewPage * 3, reviewPage * 3 + 3).map((review, i) => (
               <div key={i} className="border border-[#1a1a1a] p-5">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-2 py-0.5 font-sans-kr">
@@ -784,7 +869,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           10. FINAL OFFER — mock UI
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06]">
+      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.08) 0%, transparent 55%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -840,7 +925,7 @@ export default function Landing() {
             </div>
 
             <button onClick={goToApp}
-              className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 transition-opacity tracking-wide"
+              className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-[0.98] transition-all tracking-wide"
               style={{ boxShadow: '0 0 40px rgba(255,45,85,0.3)' }}>
               지금 분석하기 →
             </button>
@@ -875,8 +960,14 @@ export default function Landing() {
             사주에 이미 답이 있었습니다.
           </p>
 
+          <div className="flex flex-wrap justify-center gap-2 mb-8">
+            {['🔮 AI 사주 분석', '⏱ 1분이면 끝', '💬 카카오 공유', '✨ 완전 무료', '🔒 가입 불필요'].map(chip => (
+              <span key={chip} className="font-sans-kr text-[11px] border border-[#2a2a2a] text-[#666] px-3 py-1.5 rounded-full">{chip}</span>
+            ))}
+          </div>
+
           <button onClick={goToApp}
-            className="w-full bg-[#FF2D55] text-white font-display text-2xl py-6 hover:opacity-90 transition-opacity tracking-wide mb-4"
+            className="w-full bg-[#FF2D55] text-white font-display text-2xl py-6 hover:opacity-90 active:scale-[0.98] transition-all tracking-wide mb-4"
             style={{ boxShadow: '0 0 100px rgba(255,45,85,0.4)' }}>
             지금 분석하기 →
           </button>
