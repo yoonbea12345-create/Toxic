@@ -234,13 +234,13 @@ export default function Landing() {
           <button onClick={goToApp}
             className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 active:scale-[0.98] transition-all mb-3"
             style={{ boxShadow: '0 0 60px rgba(255,45,85,0.35)' }}>
-            그 사람 생일 넣어보기 →
+            이름이랑 생일 넣어보기 →
           </button>
           <p className="font-sans-kr text-[#555] text-xs text-center mb-1">
             무료 · 1분 · 가입 불필요 · 전 연인 · 친구 · 직장 · 가족 다 가능
           </p>
           <p className="font-sans-kr text-[#444] text-xs text-center">
-            생일 몰라도 괜찮아요 — <span className="text-[#666]">대략적인 나이만 알아도 분석 가능해요</span>
+            이름만 알아도 시작 가능해요 — <span className="text-[#666]">생일은 몰라도 괜찮아요</span>
           </p>
         </div>
 
@@ -396,11 +396,11 @@ export default function Landing() {
           <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] font-sans-kr text-center mb-3">실제 분석 결과</p>
           <h2 className="font-display leading-[1.08] text-white text-center mb-1"
             style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-            생일 하나로
+            생일과 이름만으로
           </h2>
           <h2 className="font-display leading-[1.08] text-[#FF2D55] text-center mb-3"
             style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-            이게 다 나와요
+            다 나와요
           </h2>
           <p className="font-sans-kr text-[#555] text-center text-sm mb-10">
             소름 돋는다는 반응이 나오는 이유 — 직접 보세요
@@ -429,7 +429,7 @@ export default function Landing() {
                 <button onClick={goToApp}
                   className="w-full bg-[#FF2D55] text-white font-display text-lg py-5 hover:opacity-90 active:scale-[0.98] transition-all tracking-wide"
                   style={{ boxShadow: '0 0 60px rgba(255,45,85,0.6)' }}>
-                  그 사람 생일 넣어보기 →
+                  이름이랑 생일 넣어보기 →
                 </button>
               </div>
             </div>
@@ -441,7 +441,7 @@ export default function Landing() {
 
         <div className="max-w-xl mx-auto px-5 mt-6">
           <p className="font-sans-kr text-center text-[#444] text-[11px]">
-            무료 · 생년월일만 있으면 됩니다 · 1분
+            무료 · 이름만 알아도 시작 가능 · 1분
           </p>
         </div>
       </section>
@@ -759,9 +759,9 @@ export default function Landing() {
             {[
               {
                 step: '01',
-                title: '생년월일 입력',
-                desc: '내 정보와 그 사람의 생년월일을 입력해요. 생일을 정확히 몰라도 대략적인 나이만 알아도 됩니다.',
-                sub: '시간 불명 · 이름 불필요',
+                title: '이름 · 생년월일 입력',
+                desc: '내 정보와 그 사람의 이름, 생년월일을 입력해요. 이름만 알아도 시작 가능하고, 생일은 몰라도 괜찮아요.',
+                sub: '이름만 OK · 생일 몰라도 가능',
               },
               {
                 step: '02',
@@ -877,7 +877,7 @@ export default function Landing() {
           <h2 className="font-display leading-[1.05] text-white text-center mb-1"
             style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>그 사람</h2>
           <h2 className="font-display leading-[1.05] text-[#FF2D55] text-center mb-10"
-            style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>생일 넣어봐</h2>
+            style={{ fontSize: 'clamp(3rem, 12vw, 5rem)' }}>이름이랑 생일 넣어봐</h2>
 
           <p className="font-sans-kr text-center text-[#666] text-sm mb-10">
             딱 한 명 떠오른다면 지금.<br />
