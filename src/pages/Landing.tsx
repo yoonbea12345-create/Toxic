@@ -2,14 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { startSession } from '../utils/analytics';
 
-const SLIDES = [
-  '/result-slide-1.png',
-  '/result-slide-2.png',
-  '/result-slide-3.png',
-  '/result-slide-4.png',
-  '/result-slide-5.png',
-  '/result-slide-6.png',
-];
 
 const TRIGGERS = [
   { type: '연인', text: '좋아했는데 자꾸 상처만 받는다면', color: '#FF2D55' },
@@ -36,7 +28,6 @@ export default function Landing() {
   const [triggerIdx, setTriggerIdx] = useState(0);
   const [userCount, setUserCount] = useState(0);
   const [chatIdx, setChatIdx] = useState(0);
-  const [slideIdx, setSlideIdx] = useState(0);
 
   useEffect(() => { startSession(); }, []);
 
@@ -545,43 +536,35 @@ export default function Landing() {
           <p className="font-sans-kr text-[#555] text-center text-sm mb-10">
             다양한 상황에 맞는 분석결과를 직접 보세요
           </p>
-        </div>
 
-        <div className="max-w-[360px] mx-auto px-5 relative">
-          {/* Nav row above image */}
-          <div className="flex justify-between items-center mb-4 px-1">
-            <button onClick={() => setSlideIdx(p => (p + SLIDES.length - 1) % SLIDES.length)}
-              className="w-10 h-10 rounded-full flex items-center justify-center border border-[#333] text-[#888] hover:text-white hover:border-[#555] transition-all active:scale-95">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
-            <p className="font-sans-kr text-[#666] text-sm">{slideIdx + 1} / {SLIDES.length}</p>
-            <button onClick={() => setSlideIdx(p => (p + 1) % SLIDES.length)}
-              className="w-10 h-10 rounded-full flex items-center justify-center border border-[#333] text-[#888] hover:text-white hover:border-[#555] transition-all active:scale-95">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </button>
+          {/* 폰 목업 3개 나란히 */}
+          <div className="flex gap-3 items-start mb-10">
+            {[
+              { src: '/result-slide-1.png', label: '충돌 원인' },
+              { src: '/result-slide-3.png', label: '갈등 패턴' },
+              { src: '/result-slide-5.png', label: '관계 구조' },
+            ].map(({ src, label }) => (
+              <div key={label} className="flex-1 flex flex-col items-center">
+                <div className="w-full rounded-[1.6rem] overflow-hidden"
+                  style={{ background: '#111', border: '1.5px solid #2A2A2A', boxShadow: '0 24px 60px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04)' }}>
+                  <div className="flex justify-center pt-2 pb-0.5">
+                    <div className="w-7 h-[3px] bg-[#2A2A2A] rounded-full" />
+                  </div>
+                  <img src={src} alt={label} className="w-full block" loading="lazy" />
+                  <div className="flex justify-center pt-1 pb-1.5">
+                    <div className="w-5 h-[2px] bg-[#2A2A2A] rounded-full" />
+                  </div>
+                </div>
+                <p className="font-sans-kr text-[#444] text-[10px] mt-2 text-center tracking-wide">{label}</p>
+              </div>
+            ))}
           </div>
 
-          {/* Image — no overlay, no CTA inside */}
-          <div className="overflow-hidden rounded-[2rem] border border-white/[0.08] mb-6"
-            style={{ boxShadow: '0 0 0 1px rgba(255,45,85,0.18), 0 40px 100px rgba(0,0,0,0.9), 0 0 80px rgba(255,45,85,0.1)' }}>
-            <img key={slideIdx} src={SLIDES[slideIdx]} alt={`분석 결과 ${slideIdx + 1}`}
-              className="w-full block animate-fade-in" />
-          </div>
-
-          {/* CTA completely below */}
           <button onClick={goToApp}
             className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-95 transition-all tracking-wide cta-glow-red">
             이름이랑 생일 넣어보기 →
           </button>
-
-          <div className="absolute -inset-8 pointer-events-none"
-            style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.08) 0%, transparent 70%)' }} />
         </div>
-
       </section>
 
       {/* ══════════════════════════════════════
