@@ -87,6 +87,10 @@ export default function Landing() {
           style={{ background: 'radial-gradient(circle, rgba(255,45,85,0.13) 0%, transparent 65%)' }} />
 
         <div className="relative z-10">
+          <p className="font-sans-kr text-[#FF2D55] text-xs font-bold tracking-widest mb-5">
+            사주로 보는 관계의 본질
+          </p>
+
           <h1 className="font-display leading-[1.02] text-white mb-6"
             style={{ fontSize: 'clamp(3.2rem, 14vw, 6rem)' }}>
             그 사람이랑<br />
@@ -103,12 +107,8 @@ export default function Landing() {
             </div>
           </div>
 
-          <p className="font-sans-kr text-white text-base leading-relaxed mb-6">
+          <p className="font-sans-kr text-white text-base leading-relaxed mb-8">
             사주에 <span className="text-[#FF2D55] font-bold">이미 답이 있습니다.</span>
-          </p>
-
-          <p className="font-sans-kr text-[#FF2D55] text-xs font-bold tracking-widest mb-8">
-            사주로 보는 관계의 본질
           </p>
 
           <button onClick={goToApp}
