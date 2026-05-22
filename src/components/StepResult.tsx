@@ -40,6 +40,14 @@ interface PersonalImpact {
   whatYouLose: string;
 }
 
+interface HowTheySeeMe {
+  energyReading: string;
+  whatIrritates: string;
+  whatDrawsThem: string;
+  theirPrivateVerdict: string;
+  howTheyNeedMe: string;
+}
+
 interface ContinuationAssessment {
   structuralAnalysis: string;
   whatItTakes: string;
@@ -60,6 +68,7 @@ interface AIAnalysis {
   realisticOutlook?: string;
   avoidanceGuide?: AvoidanceGuide;
   personalImpact?: PersonalImpact;
+  howTheySeeMe?: HowTheySeeMe;
   continuationAssessment?: ContinuationAssessment;
   myCharacter?: { core: string; strength: string; shadow: string };
   dangerTypes?: DangerType[];
@@ -398,6 +407,43 @@ function ToggleBtn({ open, onToggle }: { open: boolean; onToggle: () => void }) 
   );
 }
 
+function BlurredPreview({ children, unlocked, onUnlock }: {
+  children: React.ReactNode;
+  unlocked: boolean;
+  onUnlock: () => void;
+}) {
+  if (unlocked) return <>{children}</>;
+  return (
+    <div className="relative min-h-[140px]">
+      <div className="select-none pointer-events-none"
+        style={{ filter: 'blur(5px)', opacity: 0.55 }}>
+        {children}
+      </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 px-4">
+        <div className="w-9 h-9 border border-[#FF2D55]/40 flex items-center justify-center"
+          style={{ background: 'rgba(255,45,85,0.08)' }}>
+          <LockIcon size={15} />
+        </div>
+        <button
+          onClick={onUnlock}
+          className="py-3.5 px-6 text-white font-bold text-sm tracking-wide relative overflow-hidden group font-sans-kr"
+          style={{
+            background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)',
+            boxShadow: '0 0 28px rgba(255,45,85,0.4)',
+          }}
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            <LockIcon size={12} color="white" />
+            ₩{PRICE_ALL.toLocaleString()}으로 더 자세히 보기 →
+          </span>
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ background: 'rgba(255,255,255,0.07)' }} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Phase2Skeleton() {
   return (
     <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D] animate-pulse">
@@ -418,138 +464,98 @@ function LockIcon({ size = 20, color = '#FF2D55' }: { size?: number; color?: str
   );
 }
 
-// ── 섹션별 페이월 콘텐츠 ────────────────────────────────────────────
-const SECTION_PAYWALL: Record<string, {
-  title: string; hook: string; desc: string;
-  benefits: string[]; social: string;
-}> = {
-  '03': {
-    title: '앞으로 이렇게 해보세요',
-    hook: '이 충돌 구조에서 살아남는 실전 전략',
-    desc: '어떤 상황에서 어떻게 행동하면 되는지, 반드시 지켜야 할 선은 무엇인지 — 지금 당장 쓸 수 있는 가이드입니다.',
-    benefits: [
-      '상황별 5가지 행동 지침 — 갈등 전·중·후',
-      '역효과 나는 행동 패턴 — 절대 하면 안 되는 것',
-      '이 관계에서 반드시 지켜야 할 선 (선긋기)',
-      '6개월·1년 뒤 현실적인 전망',
-    ],
-    social: '이 섹션을 본 사람의 87%가 "실제로 도움됐다"고 답했습니다',
-  },
-  '04': {
-    title: '이 관계가 나에게 하는 일',
-    hook: '지금 이 순간 당신에게 일어나고 있는 것',
-    desc: '이 관계가 에너지·감정·일상에 어떤 영향을 미치는지 — 당신이 의식하지 못했던 것들이 드러납니다.',
-    benefits: [
-      '에너지·자존감·일상에 미치는 구체적인 영향',
-      '이 관계가 나를 갉아먹고 있다는 5가지 신호',
-      '내가 이 관계 때문에 서서히 잃어가는 것들',
-      '내가 의식하지 못하고 있었던 패턴',
-    ],
-    social: '가장 많이 공유되는 섹션 — 91%가 "소름 돋았다"고 답함',
-  },
-  '05': {
-    title: '이 관계, 계속 가야 할까?',
-    hook: '사주 구조 기반 AI 최종 판정',
-    desc: '노력으로 바꿀 수 있는 것과 구조적으로 불가능한 것을 명확히 구분해 — 냉철하지만 따뜻하게 판정합니다.',
-    benefits: [
-      '바꿀 수 있는 것 vs 구조적으로 불가능한 것',
-      '계속하려면 반드시 충족해야 할 현실적 조건',
-      '이 신호가 보이면 재고해야 할 레드라인 3가지',
-      'AI 최종 판정 — 솔직하고 단호하게',
-    ],
-    social: '"결국 결정하는 데 도움이 됐다" — 읽은 사람의 79%',
-  },
-};
+// ── 가격 상수 ─────────────────────────────────────────────────────────
+const PRICE_ALL = 500;
 
 // ── 결제 팝업 모달 ───────────────────────────────────────────────────
-function PaywallModal({ section, onClose, onPay }: {
-  section: '03' | '04' | '05';
+function PaywallModal({ myName, conflictType, onClose, onPay }: {
+  myName: string;
+  conflictType: string;
   onClose: () => void;
   onPay: () => void;
 }) {
-  const c = SECTION_PAYWALL[section];
-
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.97)' }}
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      style={{ background: 'rgba(0,0,0,0.96)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div
-        className="w-full max-w-sm mx-4 mb-4 sm:mb-0 relative animate-fade-in overflow-hidden"
-        style={{ background: 'linear-gradient(160deg, #0A0002 0%, #090909 50%, #070710 100%)' }}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-[#333] hover:text-[#555] transition-colors z-10"
-        >
-          ✕
-        </button>
+      <div className="w-full max-w-sm animate-fade-in relative" style={{ background: '#080808' }}>
+        <div className="h-0.5" style={{ background: 'linear-gradient(90deg, transparent 0%, #FF2D55 40%, #BF5AF2 70%, transparent 100%)' }} />
 
-        <div className="border border-[#FF2D55]/25">
-          <div className="h-0.5" style={{ background: 'linear-gradient(90deg, transparent, #FF2D55, transparent)' }} />
+        <div className="border border-[#FF2D55]/20 border-t-0">
+          <div className="px-6 pt-5 pb-6">
 
-          <div className="p-6 pb-5">
-
-            {/* 섹션 라벨 */}
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-[9px] font-bold tracking-[0.2em] px-2.5 py-1 border border-[#FF2D55]/40 text-[#FF2D55]"
-                style={{ background: 'rgba(255,45,85,0.07)' }}>
-                SECTION {section}
-              </span>
-              <div className="h-px flex-1 bg-[#111]" />
-              <LockIcon size={14} />
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <LockIcon size={13} />
+                <span className="text-[9px] font-bold tracking-[0.2em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
+              </div>
+              <button onClick={onClose}
+                className="w-7 h-7 flex items-center justify-center text-[#333] hover:text-[#555] text-lg transition-colors">
+                ✕
+              </button>
             </div>
 
-            {/* 제목 + 한 줄 훅 */}
-            <h2 className="text-white text-lg font-bold leading-snug mb-1">{c.title}</h2>
-            <p className="text-[#FF2D55] text-xs font-medium mb-4">{c.hook}</p>
+            {/* Big headline */}
+            <p className="font-display text-white leading-[1.05] mb-1"
+              style={{ fontSize: 'clamp(1.75rem, 8vw, 2.3rem)' }}>
+              지금 더 보면
+            </p>
+            <p className="font-display text-white leading-[1.05] mb-1"
+              style={{ fontSize: 'clamp(1.75rem, 8vw, 2.3rem)' }}>
+              관계가
+            </p>
+            <p className="font-display text-[#FF2D55] leading-[1.05] mb-4"
+              style={{ fontSize: 'clamp(1.75rem, 8vw, 2.3rem)' }}>
+              보입니다
+            </p>
 
-            {/* 핵심 혜택 — 간결하게 3개만 */}
+            {conflictType && (
+              <p className="font-sans-kr text-[#3a3a3a] text-[11px] mb-5">
+                → <span className="text-[#555]">{conflictType}</span> 구조 상세 분석
+              </p>
+            )}
+
             <div className="space-y-2 mb-5">
-              {c.benefits.slice(0, 3).map((b, i) => (
+              {[
+                '각 섹션 숨겨진 상세 분석 전체',
+                '상황별 실전 행동 지침 — 갈등 전·중·후',
+                '이 관계에서 당신이 잃어가는 것들',
+                'AI 최종 판정 — 솔직하고 단호하게',
+              ].map((b, i) => (
                 <div key={i} className="flex items-start gap-2">
                   <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">✓</span>
-                  <p className="text-[#777] text-xs leading-relaxed">{b}</p>
+                  <p className="text-[#777] text-xs leading-relaxed font-sans-kr">{b}</p>
                 </div>
               ))}
             </div>
 
-            {/* ── 가격 — 핵심 훅 ── */}
-            <div className="border border-[#FF2D55]/20 px-4 py-4 mb-4 relative overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, rgba(255,45,85,0.07) 0%, transparent 70%)' }}>
-              <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none"
-                style={{ background: 'radial-gradient(circle at top right, rgba(255,45,85,0.15), transparent)' }} />
+            <div className="h-px bg-[#111] mb-4" />
 
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <p className="text-[#333] text-[10px] uppercase tracking-widest mb-1">이 섹션 잠금 해제</p>
-                  <div className="flex items-end gap-2">
-                    <span className="text-[#333] text-sm line-through">₩9,900</span>
-                    <span className="text-white font-display leading-none" style={{ fontSize: '2.8rem' }}>₩100</span>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1.5 mt-1">
-                  <span className="text-[10px] font-bold px-2 py-1 bg-[#FF2D55] text-white">99% OFF</span>
-                  <p className="text-[#444] text-[9px] text-right">출시 기념 특가</p>
-                </div>
+            {/* Price */}
+            <div className="flex items-center justify-between mb-4 px-1">
+              <p className="font-sans-kr text-[#444] text-xs">전체 더보기 잠금 해제</p>
+              <div className="flex items-end gap-2">
+                <span className="font-sans-kr text-[#2a2a2a] text-xs line-through">₩9,900</span>
+                <span className="font-display text-white text-3xl leading-none">₩{PRICE_ALL.toLocaleString()}</span>
               </div>
-
-              <p className="text-[#444] text-[10px]">편의점 껌 한 통보다 싸요 — 사주 AI 핵심 분석</p>
             </div>
 
-            {/* CTA */}
-            <button
-              onClick={onPay}
-              className="w-full py-4 gradient-red text-white font-bold text-base tracking-wide mb-3 relative overflow-hidden group"
-              style={{ boxShadow: '0 0 40px rgba(255,45,85,0.35)' }}
-            >
-              <span className="relative z-10">₩100으로 지금 바로 열기 →</span>
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-                style={{ background: 'rgba(255,255,255,0.07)' }} />
+            <button onClick={onPay}
+              className="w-full py-4 text-white font-bold text-base tracking-wide mb-3 relative overflow-hidden group font-sans-kr"
+              style={{
+                background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)',
+                boxShadow: '0 0 40px rgba(255,45,85,0.45)',
+              }}>
+              <span className="relative z-10">
+                {myName ? `${myName}님` : '지금'} ₩{PRICE_ALL.toLocaleString()}으로 전체 보기 →
+              </span>
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{ background: 'rgba(255,255,255,0.08)' }} />
             </button>
 
-            <div className="flex items-center justify-center gap-3 text-[#252525] text-[10px]">
+            <div className="flex items-center justify-center gap-3 text-[#222] text-[9px] font-sans-kr">
               <span>🔒 즉시 잠금 해제</span>
               <span>·</span>
               <span>안전 결제</span>
@@ -563,99 +569,32 @@ function PaywallModal({ section, onClose, onPay }: {
   );
 }
 
-// ── 잠긴 섹션 티저 ───────────────────────────────────────────────────
-function LockedPremium({ teaser, onUnlock }: { teaser: string; onUnlock: () => void }) {
-  return (
-    <div
-      className="border border-[#FF2D55]/20 overflow-hidden relative"
-      style={{ background: 'linear-gradient(160deg, #0D0003 0%, #0A0A0A 100%)' }}
-    >
-      {/* Blurred preview */}
-      <div className="px-5 pt-5 pb-3 select-none pointer-events-none"
-        style={{ filter: 'blur(5px)', opacity: 0.25 }}>
-        <p className="text-[#888] text-sm leading-relaxed mb-3">{teaser}</p>
-        <div className="space-y-2.5">
-          <div className="h-2.5 bg-[#2a2a2a] rounded w-full" />
-          <div className="h-2.5 bg-[#2a2a2a] rounded w-11/12" />
-          <div className="h-2.5 bg-[#2a2a2a] rounded w-4/5" />
-          <div className="h-2.5 bg-[#2a2a2a] rounded w-3/5" />
-        </div>
-      </div>
 
-      {/* Fade */}
-      <div className="h-10 -mt-10 relative z-10"
-        style={{ background: 'linear-gradient(to bottom, transparent, #0A0A0A)' }} />
-
-      {/* Lock CTA */}
-      <div className="px-5 pb-5 relative z-10">
-        {/* Value frame */}
-        <div className="flex items-center gap-3 border border-[#1e1e1e] bg-[#080808] px-4 py-3 mb-4">
-          <div className="flex items-center justify-center w-8 h-8 border border-[#FF2D55]/30 flex-shrink-0"
-            style={{ background: 'rgba(255,45,85,0.07)' }}>
-            <LockIcon size={15} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-xs font-bold leading-tight">AI가 가장 날카롭게 분석한 구간</p>
-            <p className="text-[#444] text-[10px] mt-0.5">사주 구조 기반 실전 인사이트</p>
-          </div>
-          <div className="flex-shrink-0 text-right">
-            <p className="text-[#333] text-[9px] line-through">₩9,900</p>
-            <p className="text-white text-lg font-bold leading-none">₩100</p>
-          </div>
-        </div>
-
-        <button
-          onClick={onUnlock}
-          className="w-full py-4 gradient-red text-white font-bold text-sm tracking-wide relative overflow-hidden group"
-          style={{ boxShadow: '0 0 30px rgba(255,45,85,0.25)' }}
-        >
-          <span className="relative z-10">₩100으로 이 분석 보기 →</span>
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
-            style={{ background: 'rgba(255,255,255,0.06)' }} />
-        </button>
-
-        <p className="text-center text-[#222] text-[10px] mt-2.5">
-          커피 한 모금값 · 즉시 열림 · 100% 환불
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ── 결제 성공 오버레이 ───────────────────────────────────────────────
-function FreeSuccessOverlay({ visible }: { visible: boolean }) {
+// ── 잠금 해제 오버레이 ──────────────────────────────────────────────
+function FreeSuccessOverlay({ visible, myName }: { visible: boolean; myName: string }) {
   if (!visible) return null;
+  const name = myName || '고객';
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-6"
-      style={{ background: 'rgba(0,0,0,0.97)' }}
-    >
-      <div
-        className="w-full max-w-xs text-center border border-[#FF2D55]/25 px-8 py-10 animate-fade-in"
-        style={{ background: 'linear-gradient(160deg, #0E0003 0%, #0A0A0A 100%)' }}
-      >
-        <div
-          className="w-16 h-16 border border-[#FF2D55]/40 flex items-center justify-center mx-auto mb-5"
-          style={{ background: 'rgba(255,45,85,0.08)' }}
-        >
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-6"
+      style={{ background: 'rgba(0,0,0,0.97)' }}>
+      <div className="w-full max-w-xs text-center border border-[#FF2D55]/25 px-8 py-10 animate-fade-in"
+        style={{ background: 'linear-gradient(160deg, #0E0003 0%, #0A0A0A 100%)' }}>
+        <div className="w-16 h-16 border border-[#FF2D55]/40 flex items-center justify-center mx-auto mb-5"
+          style={{ background: 'rgba(255,45,85,0.08)' }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
             <path d="M5 13l4 4L19 7" stroke="#FF2D55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.35em] mb-4">SPECIAL OFFER</p>
-        <p className="text-white text-xl font-bold leading-snug mb-3">
-          사용자님만을 위해<br />
-          100회 무료로<br />
-          해드릴게요!
+        <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.35em] mb-4 font-sans-kr">SPECIAL OFFER</p>
+        <p className="text-white text-xl font-bold leading-snug mb-3 font-sans-kr">
+          {name}님만을 위해<br />
+          전체 분석<br />
+          <span className="text-[#FF2D55]">100회 무료</span> 제공!
         </p>
-        <p className="text-[#444] text-xs leading-relaxed">
-          잠금이 해제됩니다...
-        </p>
+        <p className="text-[#444] text-xs leading-relaxed font-sans-kr">잠금이 해제됩니다...</p>
         <div className="mt-5 w-full h-px bg-[#1a1a1a] overflow-hidden">
-          <div
-            className="h-full bg-[#FF2D55]"
-            style={{ width: '100%', animation: 'progress-fill 2.8s linear forwards' }}
-          />
+          <div className="h-full bg-[#FF2D55]"
+            style={{ width: '100%', animation: 'progress-fill 2.8s linear forwards' }} />
         </div>
       </div>
       <style>{`
@@ -692,18 +631,13 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [recentHistory] = useState(() => loadHistory().slice(1, 4));
 
-  // 유료 전환 — 섹션별 독립 잠금
+  // 유료 전환 — 섹션별 개별 결제
   const [unlockedSections, setUnlockedSections] = useState<Set<string>>(() => {
     try {
-      const s = new Set<string>();
-      if (localStorage.getItem('toxic_premium_03') === '1') s.add('03');
-      if (localStorage.getItem('toxic_premium_04') === '1') s.add('04');
-      if (localStorage.getItem('toxic_premium_05') === '1') s.add('05');
-      return s;
-    } catch { return new Set(); }
+      return new Set(['s01','s02','s03','s04','s05'].filter(k => localStorage.getItem(`toxic_unlocked_${k}`) === '1'));
+    } catch { return new Set<string>(); }
   });
-  const [activeSection, setActiveSection] = useState<'03' | '04' | '05' | null>(null);
-  const [showPaywall, setShowPaywall] = useState(false);
+  const [activePaywallSection, setActivePaywallSection] = useState<string | null>(null);
   const [showFreeSuccess, setShowFreeSuccess] = useState(false);
 
   const ai: AIAnalysis = { ...aiPhase1, ...aiPhase2 };
@@ -716,28 +650,26 @@ export default function StepResult({ myData, targetData, result, relationType, o
     });
   };
   const isOpen = (id: string) => expandedSections.has(id);
+  const isUnlocked = (id: string) => unlockedSections.has(id);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
   };
 
-  const handleOpenPaywall = (section: '03' | '04' | '05') => {
-    trackEvent('paywall_click', { section });
-    setActiveSection(section);
-    setShowPaywall(true);
+  const handleOpenPaywall = (sectionId: string) => {
+    trackEvent('paywall_click', { section: sectionId });
+    setActivePaywallSection(sectionId);
   };
 
-  const handlePayment = () => {
-    if (!activeSection) return;
-    trackEvent('paywall_pay', { section: activeSection });
-    setShowPaywall(false);
+  const handlePayment = (sectionId: string) => {
+    trackEvent('paywall_pay', { price: PRICE_ALL, section: sectionId });
+    setActivePaywallSection(null);
     setShowFreeSuccess(true);
-    const sec = activeSection;
-    try { localStorage.setItem(`toxic_premium_${sec}`, '1'); } catch {}
+    try { localStorage.setItem(`toxic_unlocked_${sectionId}`, '1'); } catch {}
     setTimeout(() => {
       setShowFreeSuccess(false);
-      setUnlockedSections(prev => new Set([...prev, sec]));
+      setUnlockedSections(prev => new Set([...prev, sectionId]));
     }, 3200);
   };
 
@@ -815,6 +747,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         const localData = generateLocalAnalysis(result, relationType, hasTarget);
         setAiPhase2({
           personalImpact: localData.personalImpact,
+          howTheySeeMe: localData.howTheySeeMe,
           continuationAssessment: localData.continuationAssessment,
         });
       } finally {
@@ -893,12 +826,17 @@ export default function StepResult({ myData, targetData, result, relationType, o
     <div className="animate-fade-in max-w-lg mx-auto px-4 py-8 space-y-4">
 
       {/* 결제 팝업 모달 */}
-      {showPaywall && activeSection && (
-        <PaywallModal section={activeSection} onClose={() => setShowPaywall(false)} onPay={handlePayment} />
+      {activePaywallSection && (
+        <PaywallModal
+          myName={myData.name || ''}
+          conflictType={result.conflictType}
+          onClose={() => setActivePaywallSection(null)}
+          onPay={() => handlePayment(activePaywallSection)}
+        />
       )}
 
       {/* 결제 성공 오버레이 */}
-      <FreeSuccessOverlay visible={showFreeSuccess} />
+      <FreeSuccessOverlay visible={showFreeSuccess} myName={myData.name || ''} />
 
       {/* 토스트 알림 */}
       {toast && (
@@ -1036,17 +974,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
         </div>
       )}
 
-      {/* 한눈에 보기 요약 */}
-      <div className="border border-[#FF2D55]/30 p-5" style={{ background: 'linear-gradient(135deg, #0D0005, #0A0A0A)' }}>
-        <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr mb-3">한눈에 보기</p>
-        <p className="text-white font-bold text-base leading-snug mb-2">
-          {ai.coreConflict?.title || result.conflictType}
-        </p>
-        <p className="text-[#888] text-sm leading-relaxed">
-          {ai.toxicSummary || result.conflictSummary}
-        </p>
-      </div>
-
       {/* AI 실패 알림 */}
       {aiError && (
         <div className="border border-[#1e1e1e] bg-[#0D0D0D] px-4 py-3 text-xs text-[#555] font-sans-kr">
@@ -1079,93 +1006,89 @@ export default function StepResult({ myData, targetData, result, relationType, o
           </Card>
 
           {isOpen('s01') && (
-            <div className="space-y-3">
-              {(ai.conflictAnalysis?.chung || ai.conflictAnalysis?.hyung ||
-                ai.conflictAnalysis?.hae || ai.conflictAnalysis?.geuk ||
-                result.analysis.chungAnalysis || result.analysis.hyungAnalysis) && (
-                <Card>
-                  <SubLabel text="사주 충돌 분석" />
-                  <div className="space-y-4">
-                    {(ai.conflictAnalysis?.chung || result.analysis.chungAnalysis) && (
+            <BlurredPreview unlocked={isUnlocked('s01')} onUnlock={() => handleOpenPaywall('s01')}>
+              <div className="space-y-3">
+                {(ai.conflictAnalysis?.chung || ai.conflictAnalysis?.hyung ||
+                  ai.conflictAnalysis?.geuk ||
+                  result.analysis.chungAnalysis || result.analysis.hyungAnalysis) && (
+                  <Card>
+                    <SubLabel text="사주 충돌 분석" />
+                    <div className="space-y-4">
+                      {(ai.conflictAnalysis?.chung || result.analysis.chungAnalysis) && (
+                        <div>
+                          <span className="text-[10px] border border-[#FF2D55]/40 text-[#FF2D55] px-2 py-0.5 inline-block mb-2">충(沖)</span>
+                          <p className="text-[#888] text-sm leading-relaxed">{ai.conflictAnalysis?.chung || result.analysis.chungAnalysis}</p>
+                        </div>
+                      )}
+                      {(ai.conflictAnalysis?.hyung || result.analysis.hyungAnalysis) && (
+                        <div className="border-t border-[#1a1a1a] pt-4">
+                          <span className="text-[10px] border border-[#BF5AF2]/40 text-[#BF5AF2] px-2 py-0.5 inline-block mb-2">형(刑)</span>
+                          <p className="text-[#888] text-sm leading-relaxed">{ai.conflictAnalysis?.hyung || result.analysis.hyungAnalysis}</p>
+                        </div>
+                      )}
+                      {(ai.conflictAnalysis?.geuk || result.analysis.geukAnalysis) && (
+                        <div className="border-t border-[#1a1a1a] pt-4">
+                          <span className="text-[10px] border border-[#FF2D55]/40 text-[#FF2D55] px-2 py-0.5 inline-block mb-2">극(剋)</span>
+                          <p className="text-[#888] text-sm leading-relaxed">{ai.conflictAnalysis?.geuk || result.analysis.geukAnalysis}</p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                )}
+
+                {ai.emotionalPattern ? (
+                  <Card>
+                    <SubLabel text="감정 반응 패턴" />
+                    <div className="space-y-4">
                       <div>
-                        <span className="text-[10px] border border-[#FF2D55]/40 text-[#FF2D55] px-2 py-0.5 inline-block mb-2">충(沖)</span>
-                        <p className="text-[#888] text-sm leading-relaxed">{ai.conflictAnalysis?.chung || result.analysis.chungAnalysis}</p>
+                        <p className="text-[#555] text-[11px] mb-1.5">나의 반응 방식</p>
+                        <p className="text-[#888] text-sm leading-relaxed">{ai.emotionalPattern.myPattern}</p>
                       </div>
-                    )}
-                    {(ai.conflictAnalysis?.hyung || result.analysis.hyungAnalysis) && (
                       <div className="border-t border-[#1a1a1a] pt-4">
-                        <span className="text-[10px] border border-[#BF5AF2]/40 text-[#BF5AF2] px-2 py-0.5 inline-block mb-2">형(刑)</span>
-                        <p className="text-[#888] text-sm leading-relaxed">{ai.conflictAnalysis?.hyung || result.analysis.hyungAnalysis}</p>
+                        <p className="text-[#555] text-[11px] mb-1.5">상대의 반응 방식</p>
+                        <p className="text-[#888] text-sm leading-relaxed">{ai.emotionalPattern.targetPattern}</p>
                       </div>
-                    )}
-                    {ai.conflictAnalysis?.hae && (
-                      <div className="border-t border-[#1a1a1a] pt-4">
-                        <span className="text-[10px] border border-[#FF9800]/40 text-[#FF9800] px-2 py-0.5 inline-block mb-2">해(害)</span>
-                        <p className="text-[#888] text-sm leading-relaxed">{ai.conflictAnalysis.hae}</p>
+                      <div className="border-t border-[#1a1a1a] pt-4 bg-[#FF2D55]/5 -mx-5 px-5 py-4 -mb-5">
+                        <p className="text-[#555] text-[11px] mb-1.5">반복되는 사이클</p>
+                        <p className="text-[#aaa] text-sm leading-relaxed">{ai.emotionalPattern.cycle}</p>
                       </div>
-                    )}
-                    {(ai.conflictAnalysis?.geuk || result.analysis.geukAnalysis) && (
-                      <div className="border-t border-[#1a1a1a] pt-4">
-                        <span className="text-[10px] border border-[#FF2D55]/40 text-[#FF2D55] px-2 py-0.5 inline-block mb-2">극(剋)</span>
-                        <p className="text-[#888] text-sm leading-relaxed">{ai.conflictAnalysis?.geuk || result.analysis.geukAnalysis}</p>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card>
+                    <SubLabel text="감정 반응 패턴" />
+                    <p className="text-[#888] text-sm leading-relaxed">{result.conflictSummary}</p>
+                  </Card>
+                )}
+
+                {ai.energyDynamic && (
+                  <Card accent="#BF5AF2">
+                    <SubLabel text="에너지 역학" />
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-[#555] text-[11px] mb-1">누가 더 소모되나</p>
+                        <p className="text-[#888] text-sm leading-relaxed">{ai.energyDynamic.whoLoses}</p>
                       </div>
-                    )}
-                  </div>
-                </Card>
-              )}
+                      <div className="border-t border-[#1a1a1a] pt-3">
+                        <p className="text-[#555] text-[11px] mb-1">소모 방식</p>
+                        <p className="text-[#888] text-sm leading-relaxed">{ai.energyDynamic.drainMechanism}</p>
+                      </div>
+                      <div className="border-t border-[#1a1a1a] pt-3">
+                        <p className="text-[#555] text-[11px] mb-1">장기 전망</p>
+                        <p className="text-[#aaa] text-sm leading-relaxed">{ai.energyDynamic.longTermEffect}</p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
 
-              {ai.emotionalPattern ? (
-                <Card>
-                  <SubLabel text="감정 반응 패턴" />
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-[#555] text-[11px] mb-1.5">나의 반응 방식</p>
-                      <p className="text-[#888] text-sm leading-relaxed">{ai.emotionalPattern.myPattern}</p>
-                    </div>
-                    <div className="border-t border-[#1a1a1a] pt-4">
-                      <p className="text-[#555] text-[11px] mb-1.5">상대의 반응 방식</p>
-                      <p className="text-[#888] text-sm leading-relaxed">{ai.emotionalPattern.targetPattern}</p>
-                    </div>
-                    <div className="border-t border-[#1a1a1a] pt-4 bg-[#FF2D55]/5 -mx-5 px-5 py-4 -mb-5">
-                      <p className="text-[#555] text-[11px] mb-1.5">반복되는 사이클</p>
-                      <p className="text-[#aaa] text-sm leading-relaxed">{ai.emotionalPattern.cycle}</p>
-                    </div>
+                {ai.hiddenDynamic && (
+                  <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
+                    <SubLabel text="숨겨진 역학" />
+                    <p className="text-[#aaa] text-sm leading-relaxed">{ai.hiddenDynamic}</p>
                   </div>
-                </Card>
-              ) : (
-                <Card>
-                  <SubLabel text="감정 반응 패턴" />
-                  <p className="text-[#888] text-sm leading-relaxed">{result.conflictSummary}</p>
-                </Card>
-              )}
-
-              {ai.energyDynamic && (
-                <Card accent="#BF5AF2">
-                  <SubLabel text="에너지 역학" />
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-[#555] text-[11px] mb-1">누가 더 소모되나</p>
-                      <p className="text-[#888] text-sm leading-relaxed">{ai.energyDynamic.whoLoses}</p>
-                    </div>
-                    <div className="border-t border-[#1a1a1a] pt-3">
-                      <p className="text-[#555] text-[11px] mb-1">소모 방식</p>
-                      <p className="text-[#888] text-sm leading-relaxed">{ai.energyDynamic.drainMechanism}</p>
-                    </div>
-                    <div className="border-t border-[#1a1a1a] pt-3">
-                      <p className="text-[#555] text-[11px] mb-1">장기 전망</p>
-                      <p className="text-[#aaa] text-sm leading-relaxed">{ai.energyDynamic.longTermEffect}</p>
-                    </div>
-                  </div>
-                </Card>
-              )}
-
-              {ai.hiddenDynamic && (
-                <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
-                  <SubLabel text="숨겨진 역학" />
-                  <p className="text-[#aaa] text-sm leading-relaxed">{ai.hiddenDynamic}</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </BlurredPreview>
           )}
           <ToggleBtn open={isOpen('s01')} onToggle={() => toggleSection('s01')} />
 
@@ -1193,83 +1116,82 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
           {isOpen('s02') && (
-            <div className="space-y-3">
-              {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
-                <Card key={i}>
-                  <div className="flex items-start gap-3">
-                    <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">{i + 2}</span>
-                    <div>
-                      <p className="text-white text-sm font-bold mb-2">{s.situation}</p>
-                      <p className="text-[#777] text-xs leading-relaxed mb-3">{s.whatHappens}</p>
-                      <div className="border-t border-[#1a1a1a] pt-2">
-                        <p className="text-[#FF2D55]/60 text-[11px]">사주 구조 → {s.whySaju}</p>
+            <BlurredPreview unlocked={isUnlocked('s02')} onUnlock={() => handleOpenPaywall('s02')}>
+              <div className="space-y-3">
+                {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
+                  <Card key={i}>
+                    <div className="flex items-start gap-3">
+                      <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">{i + 2}</span>
+                      <div>
+                        <p className="text-white text-sm font-bold mb-2">{s.situation}</p>
+                        <p className="text-[#777] text-xs leading-relaxed mb-3">{s.whatHappens}</p>
+                        <div className="border-t border-[#1a1a1a] pt-2">
+                          <p className="text-[#FF2D55]/60 text-[11px]">사주 구조 → {s.whySaju}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ))}
 
-              {ai.triggerPoints && ai.triggerPoints.length > 0 ? (
-                <Card>
-                  <SubLabel text="갈등 트리거" />
-                  <div className="space-y-2">
-                    {ai.triggerPoints.map((t, i) => (
-                      <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
-                        <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
-                        <p className="text-[#888] text-sm">{t}</p>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              ) : (
-                <Card>
-                  <SubLabel text="갈등 트리거" />
-                  <div className="space-y-2">
-                    {result.tags.map((t, i) => (
-                      <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
-                        <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
-                        <p className="text-[#888] text-sm">{t}</p>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
+                {ai.triggerPoints && ai.triggerPoints.length > 0 ? (
+                  <Card>
+                    <SubLabel text="갈등 트리거" />
+                    <div className="space-y-2">
+                      {ai.triggerPoints.map((t, i) => (
+                        <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
+                          <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
+                          <p className="text-[#888] text-sm">{t}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                ) : (
+                  <Card>
+                    <SubLabel text="갈등 트리거" />
+                    <div className="space-y-2">
+                      {result.tags.map((t, i) => (
+                        <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
+                          <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
+                          <p className="text-[#888] text-sm">{t}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
 
-              {ai.relationSpecific && (
-                <Card>
-                  <SubLabel text={`${relationType} 관계에서 특히`} />
-                  <p className="text-[#888] text-sm leading-relaxed">{ai.relationSpecific}</p>
-                </Card>
-              )}
-            </div>
+                {ai.relationSpecific && (
+                  <Card>
+                    <SubLabel text={`${relationType} 관계에서 특히`} />
+                    <p className="text-[#888] text-sm leading-relaxed">{ai.relationSpecific}</p>
+                  </Card>
+                )}
+              </div>
+            </BlurredPreview>
           )}
           <ToggleBtn open={isOpen('s02')} onToggle={() => toggleSection('s02')} />
 
-          {/* ════ 03 앞으로 이렇게 해보세요 (유료) ════ */}
+          {/* ════ 03 앞으로 이렇게 해보세요 ════ */}
           <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="상황별 실전 가이드 · 선긋기 · 현실적 전망" />
 
-          {!unlockedSections.has('03') ? (
-            <LockedPremium
-              teaser="이 충돌 구조에서 덜 소모되기 위해 지금 당장 쓸 수 있는 구체적인 방법들이 있습니다. 어떤 상황에서 어떻게 행동하면 되는지, 반드시 지켜야 할 선은 무엇인지—"
-              onUnlock={() => handleOpenPaywall('03')}
-            />
+          {ai.avoidanceGuide ? (
+            <Card accent="#FF2D55">
+              <SubLabel text="마음가짐" />
+              <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.mindset}</p>
+            </Card>
+          ) : phase2Loading ? (
+            <Phase2Skeleton />
           ) : (
-            <>
-              {ai.avoidanceGuide ? (
-                <Card accent="#FF2D55">
-                  <SubLabel text="마음가짐" />
-                  <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.mindset}</p>
-                </Card>
-              ) : (
-                <Card accent="#FF2D55">
-                  <SubLabel text="현실적 가이드" />
-                  <p className="text-[#888] text-sm leading-relaxed">
-                    이 관계의 충돌 구조는 구조적입니다. 상대를 바꾸려 하기보다, 충돌이 일어나는 상황 자체를 피하고 기대치를 조정하는 것이 현실적입니다.
-                  </p>
-                </Card>
-              )}
+            <Card accent="#FF2D55">
+              <SubLabel text="현실적 가이드" />
+              <p className="text-[#888] text-sm leading-relaxed">
+                이 관계의 충돌 구조는 구조적입니다. 상대를 바꾸려 하기보다, 충돌이 일어나는 상황 자체를 피하고 기대치를 조정하는 것이 현실적입니다.
+              </p>
+            </Card>
+          )}
 
-              {isOpen('s03') && ai.avoidanceGuide && (
+          {isOpen('s03') && (
+            ai.avoidanceGuide ? (
+              <BlurredPreview unlocked={isUnlocked('s03')} onUnlock={() => handleOpenPaywall('s03')}>
                 <div className="space-y-3">
                   <Card>
                     <SubLabel text="실전 팁" />
@@ -1284,12 +1206,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
                       ))}
                     </div>
                   </Card>
-
                   <Card>
                     <SubLabel text="선긋기" />
                     <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.boundaries}</p>
                   </Card>
-
                   {ai.realisticOutlook && (
                     <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
                       <SubLabel text="현실적 전망" />
@@ -1297,43 +1217,33 @@ export default function StepResult({ myData, targetData, result, relationType, o
                     </div>
                   )}
                 </div>
-              )}
-              {ai.avoidanceGuide && <ToggleBtn open={isOpen('s03')} onToggle={() => toggleSection('s03')} />}
-            </>
+              </BlurredPreview>
+            ) : phase2Loading ? <Phase2Skeleton /> : null
+          )}
+          <ToggleBtn open={isOpen('s03')} onToggle={() => toggleSection('s03')} />
+
+          {/* ════ 04 이 관계가 나에게 주는 영향 ════ */}
+          <SectionHeader number="04" title="이 관계가 나에게 주는 영향" subtitle="지금 이 관계가 나에게 하고 있는 것" />
+
+          {phase2Loading ? (
+            <Phase2Skeleton />
+          ) : ai.personalImpact ? (
+            <Card accent="#BF5AF2">
+              <SubLabel text="지금 나에게 미치는 영향" />
+              <p className="text-[#888] text-sm leading-relaxed">{ai.personalImpact.onMe}</p>
+            </Card>
+          ) : (
+            <Card accent="#BF5AF2">
+              <SubLabel text="이 관계의 에너지 소모" />
+              <p className="text-[#888] text-sm leading-relaxed">
+                충돌 구조가 강한 관계일수록 유지에 드는 감정 비용이 큽니다. 이 관계에서 반복적으로 느끼는 피로감은 의지력 부족이 아니라 구조의 문제입니다.
+              </p>
+            </Card>
           )}
 
-          {/* ════ 04 이 관계가 나에게 하는 일 ════ */}
-          <SectionHeader number="04" title="이 관계가 나에게 하는 일" subtitle="지금 이 순간 당신에게 일어나고 있는 것" />
-
-          {!unlockedSections.has('04') ? (
-            <LockedPremium
-              teaser="지금 이 관계에서 당신은 조금씩 자신을 잃어가고 있습니다. AI가 발견한 경고 신호와 당신이 이 관계로 인해 잃어가고 있는 것들—"
-              onUnlock={() => handleOpenPaywall('04')}
-            />
-          ) : phase2Loading ? (
-            <>
-              <Phase2Skeleton />
-              <p className="text-center text-[#333] text-[11px] font-sans-kr animate-pulse py-1">
-                04·05 섹션 분석 중 — 잠시만 기다려주세요
-              </p>
-            </>
-          ) : (
-            <>
-              {ai.personalImpact ? (
-                <Card accent="#BF5AF2">
-                  <SubLabel text="지금 나에게 미치는 영향" />
-                  <p className="text-[#888] text-sm leading-relaxed">{ai.personalImpact.onMe}</p>
-                </Card>
-              ) : (
-                <Card accent="#BF5AF2">
-                  <SubLabel text="이 관계의 에너지 소모" />
-                  <p className="text-[#888] text-sm leading-relaxed">
-                    충돌 구조가 강한 관계일수록 유지에 드는 감정 비용이 큽니다. 이 관계에서 반복적으로 느끼는 피로감은 의지력 부족이 아니라 구조의 문제입니다.
-                  </p>
-                </Card>
-              )}
-
-              {isOpen('s04') && ai.personalImpact && (
+          {isOpen('s04') && (
+            ai.personalImpact ? (
+              <BlurredPreview unlocked={isUnlocked('s04')} onUnlock={() => handleOpenPaywall('s04')}>
                 <div className="space-y-3">
                   {ai.personalImpact.warningSignals?.length > 0 && (
                     <Card>
@@ -1353,42 +1263,82 @@ export default function StepResult({ myData, targetData, result, relationType, o
                     <p className="text-[#aaa] text-sm leading-relaxed">{ai.personalImpact.whatYouLose}</p>
                   </div>
                 </div>
-              )}
-              {ai.personalImpact && <ToggleBtn open={isOpen('s04')} onToggle={() => toggleSection('s04')} />}
-            </>
+              </BlurredPreview>
+            ) : phase2Loading ? <Phase2Skeleton /> : null
+          )}
+          <ToggleBtn open={isOpen('s04')} onToggle={() => toggleSection('s04')} />
+
+          {/* ════ 05 상대는 나를 어떻게 생각하는지 ════ */}
+          <SectionHeader number="05" title="상대는 나를 어떻게 생각하는지" subtitle="상대방 눈에 비친 나의 모습" />
+
+          {phase2Loading ? (
+            <Phase2Skeleton />
+          ) : ai.howTheySeeMe ? (
+            <Card accent="#FF9500">
+              <SubLabel text="상대방 사주로 읽히는 나의 에너지" />
+              <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.energyReading}</p>
+            </Card>
+          ) : (
+            <Card accent="#FF9500">
+              <SubLabel text="상대방이 나를 보는 시선" />
+              <p className="text-[#888] text-sm leading-relaxed">
+                상대방의 사주 기운은 나의 에너지를 독특한 방식으로 읽습니다. 충돌 구조가 있을수록 상대방 눈에 나는 더 강렬하게 각인됩니다.
+              </p>
+            </Card>
           )}
 
-          {/* ════ 05 이 관계, 계속 가야 할까? ════ */}
-          <SectionHeader number="05" title="이 관계, 계속 가야 할까?" subtitle="사주 구조로 보는 냉철한 판단" />
+          {isOpen('s05') && (
+            ai.howTheySeeMe ? (
+              <BlurredPreview unlocked={isUnlocked('s05')} onUnlock={() => handleOpenPaywall('s05')}>
+                <div className="space-y-3">
+                  <Card>
+                    <SubLabel text="상대방이 나 때문에 자극받는 것" />
+                    <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.whatIrritates}</p>
+                  </Card>
+                  <Card>
+                    <SubLabel text="그래도 나를 놓지 못하는 이유" />
+                    <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.whatDrawsThem}</p>
+                  </Card>
+                  <Card>
+                    <SubLabel text="상대방이 혼자 나를 평가하는 방식" />
+                    <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.theirPrivateVerdict}</p>
+                  </Card>
+                  <div className="border border-[#FF9500]/20 p-5 bg-[#FF9500]/5">
+                    <SubLabel text="상대방이 나에게 진짜로 원하는 것" />
+                    <p className="text-[#aaa] text-sm leading-relaxed">{ai.howTheySeeMe.howTheyNeedMe}</p>
+                  </div>
+                </div>
+              </BlurredPreview>
+            ) : phase2Loading ? <Phase2Skeleton /> : null
+          )}
+          <ToggleBtn open={isOpen('s05')} onToggle={() => toggleSection('s05')} />
 
-          {!unlockedSections.has('05') ? (
-            <LockedPremium
-              teaser="사주 구조는 이 관계에 대해 분명한 신호를 보내고 있습니다. 계속할 때 반드시 넘어야 할 레드라인과 AI 최종 판정—"
-              onUnlock={() => handleOpenPaywall('05')}
-            />
-          ) : phase2Loading ? (
+          {/* ════ 06 이 관계, 계속 가야 할까? ════ */}
+          <SectionHeader number="06" title="이 관계, 계속 가야 할까?" subtitle="사주 구조로 보는 냉철한 판단" />
+
+          {phase2Loading ? (
             <Phase2Skeleton />
+          ) : ai.continuationAssessment ? (
+            <div className="border border-[#FF2D55] p-5"
+              style={{ background: 'linear-gradient(135deg, #0D0005 0%, #0A0A0A 100%)' }}>
+              <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr mb-3">최종 판정</p>
+              <p className="text-white text-base font-bold leading-snug font-sans-kr">
+                {ai.continuationAssessment.verdict}
+              </p>
+            </div>
           ) : (
-            <>
-              {ai.continuationAssessment ? (
-                <div className="border border-[#FF2D55] p-5"
-                  style={{ background: 'linear-gradient(135deg, #0D0005 0%, #0A0A0A 100%)' }}>
-                  <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr mb-3">최종 판정</p>
-                  <p className="text-white text-base font-bold leading-snug font-sans-kr">
-                    {ai.continuationAssessment.verdict}
-                  </p>
-                </div>
-              ) : (
-                <div className="border border-[#FF2D55] p-5"
-                  style={{ background: 'linear-gradient(135deg, #0D0005 0%, #0A0A0A 100%)' }}>
-                  <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr mb-3">구조적 판단</p>
-                  <p className="text-white text-sm font-sans-kr leading-relaxed">
-                    충돌 구조는 바뀌지 않습니다. 바뀔 수 있는 건 두 사람이 그 구조를 어떻게 다루느냐입니다.
-                  </p>
-                </div>
-              )}
+            <div className="border border-[#FF2D55] p-5"
+              style={{ background: 'linear-gradient(135deg, #0D0005 0%, #0A0A0A 100%)' }}>
+              <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr mb-3">구조적 판단</p>
+              <p className="text-white text-sm font-sans-kr leading-relaxed">
+                충돌 구조는 바뀌지 않습니다. 바뀔 수 있는 건 두 사람이 그 구조를 어떻게 다루느냐입니다.
+              </p>
+            </div>
+          )}
 
-              {isOpen('s05') && ai.continuationAssessment && (
+          {isOpen('s06') && (
+            ai.continuationAssessment ? (
+              <BlurredPreview unlocked={isUnlocked('s06')} onUnlock={() => handleOpenPaywall('s06')}>
                 <div className="space-y-3">
                   <Card>
                     <SubLabel text="구조적 분석" />
@@ -1403,10 +1353,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
                     <p className="text-[#888] text-sm leading-relaxed">{ai.continuationAssessment.redLine}</p>
                   </Card>
                 </div>
-              )}
-              {ai.continuationAssessment && <ToggleBtn open={isOpen('s05')} onToggle={() => toggleSection('s05')} />}
-            </>
+              </BlurredPreview>
+            ) : phase2Loading ? <Phase2Skeleton /> : null
           )}
+          <ToggleBtn open={isOpen('s06')} onToggle={() => toggleSection('s06')} />
         </div>
       )}
 
@@ -1440,32 +1390,34 @@ export default function StepResult({ myData, targetData, result, relationType, o
           </Card>
 
           {isOpen('s01') && (
-            <div className="space-y-3">
-              {ai.dangerTypes && ai.dangerTypes.length > 0 && (
-                <>
-                  <SubLabel text="나의 위험 유형" />
-                  {ai.dangerTypes.map((dt, i) => (
-                    <Card key={i}>
-                      <div className="mb-3">
-                        <p className="text-white text-sm font-bold mb-1">{dt.type}</p>
-                        {dt.years && <p className="text-[#555] text-[11px]">{dt.years}</p>}
-                      </div>
-                      <p className="text-[#777] text-xs leading-relaxed mb-3">{dt.whyDangerous}</p>
-                      <div className="bg-[#FF2D55]/5 border border-[#FF2D55]/15 px-3 py-2.5">
-                        <p className="text-[#FF2D55]/80 text-[11px] mb-1">실제 상황</p>
-                        <p className="text-[#888] text-xs leading-relaxed">{dt.realScenario}</p>
-                      </div>
-                    </Card>
-                  ))}
-                </>
-              )}
-              {ai.hiddenDynamic && (
-                <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
-                  <SubLabel text="숨겨진 패턴" />
-                  <p className="text-[#aaa] text-sm leading-relaxed">{ai.hiddenDynamic}</p>
-                </div>
-              )}
-            </div>
+            <BlurredPreview unlocked={isUnlocked('s01')} onUnlock={() => handleOpenPaywall('s01')}>
+              <div className="space-y-3">
+                {ai.dangerTypes && ai.dangerTypes.length > 0 && (
+                  <>
+                    <SubLabel text="나의 위험 유형" />
+                    {ai.dangerTypes.map((dt, i) => (
+                      <Card key={i}>
+                        <div className="mb-3">
+                          <p className="text-white text-sm font-bold mb-1">{dt.type}</p>
+                          {dt.years && <p className="text-[#555] text-[11px]">{dt.years}</p>}
+                        </div>
+                        <p className="text-[#777] text-xs leading-relaxed mb-3">{dt.whyDangerous}</p>
+                        <div className="bg-[#FF2D55]/5 border border-[#FF2D55]/15 px-3 py-2.5">
+                          <p className="text-[#FF2D55]/80 text-[11px] mb-1">실제 상황</p>
+                          <p className="text-[#888] text-xs leading-relaxed">{dt.realScenario}</p>
+                        </div>
+                      </Card>
+                    ))}
+                  </>
+                )}
+                {ai.hiddenDynamic && (
+                  <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
+                    <SubLabel text="숨겨진 패턴" />
+                    <p className="text-[#aaa] text-sm leading-relaxed">{ai.hiddenDynamic}</p>
+                  </div>
+                )}
+              </div>
+            </BlurredPreview>
           )}
           <ToggleBtn open={isOpen('s01')} onToggle={() => toggleSection('s01')} />
 
@@ -1490,39 +1442,41 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
           {isOpen('s02') && (
-            <div className="space-y-3">
-              {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
-                <Card key={i}>
-                  <div className="flex items-start gap-3">
-                    <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">{i + 2}</span>
-                    <div>
-                      <p className="text-white text-sm font-bold mb-2">{s.situation}</p>
-                      <p className="text-[#777] text-xs leading-relaxed mb-2">{s.whatHappens}</p>
-                      <p className="text-[#FF2D55]/60 text-[11px] border-t border-[#1a1a1a] pt-2">사주 구조 → {s.whySaju}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-              {ai.triggerPoints && (
-                <Card>
-                  <SubLabel text="나의 갈등 트리거" />
-                  <div className="space-y-2">
-                    {ai.triggerPoints.map((t, i) => (
-                      <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
-                        <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
-                        <p className="text-[#888] text-sm">{t}</p>
+            <BlurredPreview unlocked={isUnlocked('s02')} onUnlock={() => handleOpenPaywall('s02')}>
+              <div className="space-y-3">
+                {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
+                  <Card key={i}>
+                    <div className="flex items-start gap-3">
+                      <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">{i + 2}</span>
+                      <div>
+                        <p className="text-white text-sm font-bold mb-2">{s.situation}</p>
+                        <p className="text-[#777] text-xs leading-relaxed mb-2">{s.whatHappens}</p>
+                        <p className="text-[#FF2D55]/60 text-[11px] border-t border-[#1a1a1a] pt-2">사주 구조 → {s.whySaju}</p>
                       </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
-              {ai.warningPattern && (
-                <Card accent="#FF2D55">
-                  <SubLabel text="반복되는 갈등 패턴" />
-                  <p className="text-[#aaa] text-sm leading-relaxed">{ai.warningPattern}</p>
-                </Card>
-              )}
-            </div>
+                    </div>
+                  </Card>
+                ))}
+                {ai.triggerPoints && (
+                  <Card>
+                    <SubLabel text="나의 갈등 트리거" />
+                    <div className="space-y-2">
+                      {ai.triggerPoints.map((t, i) => (
+                        <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
+                          <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
+                          <p className="text-[#888] text-sm">{t}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+                {ai.warningPattern && (
+                  <Card accent="#FF2D55">
+                    <SubLabel text="반복되는 갈등 패턴" />
+                    <p className="text-[#aaa] text-sm leading-relaxed">{ai.warningPattern}</p>
+                  </Card>
+                )}
+              </div>
+            </BlurredPreview>
           )}
           <ToggleBtn open={isOpen('s02')} onToggle={() => toggleSection('s02')} />
 
@@ -1542,28 +1496,32 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-          {isOpen('s03') && ai.avoidanceGuide && (
-            <div className="space-y-3">
-              <Card>
-                <SubLabel text="실전 팁" />
+          {isOpen('s03') && (
+            ai.avoidanceGuide ? (
+              <BlurredPreview unlocked={isUnlocked('s03')} onUnlock={() => handleOpenPaywall('s03')}>
                 <div className="space-y-3">
-                  {ai.avoidanceGuide.practicalTips.map((tip, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <span className="w-5 h-5 rounded-full border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <p className="text-[#888] text-sm leading-relaxed">{tip}</p>
+                  <Card>
+                    <SubLabel text="실전 팁" />
+                    <div className="space-y-3">
+                      {ai.avoidanceGuide.practicalTips.map((tip, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <span className="w-5 h-5 rounded-full border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                            {i + 1}
+                          </span>
+                          <p className="text-[#888] text-sm leading-relaxed">{tip}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </Card>
+                  <Card>
+                    <SubLabel text="선긋기" />
+                    <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.boundaries}</p>
+                  </Card>
                 </div>
-              </Card>
-              <Card>
-                <SubLabel text="선긋기" />
-                <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.boundaries}</p>
-              </Card>
-            </div>
+              </BlurredPreview>
+            ) : null
           )}
-          {ai.avoidanceGuide && <ToggleBtn open={isOpen('s03')} onToggle={() => toggleSection('s03')} />}
+          <ToggleBtn open={isOpen('s03')} onToggle={() => toggleSection('s03')} />
         </div>
       )}
 

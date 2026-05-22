@@ -30,6 +30,8 @@ interface Stats {
   paywallPays: number;
   paywallCTR: number;
   paywallConversion: number;
+  reviewSubmits: number;
+  avgReviewStars: string;
 }
 
 function computeStats(events: EventRecord[]): Stats {
@@ -86,6 +88,8 @@ function computeStats(events: EventRecord[]): Stats {
     paywallPays,
     paywallCTR: paywallImpressions ? Math.round((paywallClicks / paywallImpressions) * 100) : 0,
     paywallConversion: paywallClicks ? Math.round((paywallPays / paywallClicks) * 100) : 0,
+    reviewSubmits,
+    avgReviewStars,
     dropoff: {
       landing: 100,
       step1: landing ? Math.round((s1 / landing) * 100) : 0,

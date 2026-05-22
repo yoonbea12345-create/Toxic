@@ -180,7 +180,7 @@ select {
 
 /* ── CTA 버튼 그림자 강화 ── */
 .cta-glow-red {
-  box-shadow: 0 0 60px rgba(255,45,85,0.4), 0 8px 32px rgba(255,45,85,0.2);
+  box-shadow: none;
 }
 
 /* ── 카드 hover 트랜지션 강화 ── */

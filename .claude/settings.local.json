@@ -1,7 +1,8 @@
 {
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
-      "PowerShell(Get-ChildItem -Path \"D:\\\\Users\\\\issue\\\\Toxic\\\\src\" -Recurse -Force | ForEach-Object { $_.FullName })"
+      "WebFetch(domain:github.com)"
     ]
   }
 }

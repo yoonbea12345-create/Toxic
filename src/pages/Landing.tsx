@@ -180,7 +180,7 @@ export default function Landing() {
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-xl mx-auto px-5 h-14 flex items-center justify-between">
-          <img src="/logo.svg" alt="TOXIC" className="h-16 object-contain" />
+          <img src="/hero-title.svg" alt="TOXIC" className="h-16 object-contain" />
           <button onClick={goToApp}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 rounded-full hover:opacity-90 active:scale-95 transition-all font-sans-kr tracking-wider font-bold">
             분석 시작 →
@@ -197,8 +197,8 @@ export default function Landing() {
 
         <div className="relative z-10">
           <div className="flex items-center gap-2.5 mb-10">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D55] animate-pulse" />
-            <span className="text-[#FF2D55] section-label font-sans-kr">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D55] animate-pulse flex-shrink-0" />
+            <span className="text-[#FF2D55] section-label font-sans-kr !mb-0">
               사주로 보는 관계의 본질
             </span>
           </div>
@@ -211,15 +211,15 @@ export default function Landing() {
           </h1>
 
           {/* 감정 트리거 rotator */}
-          <div className="flex items-center gap-2.5 mb-3 h-5 overflow-hidden">
-            <span className="text-[#FF2D55] text-xs flex-shrink-0">▸</span>
-            <p key={triggerIdx} className="font-sans-kr text-[#666] text-sm animate-fade-in">
+          <div className="flex items-start gap-2.5 mb-3" style={{ minHeight: '5rem' }}>
+            <span className="text-[#FF2D55] text-xs flex-shrink-0 mt-0.5">▸</span>
+            <p key={triggerIdx} className="font-sans-kr text-[#666] text-sm animate-fade-in leading-relaxed">
               {TRIGGERS[triggerIdx]}
             </p>
           </div>
 
           <p className="font-sans-kr text-white text-base leading-relaxed mb-12">
-            사주에 <span className="text-[#FF2D55] font-bold">이미 답이 있었습니다.</span>
+            사주에 <span className="text-[#FF2D55] font-bold">이미 답이 있습니다.</span>
           </p>
 
           <div className="flex items-center gap-3 mb-8">
@@ -227,8 +227,6 @@ export default function Landing() {
               {[1,2,3,4,5].map(i => <span key={i} className={`text-xs ${i <= 4 ? 'text-[#FF2D55]' : 'text-[#333]'}`}>★</span>)}
             </div>
             <p className="font-sans-kr text-[#555] text-[11px]">4.4점 · 54개 리뷰</p>
-            <span className="text-[#222]">·</span>
-            <p className="font-sans-kr text-[#555] text-[11px]">무료</p>
           </div>
 
           <button onClick={goToApp}
@@ -238,7 +236,7 @@ export default function Landing() {
 
           {/* 기능 칩 (MINT 패턴) */}
           <div className="flex flex-wrap gap-2 mb-4 justify-center">
-            {['🔮 AI 사주', '⏱ 1분', '✨ 무료', '🔒 가입 불필요'].map(chip => (
+            {['소름 돋는 정확도', '1분이면 끝', '가입 불필요'].map(chip => (
               <span key={chip} className="font-sans-kr text-[10px] border border-[#2a2a2a] text-[#555] px-3 py-1.5 rounded-full">{chip}</span>
             ))}
           </div>
@@ -263,53 +261,111 @@ export default function Landing() {
           <p className="font-sans-kr text-[#FF2D55] section-label text-center mb-2">FAMILIAR?</p>
         <p className="font-sans-kr text-[#555] text-[10px] text-center mb-8">이 대화, 익숙하지 않나요?</p>
 
-          {/* 카톡 스타일 대화창 */}
-          <div className="border border-[#1e1e1e] overflow-hidden max-w-sm mx-auto mb-10" style={{ background: '#111' }}>
-            <div className="px-4 py-3 border-b border-[#1e1e1e] flex items-center gap-2">
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#FF2D55]/50" />
-                <div className="w-1.5 h-1.5 rounded-full bg-[#444]" />
-                <div className="w-1.5 h-1.5 rounded-full bg-[#444]" />
+          {/* 카카오톡 스타일 대화창 */}
+          <div className="overflow-hidden max-w-[320px] mx-auto mb-10 rounded-[20px]"
+            style={{ background: '#1D1D1D', boxShadow: '0 24px 70px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.07)' }}>
+
+            {/* 헤더 — 실제 카카오톡 1:1 채팅방 (이름 절대 중앙) */}
+            <div className="relative flex items-center justify-center h-12"
+              style={{ background: '#252525', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              {/* 뒤로가기 */}
+              <div className="absolute left-3 flex items-center">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" className="opacity-55">
+                  <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </div>
-              <p className="font-sans-kr text-[#444] text-[10px] flex-1 text-center">카카오톡</p>
+              {/* 이름 — 정중앙 */}
+              <p className="font-sans-kr text-white text-[13.5px] font-bold">지훈</p>
+              {/* 우측 아이콘 */}
+              <div className="absolute right-3 flex items-center gap-3.5 opacity-50">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="11" cy="11" r="7" stroke="white" strokeWidth="2"/>
+                  <path d="M21 21l-4-4" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="5" r="1.5" fill="white"/>
+                  <circle cx="12" cy="12" r="1.5" fill="white"/>
+                  <circle cx="12" cy="19" r="1.5" fill="white"/>
+                </svg>
+              </div>
             </div>
 
-            <div className="px-4 py-5 space-y-4">
+            {/* 날짜 */}
+            <div className="pt-3.5 pb-2.5 text-center">
+              <span className="font-sans-kr text-[#505050] text-[10px] bg-[#2A2A2A] px-3 py-1 rounded-full">2025년 3월 14일 금요일</span>
+            </div>
+
+            {/* 메시지 영역 */}
+            <div className="px-3 pb-4 space-y-2">
+
+              {/* 은지 발신 1 — 은지가 먼저 따짐 */}
+              <div className="flex justify-end">
+                <div className="flex items-end gap-1.5">
+                  <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 11:12</p>
+                  <div className="px-3 py-2 max-w-[175px]"
+                    style={{ background: '#FEE500', borderRadius: '14px 2px 14px 14px' }}>
+                    <p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">6시간째 읽씹이네</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 지훈 수신 1 — 거짓말 */}
               <div className="flex gap-2 items-end">
-                <div className="w-7 h-7 rounded-full bg-[#222] flex-shrink-0 flex items-center justify-center text-[11px]">🙁</div>
-                <div className="bg-[#1e1e1e] border border-[#2a2a2a] px-3 py-2.5 max-w-[75%] rounded-tr-lg rounded-br-lg rounded-tl-sm">
-                  <p className="font-sans-kr text-[#ccc] text-xs leading-relaxed">오늘도 또 싸웠어... 왜 항상 이렇지</p>
+                <div className="w-8 h-8 rounded-[8px] flex-shrink-0 overflow-hidden flex items-center justify-center text-base"
+                  style={{ background: 'linear-gradient(135deg, #B8D4F0 0%, #8FB8E8 100%)' }}>
+                  🐻
+                </div>
+                <div>
+                  <p className="font-sans-kr text-[#686868] text-[10.5px] mb-1">지훈</p>
+                  <div className="flex items-end gap-1.5">
+                    <div className="px-3 py-2 max-w-[175px]"
+                      style={{ background: '#3A3A3A', borderRadius: '2px 14px 14px 14px' }}>
+                      <p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">일하느라 못봤어</p>
+                    </div>
+                    <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 11:31</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 items-end justify-end">
-                <div className="bg-[#FF2D55]/80 px-3 py-2.5 max-w-[75%] rounded-tl-lg rounded-bl-lg rounded-tr-sm">
-                  <p className="font-sans-kr text-white text-xs leading-relaxed">또?? 무슨 일인데</p>
+              {/* 은지 발신 2 — 증거 제시 */}
+              <div className="flex justify-end">
+                <div className="flex items-end gap-1.5">
+                  <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 11:32</p>
+                  <div className="px-3 py-2 max-w-[185px]"
+                    style={{ background: '#FEE500', borderRadius: '14px 2px 14px 14px' }}>
+                    <p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">일하는데 인스타는 올렸더라</p>
+                  </div>
                 </div>
               </div>
 
+              {/* 지훈 수신 2 — 침묵 */}
               <div className="flex gap-2 items-end">
-                <div className="w-7 h-7 rounded-full bg-[#222] flex-shrink-0" />
-                <div className="bg-[#1e1e1e] border border-[#2a2a2a] px-3 py-2.5 max-w-[75%] rounded-tr-lg rounded-br-lg rounded-tl-sm">
-                  <p className="font-sans-kr text-[#ccc] text-xs leading-relaxed">그냥... 매번 같은 패턴이야. 분명 좋아하는데 왜 이렇게 자꾸 다치는지</p>
+                <div className="w-8 flex-shrink-0" />
+                <div className="flex items-end gap-1.5">
+                  <div className="px-3 py-2"
+                    style={{ background: '#3A3A3A', borderRadius: '2px 14px 14px 14px' }}>
+                    <p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">…</p>
+                  </div>
+                  <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 11:47</p>
                 </div>
               </div>
 
-              <div className="flex gap-2 items-end justify-end">
-                <div className="bg-[#FF2D55]/80 px-3 py-2.5 max-w-[75%] rounded-tl-lg rounded-bl-lg rounded-tr-sm">
-                  <p className="font-sans-kr text-white text-xs leading-relaxed">헤어지고도 자꾸 생각나지 않아?</p>
+              {/* 은지 발신 3 — 마무리 */}
+              <div className="flex justify-end">
+                <div className="flex items-end gap-1.5">
+                  <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 11:48</p>
+                  <div className="px-3 py-2 max-w-[175px]"
+                    style={{ background: '#FEE500', borderRadius: '14px 2px 14px 14px' }}>
+                    <p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">할 말 없지</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex gap-2 items-end">
-                <div className="w-7 h-7 rounded-full bg-[#222] flex-shrink-0" />
-                <div className="bg-[#1e1e1e] border border-[#2a2a2a] px-3 py-2.5 max-w-[75%] rounded-tr-lg rounded-br-lg rounded-tl-sm">
-                  <p className="font-sans-kr text-[#ccc] text-xs leading-relaxed">ㅇㅇ 그게 더 이상해... 이유를 모르겠어</p>
-                </div>
-              </div>
-
-              <div className="border-t border-[#1e1e1e] pt-4 mt-2">
-                <p className="font-sans-kr text-[#FF2D55] text-[10px] text-center">사주에 이미 이유가 있었습니다</p>
+              {/* 하단 구분 */}
+              <div className="flex items-center gap-2 pt-1.5">
+                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.04)' }} />
+                <p className="font-sans-kr text-[#FF2D55] text-[10px] px-1">사주에 이미 이유가 있었습니다</p>
+                <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.04)' }} />
               </div>
             </div>
           </div>
@@ -342,7 +398,7 @@ export default function Landing() {
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2.5">
-                    <span className="text-[#FF2D55] text-[10px] font-bold border border-[#FF2D55]/30 px-2.5 py-1 rounded-full font-sans-kr tracking-wide">연인 · 전 연인</span>
+                    <span className="text-[#FF2D55] text-[10px] font-bold border border-[#FF2D55]/30 px-2.5 py-1 rounded-full font-sans-kr tracking-wide">연인</span>
                   </div>
                   <p className="font-sans-kr text-white text-sm font-bold mb-1.5">끌렸는데 왜 이렇게 자꾸 다쳤는지</p>
                   <p className="font-sans-kr text-[#555] text-xs leading-relaxed">
@@ -446,7 +502,7 @@ export default function Landing() {
 
         <div className="max-w-xl mx-auto px-5 mt-6">
           <p className="font-sans-kr text-center text-[#444] text-[11px]">
-            무료 · 이름만 알아도 시작 가능 · 1분
+            이름만 알아도 시작 가능 · 1분
           </p>
         </div>
       </section>
@@ -463,7 +519,7 @@ export default function Landing() {
           </div>
           <div className="flex items-center gap-3 mb-8">
             <div className="w-6 h-px bg-[#FF2D55]" />
-            <p className="text-[#FF2D55] section-label font-sans-kr">연인 · 전 연인</p>
+            <p className="text-[#FF2D55] section-label font-sans-kr">연인</p>
           </div>
 
           <h2 className="font-display leading-[1.08] text-white mb-2"
@@ -520,7 +576,7 @@ export default function Landing() {
 
           <button onClick={goToApp}
             className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 active:scale-95 transition-all tracking-wide">
-            전 연인 분석하기 →
+            연인 분석하기 →
           </button>
         </div>
       </section>
@@ -541,11 +597,11 @@ export default function Landing() {
           </div>
 
           <h2 className="font-display leading-[1.08] text-white mb-2"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)', wordBreak: 'keep-all' }}>
             저 팀장이랑
           </h2>
           <h2 className="font-display leading-[1.08] mb-6"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            style={{ fontSize: 'clamp(2.4rem, 9.5vw, 4.5rem)', wordBreak: 'keep-all' }}>
             왜 이렇게 <span className="text-[#FF2D55]">안 맞지?</span>
           </h2>
 
@@ -784,9 +840,9 @@ export default function Landing() {
               },
               {
                 step: 'STEP 2',
-                title: 'AI 사주 분석',
-                desc: '사주팔자를 기반으로 충(沖)·형(刑)·해(害)·극(剋) 관계를 계산하고 AI가 실제 갈등 패턴을 도출합니다.',
-                sub: '전통 사주 + AI 해석',
+                title: '사주 분석',
+                desc: '사주팔자를 기반으로 충(沖)·형(刑)·해(害)·극(剋) 관계를 계산하고 실제 갈등 패턴을 도출합니다.',
+                sub: '전통 사주 해석',
               },
               {
                 step: 'STEP 3',
@@ -833,8 +889,8 @@ export default function Landing() {
           <div className="grid grid-cols-3 gap-px bg-[#1a1a1a] border border-[#1a1a1a] mb-12">
             {[
               { num: '4.4', unit: '/ 5', label: '평균 만족도', sub: '실제 리뷰 54개 기준' },
-              { num: '1분', unit: '', label: '분석 소요 시간', sub: '입력 후 AI 분석' },
-              { num: '100%', unit: '', label: '무료', sub: '광고 없음' },
+              { num: '1분', unit: '', label: '분석 소요 시간', sub: '입력 후 AI 결과' },
+              { num: '54', unit: '개', label: '실제 후기', sub: '소름돋는다는 반응' },
             ].map(({ num, unit, label, sub }) => (
               <div key={label} className="bg-[#0A0A0A] py-7 text-center">
                 <div className="flex items-end justify-center gap-1 mb-1">
@@ -946,7 +1002,7 @@ export default function Landing() {
           </div>
 
           <p className="font-sans-kr text-center text-[#444] text-xs">
-            전 연인 · 친구 · 상사 · 가족{' '}
+            연인 · 친구 · 상사 · 가족{' '}
             <span className="border border-[#333] px-2.5 py-0.5 rounded-full">모두 가능</span>
           </p>
         </div>
@@ -980,18 +1036,18 @@ export default function Landing() {
           </button>
 
           <div className="flex flex-wrap justify-center gap-2 mb-4">
-            {['🔮 AI 사주 분석', '⏱ 1분이면 끝', '💬 카카오 공유', '✨ 완전 무료', '🔒 가입 불필요'].map(chip => (
+            {['1분이면 끝', '카카오 공유', '가입 불필요'].map(chip => (
               <span key={chip} className="font-sans-kr text-[11px] border border-[#2a2a2a] text-[#666] px-3 py-1.5 rounded-full">{chip}</span>
             ))}
           </div>
-          <p className="font-sans-kr text-[#444] text-xs">무료 · 1분 · 지금 바로</p>
+          <p className="font-sans-kr text-[#444] text-xs">1분 · 지금 바로</p>
         </div>
       </section>
 
       {/* FOOTER */}
       <footer className="border-t border-white/[0.06] py-12 px-5">
         <div className="max-w-xl mx-auto flex flex-col items-center gap-4">
-          <img src="/logo.svg" alt="TOXIC" className="h-10 object-contain opacity-60" />
+          <img src="/hero-title.svg" alt="TOXIC" className="h-10 object-contain opacity-60" />
           <p className="font-sans-kr text-[#555] text-xs">사주로 보는 관계의 본질</p>
           <div className="w-px h-4 bg-[#222]" />
           <div className="flex items-center gap-4">

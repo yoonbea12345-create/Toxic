@@ -14,6 +14,7 @@ export interface LocalAIAnalysis {
   realisticOutlook?: string;
   avoidanceGuide?: { mindset: string; practicalTips: string[]; boundaries: string };
   personalImpact?: { onMe: string; warningSignals: string[]; whatYouLose: string };
+  howTheySeeMe?: { energyReading: string; whatIrritates: string; whatDrawsThem: string; theirPrivateVerdict: string; howTheyNeedMe: string };
   continuationAssessment?: { structuralAnalysis: string; whatItTakes: string; redLine: string; verdict: string };
   myCharacter?: { core: string; strength: string; shadow: string };
   dangerTypes?: Array<{ type: string; years?: string; whyDangerous: string; realScenario: string }>;
@@ -318,6 +319,31 @@ function buildContinuationAssessment(result: SajuResult, _relationType: string, 
   return { structuralAnalysis, whatItTakes, redLine, verdict };
 }
 
+// ── 상대가 나를 보는 시선 (Phase 2) ──────────────────────────────
+function buildHowTheySeeMe(score: number) {
+  const energyReading = score >= 75
+    ? `상대방은 나의 사주 에너지를 처음부터 강렬하게 감지했습니다. 끌리면서도 어딘가 자신의 기운이 부딪히는 느낌 — 이 충돌이 처음엔 자극으로 느껴졌지만 시간이 지나면서 피로감으로 바뀌는 구조입니다. 상대방의 오행 기질이 나의 에너지를 '다루기 어려운 대상'으로 분류하는 과정이 이미 진행되었습니다. 지금 상대방 눈에 나는 '존재감이 강해서 무시할 수 없는 사람'입니다.`
+    : `상대방은 나의 사주 기운을 처음에 안정적이고 진지한 에너지로 읽었습니다. 오행 구조상 낯설지 않아 자연스럽게 가까워졌지만, 시간이 지나며 서로 다른 방향성이 조금씩 감지되기 시작했습니다. 충돌 구조가 드러나는 순간마다 상대방은 나를 '가까이하고 싶은데 완전히 이해하기 어려운 사람'으로 재분류하고 있습니다. 지금 이 인식이 관계의 온도를 미묘하게 조절하고 있습니다.`;
+
+  const whatIrritates = score >= 75
+    ? `내가 자연스럽게 하는 직접적인 표현 방식이 상대방의 사주 기질엔 '압박'으로 느껴집니다. 내가 뭔가를 명확히 말하거나 결정을 밀어붙일 때, 상대방 안에서는 '또 이렇게 나온다'는 피로감이 올라옵니다. 특히 내가 빠른 결론을 원할 때 상대방은 속으로 '왜 이렇게 서두르는 거야'라고 생각하며 한발 물러섭니다. 상대방이 나한테 갑자기 말이 없어지거나 대화를 끊는 것은 거부가 아니라 상대방 기질이 과부하 상태라는 신호입니다.`
+    : `내가 감정을 드러내지 않거나 혼자 처리하려 할 때 상대방은 답답함을 느낍니다. 상대방 입장에서 나는 '뭔가 말하고 싶은 게 있는데 말 안 하는 사람'처럼 읽힙니다. 대화 중에 내가 생각을 정리하느라 잠깐 침묵하는 순간, 상대방은 그걸 거리두기로 오해합니다. 상대방이 나한테 갑자기 더 많은 것을 확인하려 들 때 그 배경엔 이 오해가 있습니다.`;
+
+  const whatDrawsThem = score >= 75
+    ? `충(沖) 구조는 밀어내는 동시에 끌어당깁니다. 상대방이 나를 힘들어하면서도 놓지 못하는 건, 내 에너지가 상대방이 스스로 채울 수 없는 오행 기운을 건드리기 때문입니다. 상대방은 나와 있을 때 평소보다 더 살아있는 느낌을 받는데, 그게 불편해도 끊기 어렵게 만드는 요소입니다. 자신도 설명하지 못하는 채로 '이 사람이 계속 생각난다'는 상태가 바로 이 구조에서 비롯됩니다.`
+    : `오행 구조상 나는 상대방이 부족한 기운을 보완해주는 존재입니다. 상대방은 나와 있을 때 어딘가 균형이 잡히는 느낌을 받지만, 동시에 그 균형을 유지하기 위해 에너지를 씁니다. 자연스럽게 나를 찾게 되는 것이 이 구조의 특징입니다. 집착은 아니지만 꾸준히 신경 쓰이는 — 상대방이 나에게 갖는 감정의 정체가 여기에 있습니다.`;
+
+  const theirPrivateVerdict = score >= 75
+    ? `상대방이 혼자 있을 때 나에 대해 하는 생각: 긍정으로는 '이 사람만큼 강렬한 사람이 없다', 부정으로는 '이 사람이랑 있으면 왜 이렇게 지치지'. 기억에 박혀 있는 장면은 내가 감정적으로 강하게 말했던 어떤 순간 — 상대방은 그 장면을 '이 사람의 진짜 모습'으로 기억합니다. 속 판단은 '결국 자기 방식을 고집하는 사람이야'에 가깝습니다. 말하지 못하고 있는 것은 '가끔은 내가 맞추는 게 아니라 네가 맞춰줬으면 한다'입니다.`
+    : `상대방이 혼자 있을 때 나에 대해 하는 생각: 긍정으로는 '이 사람은 진심이 있다', 부정으로는 '속을 잘 모르겠다'. 기억에 남는 장면은 내가 예상 밖으로 솔직했거나 의외의 면을 보여줬던 순간 — 그 장면이 나에 대한 기대치를 높여놨습니다. 속 판단은 '좋은 사람인데 뭔가 하나 더 있는 것 같다'에 가깝습니다. 말하지 못한 것은 '조금만 더 먼저 다가와줬으면'입니다.`;
+
+  const howTheyNeedMe = score >= 75
+    ? `상대방이 진짜로 원하는 것은 내가 강도를 낮춰주는 것입니다. 말로 하진 않지만 내가 한 발 양보할 때마다 상대방은 눈에 띄게 부드러워집니다. 이게 채워지지 않으면 상대방은 점점 방어적으로 변하거나 접촉 빈도를 줄이는 방식으로 반응합니다.`
+    : `상대방이 말 없이 원하는 것은 내가 먼저 솔직하게 꺼내주는 것입니다. 내가 먼저 속 얘기를 할 때마다 상대방은 안도하고 마음이 열립니다. 이게 채워지지 않으면 상대방은 기다리다가 지쳐서 스스로 거리를 두기 시작합니다.`;
+
+  return { energyReading, whatIrritates, whatDrawsThem, theirPrivateVerdict, howTheyNeedMe };
+}
+
 // ── 역산 모드 (상대 없음) ────────────────────────────────────────
 function buildMyCharacter(result: SajuResult) {
   const myBranch = result.myBranch;
@@ -402,6 +428,7 @@ export function generateLocalAnalysis(
       energyDynamic: buildEnergyDynamic(result),
       avoidanceGuide: buildAvoidanceGuide(relationType, score, chungs.map(c => c.name)),
       personalImpact: buildPersonalImpact(result, relationType),
+      howTheySeeMe: buildHowTheySeeMe(score),
       continuationAssessment: buildContinuationAssessment(result, relationType, score),
     };
   }

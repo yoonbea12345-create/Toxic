@@ -249,22 +249,26 @@ function buildPhase1BPrompt(myData: any, targetData: any, relationType: string, 
 // ─── Phase 2: 관계 영향 + 지속 판단 ─────────────────────────────
 function buildPhase2Prompt(myData: any, targetData: any, relationType: string, result: any): string {
   const chung = result.conflicts.chung.map((c: any) => c.name).join(', ') || '없음';
+  const hyung = result.conflicts.hyung?.map((h: any) => h.name).join(', ') || '없음';
+  const hae   = result.conflicts.hae?.map((h: any) => h.name).join(', ') || '없음';
   const geuk  = result.conflicts.geuk?.exists ? result.conflicts.geuk.direction : '없음';
   const score = result.toxicScore;
-  const myYr  = `${result.myYear?.stem}${result.myYear?.branch}`;
-  const tgYr  = `${result.targetYear?.stem}${result.targetYear?.branch}`;
+  const myPillar  = `${result.myYear?.stem}${result.myYear?.branch}년 ${result.myMonth ? result.myMonth.stem+result.myMonth.branch+'월' : ''} ${result.myDay ? result.myDay.stem+result.myDay.branch+'일' : ''}`.trim();
+  const tgPillar  = `${result.targetYear?.stem}${result.targetYear?.branch}년 ${result.targetMonth ? result.targetMonth.stem+result.targetMonth.branch+'월' : ''} ${result.targetDay ? result.targetDay.stem+result.targetDay.branch+'일' : ''}`.trim();
 
   return `[사주 데이터]
-나(${myData.gender}): ${myYr}년 일주:${result.myDay ? result.myDay.stem+result.myDay.branch : '미상'}
-상대(${targetData.gender}): ${tgYr}년
-관계: ${relationType} | 독성지수: ${score}점 | 충: ${chung} | 극: ${geuk}
+나(${myData.gender}): ${myPillar}
+상대(${targetData.gender}): ${tgPillar}
+관계: ${relationType} | 독성지수: ${score}점
+충(沖): ${chung} | 형(刑): ${hyung} | 해(害): ${hae} | 극(剋): ${geuk}
+갈등요약: ${result.conflictSummary || ''} | 태그: ${result.tags?.join(',') || ''}
 
-[목표] 04번 섹션: "이 관계가 나에게 하고 있는 일"을 거울처럼 보여줘서 소름 돋게. 05번 섹션: 계속 가야 할지 사주로 판정 — 따뜻하지만 솔직하게.
+[목표] 04번 섹션: "이 관계가 나에게 주는 영향"을 거울처럼 보여줘서 소름 돋게. 05번 섹션: 상대방 사주 기운으로 "상대방이 나를 어떻게 인식하는지" — 상대방의 오행·충돌구조를 뒤집어서 나를 바라보는 시선 분석. 추상적 표현 절대 금지, 구체적 장면·대화체·상대방 내면 독백까지. 06번 섹션: 계속 가야 할지 사주로 판정.
 [출력 형식] 순수 JSON만.
 
 {
   "personalImpact": {
-    "onMe": "4문장. 이 관계가 지금 나에게 실제로 하고 있는 일. ①에너지·체력 측면에서 — 이 사람과 만난 날과 만나지 않은 날이 어떻게 다른지. ②감정·자존감 측면에서 — 이 관계 안에서 나는 어떤 버전의 나인지. ③일상 영향 — 이 관계 때문에 다른 것에 어떤 영향이 가는지. ④내가 의식하지 못하고 있었던 것.",
+    "onMe": "4문장. 이 관계가 지금 나에게 실제로 주는 영향. ①에너지·체력 측면에서 — 이 사람과 만난 날과 만나지 않은 날이 어떻게 다른지. ②감정·자존감 측면에서 — 이 관계 안에서 나는 어떤 버전의 나인지. ③일상 영향 — 이 관계 때문에 다른 것에 어떤 영향이 가는지. ④내가 의식하지 못하고 있었던 것.",
     "warningSignals": [
       "이 관계가 나를 갉아먹고 있다는 신호 — 신체 반응으로 나타나는 것 (예: 연락 오면 몸이 먼저 반응하는 것)",
       "감정 측면에서 나타나는 신호 — 이전과 달라진 나의 감정 패턴",
@@ -273,6 +277,13 @@ function buildPhase2Prompt(myData: any, targetData: any, relationType: string, r
       "관계 외부에서 나타나는 신호 — 다른 관계나 일에 생기는 영향"
     ],
     "whatYouLose": "3문장. 이 관계를 유지하면서 내가 서서히 포기하거나 잃어가는 것들 — ①내 에너지의 어느 부분. ②내 어떤 모습이나 능력. ③내가 원래 가지고 싶었던 어떤 것."
+  },
+  "howTheySeeMe": {
+    "energyReading": "4문장. 상대방의 사주(${tgPillar}) 기운이 나의 사주(${myPillar}) 에너지를 어떻게 읽는지 — ①상대방 오행 기질로 봤을 때 내 에너지가 처음 어떻게 느껴졌는지 — 끌렸는지 경계했는지 구체적으로. ②충·극 구조(${chung !== '없음' ? chung : geuk !== '없음' ? '극: '+geuk : '오행 불일치'})가 상대방의 감각에 어떻게 체감되는지 — '이 사람이 뭔가 나를 건드린다'는 느낌이 어떤 순간에 생기는지. ③상대방이 나를 속으로 어떤 '유형의 사람'으로 분류했는지 — 사주 기운이 만드는 프레임. ④시간이 지나면서 그 인식이 어떻게 굳어졌는지.",
+    "whatIrritates": "4문장. 내가 전혀 의도하지 않았는데 상대방의 사주 기질을 긁는 말·행동·태도 — ①내 어떤 특성이 상대방의 오행 에너지와 구조적으로 충돌하는지 — 실제 대화 장면('내가 이렇게 말하면 상대방은 속으로 이런 생각을 한다' 형식). ②상대방이 '또 시작이다' 싶어하는 순간 — 내가 하는 패턴이지만 본인은 잘 모르는 것. ③그 순간 상대방 안에서 어떤 감정이 올라오는지 — 상대방의 내면 독백. ④상대방이 나한테 거리를 두거나 차갑게 반응하는 진짜 사주 구조적 이유.",
+    "whatDrawsThem": "3문장. 갈등이 있는데도 상대방이 나를 놓지 못하는 사주적 이유 — 충(沖)이 동시에 끌림이기도 한 구조적 아이러니, 상대방이 나에게서 무의식적으로 채우려는 오행 에너지, 상대방 자신도 설명 못하는 나에 대한 집착이나 신경 쓰임.",
+    "theirPrivateVerdict": "4문장. 상대방이 혼자 있을 때 나를 어떻게 평가하는지 — ①나에 대해 반복적으로 하는 생각 — 긍정 한 가지, 부정 한 가지 (대화체로). ②상대방의 기억에 박혀 있는 나의 특정 장면이나 말 — 상대방이 그 장면을 어떻게 해석하고 있는지. ③나에 대한 상대방의 속 판단 — '결국 얘는 이런 사람이야' 싶은 것. ④상대방이 나한테 직접 말하지 못한 채 품고 있는 것.",
+    "howTheyNeedMe": "3문장. 상대방이 이 관계에서 나에게 실제로 원하는 것 — 말로 표현하지 않지만 행동으로 드러나는 욕구, 내가 이걸 해줄 때 상대방이 안도하거나 만족하는 것, 이게 채워지지 않을 때 상대방이 구체적으로 어떻게 반응하는지."
   },
   "continuationAssessment": {
     "structuralAnalysis": "4문장. 이 관계의 구조적 분석. ①사주 구조상 이 갈등의 뿌리 — 두 사람의 에너지가 어떤 식으로 충돌하는지. ②노력으로 바꿀 수 있는 것 vs 구조적으로 변하지 않는 것을 명확히 구분. ③지금까지 어떤 패턴이 반복됐을지 — 이미 경험했을 법한 것. ④이 구조를 알고 관계를 이어간다는 것이 어떤 의미인지.",
