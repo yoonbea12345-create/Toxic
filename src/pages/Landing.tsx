@@ -111,7 +111,8 @@ export default function Landing() {
           {/* 감정 트리거 rotator */}
           <div className="mb-1 min-h-[2.2rem]">
             <div key={triggerIdx} className="animate-fade-in">
-              <p className="font-sans-kr text-[#777] text-sm leading-relaxed">
+              <p className="font-sans-kr text-sm leading-relaxed font-bold"
+                style={{ color: trigger.color }}>
                 {trigger.text}
               </p>
             </div>
