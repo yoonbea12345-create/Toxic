@@ -325,7 +325,7 @@ export default function Landing() {
                         <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 8:25</p>
                         <div className="px-3 py-2 max-w-[195px]"
                           style={{ background: '#FEE500', borderRadius: '14px 2px 14px 14px' }}>
-                          <p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">그냥? 내가 저번에 말하고 만나달라 했잖아</p>
+                          <p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">그냥? 내가 저번에 만날거면 나한테 말하고 만나달라 했잖아</p>
                         </div>
                       </div>
                     </div>
@@ -337,7 +337,7 @@ export default function Landing() {
                         <div className="flex items-end gap-1.5">
                           <div className="px-3 py-2 max-w-[195px]"
                             style={{ background: '#3A3A3A', borderRadius: '2px 14px 14px 14px' }}>
-                            <p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">걔가 먼저 만나자 한건데 내가 왜 보고해야돼?</p>
+                            <p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">걔가 먼저 만나자 한거고 그냥 밥만 먹은건데 내가 왜 너한테 보고해야돼?</p>
                           </div>
                           <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 8:26</p>
                         </div>
