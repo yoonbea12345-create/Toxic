@@ -303,8 +303,8 @@ export default function AdminPage() {
           <div>
             <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유저 후기</p>
             <div className="grid grid-cols-2 gap-3">
-              <StatCard label="후기 제출" value={reviewSubmits} sub="결과 페이지 제출 수" color="#4CAF50" />
-              <StatCard label="평균 별점" value={avgReviewStars} sub="/ 5.0" color="#F59E0B" />
+              <StatCard label="후기 제출" value={stats.reviewSubmits} sub="결과 페이지 제출 수" color="#4CAF50" />
+              <StatCard label="평균 별점" value={stats.avgReviewStars} sub="/ 5.0" color="#F59E0B" />
             </div>
           </div>
 
