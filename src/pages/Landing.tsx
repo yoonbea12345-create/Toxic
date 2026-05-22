@@ -13,14 +13,14 @@ const SLIDES = [
 
 const TRIGGERS = [
   { type: '연인', text: '좋아했는데 자꾸 상처만 받는다면', color: '#FF2D55' },
-  { type: '직장', text: '팀장이 나만 싫어하는 것 같다면', color: '#BF5AF2' },
-  { type: '가족', text: '부모님이랑 항상 부딪힌다면', color: '#FF9500' },
-  { type: '연인', text: '헤어진 뒤에도 자꾸 생각난다면', color: '#FF2D55' },
-  { type: '직장', text: '매 회의마다 같은 사람과 충돌한다면', color: '#BF5AF2' },
-  { type: '가족', text: '가족이랑 대화가 늘 불편하다면', color: '#FF9500' },
+  { type: '직장', text: '저 팀장이 왜 나만 싫어하는지 모르겠다면', color: '#BF5AF2' },
+  { type: '가족', text: '부모님이랑 부딪히는 이유를 모르겠다면', color: '#FF9500' },
+  { type: '연인', text: '헤어졌는데 자꾸 그 사람이 생각난다면', color: '#FF2D55' },
+  { type: '직장', text: '회의 때마다 같은 사람이랑 또 충돌했다면', color: '#BF5AF2' },
+  { type: '가족', text: '가족인데 왜 이렇게 불편한지 모르겠다면', color: '#FF9500' },
   { type: '연인', text: '맨날 같은 이유로 싸운다면', color: '#FF2D55' },
-  { type: '직장', text: '그 팀장 때문에 퇴사 고민이라면', color: '#BF5AF2' },
-  { type: '가족', text: '사랑하는데 자꾸 상처받는다면', color: '#FF9500' },
+  { type: '직장', text: '퇴사하고 싶은데 그 사람 때문인지 모르겠다면', color: '#BF5AF2' },
+  { type: '가족', text: '사랑하는데 왜 이렇게 아픈지 모르겠다면', color: '#FF9500' },
 ];
 
 const CheckIcon = ({ color }: { color: string }) => (
@@ -111,8 +111,7 @@ export default function Landing() {
           {/* 감정 트리거 rotator */}
           <div className="mb-1 min-h-[2.2rem]">
             <div key={triggerIdx} className="animate-fade-in">
-              <p className="font-sans-kr text-sm leading-relaxed font-bold"
-                style={{ color: trigger.color }}>
+              <p className="font-sans-kr text-[#777] text-sm leading-relaxed">
                 {trigger.text}
               </p>
             </div>
@@ -122,12 +121,6 @@ export default function Landing() {
             사주에 <span className="text-[#FF2D55] font-bold">이미 답이 있습니다.</span>
           </p>
 
-          {userCount > 0 && (
-            <p className="font-sans-kr text-[#444] text-xs mb-1">
-              지금까지 <span className="text-[#666]">{userCount.toLocaleString()}번</span>의 사주 분석을 완료했어요
-            </p>
-          )}
-
           <p className="font-sans-kr text-[#FF2D55] text-xs font-bold tracking-widest mb-8">
             사주로 보는 관계의 본질
           </p>
@@ -136,6 +129,12 @@ export default function Landing() {
             className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 active:scale-95 transition-all cta-glow-red">
             이름이랑 생일 넣어보기 →
           </button>
+
+          {userCount > 0 && (
+            <p className="font-sans-kr text-[#444] text-xs text-center mt-3">
+              지금까지 <span className="text-[#666]">{userCount.toLocaleString()}번</span>의 사주 분석을 완료했어요
+            </p>
+          )}
         </div>
       </section>
 
