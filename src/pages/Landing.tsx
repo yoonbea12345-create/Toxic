@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { startSession } from '../utils/analytics';
 
 const SLIDES = [
@@ -37,7 +37,6 @@ export default function Landing() {
   const [userCount, setUserCount] = useState(0);
   const [chatIdx, setChatIdx] = useState(0);
   const [slideIdx, setSlideIdx] = useState(0);
-  const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { startSession(); }, []);
 
@@ -64,10 +63,6 @@ export default function Landing() {
       .catch(() => setUserCount(1247));
   }, []);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'instant' });
-  }, [chatIdx]);
-
   const goToApp = () => {
     try { sessionStorage.removeItem('toxic_session'); } catch {}
     navigate('/app');
@@ -85,7 +80,7 @@ export default function Landing() {
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-xl mx-auto pl-0 pr-4 h-14 flex items-center justify-between">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-10 w-auto block" />
+          <img src="/hero-title.svg" alt="TOXIC" className="h-[47px] w-auto block" />
           <button onClick={goToApp}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 rounded-full hover:opacity-90 active:scale-95 transition-all font-sans-kr tracking-wider font-bold">
             분석 시작 →
@@ -228,9 +223,8 @@ export default function Landing() {
                 </span>
               </div>
 
-              {/* Messages — fixed height, scrollbar hidden */}
-              <div className="px-3 pb-4 space-y-2 h-[240px] overflow-y-auto"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {/* Messages */}
+              <div className="px-3 pb-4 space-y-2">
 
                 {/* 연인 — 지훈 */}
                 {chatIdx === 0 && (
@@ -296,6 +290,43 @@ export default function Landing() {
                 {/* 친구 — 지혜 */}
                 {chatIdx === 1 && (
                   <>
+                    <div className="flex gap-2 items-end">
+                      <img src="/profile-jihye.png" alt="지혜"
+                        className="w-8 h-8 rounded-[8px] flex-shrink-0 object-cover bg-[#3a3a3a]" />
+                      <div>
+                        <p className="font-sans-kr text-[#686868] text-[10.5px] mb-1">지혜</p>
+                        <div className="flex items-end gap-1.5">
+                          <div className="px-3 py-2 max-w-[175px]"
+                            style={{ background: '#3A3A3A', borderRadius: '2px 14px 14px 14px' }}>
+                            <p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">어 오빠 어제 잠깐 봤어 ㅎㅎ</p>
+                          </div>
+                          <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 8:17</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <div className="flex items-end gap-1.5">
+                        <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 8:21</p>
+                        <div className="px-3 py-2 max-w-[160px]"
+                          style={{ background: '#FEE500', borderRadius: '14px 2px 14px 14px' }}>
+                          <p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">어? 나한테 말 안했잖아</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-end">
+                      <img src="/profile-jihye.png" alt="지혜"
+                        className="w-8 h-8 rounded-[8px] flex-shrink-0 object-cover bg-[#3a3a3a]" />
+                      <div>
+                        <p className="font-sans-kr text-[#686868] text-[10.5px] mb-1">지혜</p>
+                        <div className="flex items-end gap-1.5">
+                          <div className="px-3 py-2 max-w-[155px]"
+                            style={{ background: '#3A3A3A', borderRadius: '2px 14px 14px 14px' }}>
+                            <p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">그냥 밥만 먹은건데</p>
+                          </div>
+                          <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 8:22</p>
+                        </div>
+                      </div>
+                    </div>
                     <div className="flex justify-end">
                       <div className="flex items-end gap-1.5">
                         <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 8:23</p>
@@ -401,7 +432,6 @@ export default function Landing() {
                   </>
                 )}
 
-                <div ref={chatEndRef} />
               </div>
             </div>
           </div>
@@ -539,8 +569,7 @@ export default function Landing() {
           <div className="overflow-hidden rounded-[2rem] border border-white/[0.08] mb-6"
             style={{ boxShadow: '0 0 0 1px rgba(255,45,85,0.18), 0 40px 100px rgba(0,0,0,0.9), 0 0 80px rgba(255,45,85,0.1)' }}>
             <img key={slideIdx} src={SLIDES[slideIdx]} alt={`분석 결과 ${slideIdx + 1}`}
-              className="w-full block animate-fade-in"
-              style={{ maxHeight: '520px', objectFit: 'cover', objectPosition: 'top' }} />
+              className="w-full block animate-fade-in" />
           </div>
 
           {/* CTA completely below */}
@@ -553,11 +582,6 @@ export default function Landing() {
             style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.08) 0%, transparent 70%)' }} />
         </div>
 
-        <div className="max-w-xl mx-auto px-5 mt-6">
-          <p className="font-sans-kr text-center text-[#444] text-[11px]">
-            이름만 알아도 시작 가능 · 1분
-          </p>
-        </div>
       </section>
 
       {/* ══════════════════════════════════════
@@ -818,20 +842,18 @@ export default function Landing() {
             <p className="text-[#FF9500] section-label font-sans-kr">가족</p>
           </div>
 
-          <div className="text-center mb-10">
-            <p className="font-display leading-[1.08] text-white mb-3"
-              style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-              가족인데
-            </p>
-            <p className="font-display leading-[1.08] mb-3"
-              style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-              <span className="text-[#FF9500]">왜 이렇게 안맞을까</span>
-            </p>
-            <p className="font-sans-kr text-[#777] text-sm mt-6 leading-relaxed">
-              억압이 아니에요. 오행의 흐름입니다.<br />
-              <span className="text-[#555]">성격 문제로 봤던 것이 구조로 보이기 시작합니다.</span>
-            </p>
-          </div>
+          <h2 className="font-display leading-[1.08] text-white mb-2"
+            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            가족인데
+          </h2>
+          <h2 className="font-display leading-[1.08] mb-6"
+            style={{ fontSize: 'clamp(2.4rem, 9.5vw, 4.5rem)' }}>
+            <span className="text-[#FF9500]">왜 이렇게 안맞을까</span>
+          </h2>
+          <p className="font-sans-kr text-[#666] text-sm leading-relaxed mb-10">
+            억압이 아니에요. 오행의 흐름입니다.<br />
+            <span className="text-[#888]">성격 문제로 봤던 것이 구조로 보이기 시작합니다.</span>
+          </p>
 
           <div className="grid grid-cols-3 gap-2 mb-10">
             {[
@@ -1020,7 +1042,7 @@ export default function Landing() {
       {/* FOOTER */}
       <footer className="border-t border-white/[0.06] py-12 px-5">
         <div className="max-w-xl mx-auto flex flex-col items-center gap-4">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-10 object-contain opacity-60" />
+          <img src="/hero-title.svg" alt="TOXIC" className="h-[47px] object-contain opacity-60" />
           <p className="font-sans-kr text-[#555] text-xs">사주로 보는 관계의 본질</p>
           <div className="w-px h-4 bg-[#222]" />
           <div className="flex items-center gap-4">
