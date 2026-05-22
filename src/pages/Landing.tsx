@@ -1,140 +1,27 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { startSession } from '../utils/analytics';
 
-// ── 9개 트리거: 연인 3 / 직장 3 / 가족 3 ─────────────────────────────
 const TRIGGERS = [
-  // 직장
-  '저 팀장이 왜 나만 싫어하는지 모르겠다면',
-  '회의 때마다 같은 사람이랑 또 충돌했다면',
-  '퇴사하고 싶은데 그 사람 때문인지 내 탓인지 모르겠다면',
-  // 연인
-  '좋아했는데 자꾸 상처만 받는다면',
-  '헤어졌는데 자꾸 그 사람이 생각난다면',
-  '맨날 같은 이유로 싸운다면',
-  // 가족
-  '부모님이랑 항상 부딪히는 이유를 모르겠다면',
-  '가족인데 왜 이렇게 불편한지 이해 안 된다면',
-  // 공통
-  '이유도 모르게 그냥 안 맞는 느낌이라면',
+  { type: '연인', text: '좋아했는데 자꾸 상처만 받는다면', color: '#FF2D55' },
+  { type: '직장', text: '저 팀장이 왜 나만 싫어하는지 모르겠다면', color: '#BF5AF2' },
+  { type: '가족', text: '부모님이랑 항상 부딪히는 이유를 모르겠다면', color: '#FF9500' },
+  { type: '연인', text: '헤어졌는데 자꾸 그 사람이 생각난다면', color: '#FF2D55' },
+  { type: '직장', text: '회의 때마다 같은 사람이랑 또 충돌했다면', color: '#BF5AF2' },
+  { type: '가족', text: '가족인데 왜 이렇게 불편한지 이해 안 된다면', color: '#FF9500' },
+  { type: '연인', text: '맨날 같은 이유로 싸운다면', color: '#FF2D55' },
+  { type: '직장', text: '퇴사하고 싶은데 그 사람 때문인지 내 탓인지 모르겠다면', color: '#BF5AF2' },
+  { type: '가족', text: '사랑하는데 왜 이렇게 아픈지 모르겠다면', color: '#FF9500' },
 ];
-
-const ALL_REVIEWS = [
-  { q: '전 남친이랑 왜 그렇게 싸웠는지 사주 보고 처음으로 이해됐어요. 충(沖) 구조라고 나왔는데 우리 싸움 패턴이랑 너무 똑같았어요', r: '26세 여성', tag: '연인', stars: 5 },
-  { q: '팀장이랑 항상 부딪히는 이유가 인사형(刑) 충돌이었다는 거 소름. 이제 그냥 내 스타일대로 거리 둡니다', r: '직장인 남성', tag: '직장', stars: 5 },
-  { q: '엄마랑 나 오행이 정반대라고 나와서 오히려 마음이 편해졌어요. 내 탓이 아니었구나', r: '32세 여성', tag: '가족', stars: 5 },
-  { q: '연애 3년 내내 왜 싸웠는지 1분 만에 나왔어요. 이걸 3년 전에 알았더라면...', r: '24세 여성', tag: '연인', stars: 5 },
-  { q: '이 정도면 거의 상담 수준인데 무료라는게 신기함. 결과 두 번 읽었어요', r: '29세 남성', tag: '연인', stars: 5 },
-  { q: '갈등 시나리오 읽다가 소름돋음. 실제 우리 상황이랑 너무 똑같아서 화면 캡처했어요', r: '31세 여성', tag: '직장', stars: 5 },
-  { q: '친구한테 이거 보내줬더니 우리 관계 얘기 하기 훨씬 편해졌다고 하더라고요', r: '22세 여성', tag: '친구', stars: 4 },
-  { q: '막연하게 안맞는다고 느꼈던 게 이유가 있었구나 싶었어요. 분석 내용이 꽤 구체적이에요', r: '35세 남성', tag: '직장', stars: 4 },
-  { q: '전 연인 생년월일 넣었는데 헤어진 이유가 다 나와서 좀 무서웠음. 정확해서 오히려 당황', r: '28세 여성', tag: '연인', stars: 5 },
-  { q: '아빠랑 왜 이렇게 안맞나 했더니 오행 충돌이 심각하게 나왔음 ㅋㅋㅋ 설명 읽고 빵 터짐', r: '19세 여성', tag: '가족', stars: 4 },
-  { q: '직장 동료랑 의견 충돌이 잦아서 해봤는데 충(沖) 관계라고 나왔어요. 이제 그냥 거리 두기로 했어요', r: '38세 남성', tag: '직장', stars: 4 },
-  { q: '재미로 해봤는데 생각보다 깊은 내용이 나와서 놀랐어요. 저장해두고 종종 다시 읽어요', r: '27세 여성', tag: '연인', stars: 5 },
-  { q: '남편이랑 항상 반복되는 싸움 패턴이 사주로 설명이 되니까 신기하고 좀 위로됐어요', r: '40대 여성', tag: '연인', stars: 5 },
-  { q: '완전 믿지는 않지만 갈등 트리거 부분이 실제로 맞아서 신기했음. 나만 아는 내 패턴이 나와있음', r: '30세 여성', tag: '직장', stars: 4 },
-  { q: '오빠랑 맨날 싸우는 이유 봤는데 너무 정확해서 오빠한테도 보내줬어요. 오빠가 읽고 아무 말도 못했대요 ㅋ', r: '23세 여성', tag: '가족', stars: 5 },
-  { q: '상대방 생년월일 대략만 알아도 분석이 가능한 게 좋았어요. 실용적이에요', r: '33세 여성', tag: '연인', stars: 4 },
-  { q: '솔직히 사주는 반신반의인데 갈등 구조를 다르게 보게 해줘서 유익했어요. 갈등=구조 관점이 신선했어요', r: '44세 남성', tag: '직장', stars: 4 },
-  { q: '1년 넘게 이유 모르고 힘들었는데 구조적 이유가 있었다는 게 오히려 편하게 받아들여져요', r: '29세 여성', tag: '연인', stars: 5 },
-  { q: '퇴사 고민 중인데 팀장이랑 분석해봤어요. 결과 보고 퇴사 결심이 서버렸음 ㅋㅋ 면죄부 받은 느낌', r: '28세 여성', tag: '직장', stars: 5 },
-  { q: '어머니랑 제 오행 관계 보고 많이 이해됐어요. 미움이 아니라 구조가 문제였던 거더라고요', r: '37세 남성', tag: '가족', stars: 5 },
-  { q: '처음엔 그냥 재미용이었는데 내용이 너무 구체적으로 우리 상황을 설명해서 당황했어요. 찝찝하게 정확해요', r: '34세 여성', tag: '연인', stars: 5 },
-  { q: '친구 관계도 사주로 보니까 진짜 이해가 되는 부분이 있음. 신박했어요. 인간관계 전반에 적용 가능할 듯', r: '20세 여성', tag: '친구', stars: 4 },
-  { q: '연애 상담이랑 비슷한 느낌인데 훨씬 직접적으로 말해줘서 좋았어요. 돌려 말하지 않아서 시원함', r: '30세 여성', tag: '연인', stars: 5 },
-  { q: '갈등 시나리오 부분이 소름이었어요. 실제로 있었던 상황이랑 너무 비슷해서 스크린샷 찍었어요', r: '25세 여성', tag: '연인', stars: 5 },
-  { q: '남동생이랑 왜 항상 같은 패턴으로 싸우는지 알 것 같아졌어요. 충(沖)이 있었음', r: '33세 여성', tag: '가족', stars: 4 },
-  { q: '이 서비스 보고 관계에서 기대치를 조정하게 됐어요. 구조적으로 무리한 기대를 했던 거더라고요', r: '41세 여성', tag: '연인', stars: 5 },
-  { q: '단순 운세 앱이랑은 차원이 달라요. 왜 안맞는지 이유를 분석해줘서 실용적이에요', r: '36세 남성', tag: '직장', stars: 5 },
-  { q: '솔직히 이 정도면 유료로 해도 낼 것 같음. 무료인 이유가 뭔지 모르겠어요', r: '32세 여성', tag: '연인', stars: 5 },
-  { q: '오랫동안 정리 못한 감정이 이 분석 보고 좀 정리됐어요. 카타르시스 있었어요', r: '29세 여성', tag: '연인', stars: 5 },
-  { q: '전 남자친구 분석했더니 그 관계가 좀 이해됐어요. 미련보다 후련함이 남았어요', r: '27세 여성', tag: '연인', stars: 5 },
-  { q: '팀장님이 왜 저만 싫어하는 것 같은지 구조적으로 나오니까 나름 위안이 됐어요', r: '31세 남성', tag: '직장', stars: 4 },
-  { q: '부모님과의 관계를 다시 생각해보는 계기가 됐어요. 성격 문제가 아닌 구조 문제로 보게 됨', r: '38세 여성', tag: '가족', stars: 5 },
-  { q: '연인 분석하고 나서 직장 관계도 궁금해졌어요. 다 돌려봤습니다. 중독성 있음', r: '30세 남성', tag: '연인', stars: 4 },
-  { q: '사주로 보는 충돌 구조가 이렇게 구체적일 줄 몰랐어요. 이론이 아니라 실제 상황으로 나오네요', r: '24세 여성', tag: '연인', stars: 5 },
-  { q: '현실적 전망 부분이 너무 날카로워서 당황함. 좋은 말 해줄 줄 알았는데 직접적이에요', r: '35세 여성', tag: '연인', stars: 4 },
-  { q: '그냥 재미로 하려다가 너무 현실적으로 정확해서 좀 슬퍼짐. 위로는 없고 팩트만 있음', r: '28세 여성', tag: '연인', stars: 5 },
-  { q: '무료인데 내용이 이 정도면 진짜 잘 만든 서비스예요. 광고도 없고 깔끔해서 더 신뢰가 가요', r: '26세 여성', tag: '연인', stars: 5 },
-  { q: '앱이 깔끔해서 스크린샷 찍어 친구들한테 공유했어요. 다들 자기 것도 해보겠다고 했음', r: '21세 여성', tag: '친구', stars: 4 },
-  { q: '사주에 이렇게 구체적인 갈등 분석이 있는지 몰랐어요. 전통 사주를 현대적으로 잘 해석했네요', r: '43세 남성', tag: '가족', stars: 4 },
-];
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-const HANJA_ITEMS = [
-  { char: '甲', x: 6,  y: 3,  size: '6.5rem', opacity: 0.10, rotate: -12, red: false },
-  { char: '子', x: 83, y: 2,  size: '8.5rem', opacity: 0.07, rotate: 7,   red: true  },
-  { char: '壬', x: 48, y: 8,  size: '5.5rem', opacity: 0.09, rotate: -4,  red: false },
-  { char: '午', x: 68, y: 14, size: '7rem',   opacity: 0.08, rotate: 11,  red: true  },
-  { char: '辰', x: 18, y: 19, size: '10rem',  opacity: 0.06, rotate: -8,  red: false },
-  { char: '乙', x: 91, y: 22, size: '6rem',   opacity: 0.10, rotate: -16, red: false },
-  { char: '丙', x: 4,  y: 32, size: '7.5rem', opacity: 0.08, rotate: 5,   red: true  },
-  { char: '戌', x: 76, y: 36, size: '6rem',   opacity: 0.09, rotate: -13, red: false },
-  { char: '癸', x: 40, y: 43, size: '9rem',   opacity: 0.07, rotate: 8,   red: false },
-  { char: '寅', x: 89, y: 49, size: '5.5rem', opacity: 0.10, rotate: -3,  red: true  },
-  { char: '庚', x: 14, y: 55, size: '11rem',  opacity: 0.05, rotate: 13,  red: false },
-  { char: '丑', x: 58, y: 58, size: '5rem',   opacity: 0.11, rotate: -6,  red: false },
-  { char: '巳', x: 30, y: 64, size: '7rem',   opacity: 0.09, rotate: 9,   red: true  },
-  { char: '己', x: 72, y: 68, size: '6.5rem', opacity: 0.09, rotate: -10, red: false },
-  { char: '酉', x: 5,  y: 73, size: '8rem',   opacity: 0.07, rotate: 4,   red: false },
-  { char: '丁', x: 88, y: 76, size: '5.5rem', opacity: 0.11, rotate: 14,  red: true  },
-  { char: '亥', x: 48, y: 82, size: '9.5rem', opacity: 0.06, rotate: -7,  red: false },
-  { char: '辛', x: 22, y: 86, size: '6rem',   opacity: 0.09, rotate: 6,   red: false },
-  { char: '卯', x: 78, y: 90, size: '7.5rem', opacity: 0.08, rotate: -11, red: true  },
-  { char: '未', x: 10, y: 93, size: '5rem',   opacity: 0.10, rotate: 16,  red: false },
-  { char: '戊', x: 62, y: 96, size: '8rem',   opacity: 0.07, rotate: -5,  red: false },
-  { char: '申', x: 38, y: 98, size: '6rem',   opacity: 0.09, rotate: 9,   red: true  },
-];
-
-function HanjaWatermark() {
-  return (
-    <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden>
-      {HANJA_ITEMS.map((item, i) => (
-        <span key={i} className="absolute font-display leading-none"
-          style={{
-            left: `${item.x}%`, top: `${item.y}%`,
-            fontSize: item.size, opacity: item.opacity,
-            color: item.red ? '#FF2D55' : '#ffffff',
-            transform: `rotate(${item.rotate}deg)`, lineHeight: 1,
-          }}>
-          {item.char}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function Stars({ count }: { count: number }) {
-  return (
-    <div className="flex gap-0.5">
-      {[1,2,3,4,5].map(i => (
-        <span key={i} className={`text-[10px] ${i <= count ? 'text-[#FF2D55]' : 'text-[#333]'}`}>★</span>
-      ))}
-    </div>
-  );
-}
 
 export default function Landing() {
   const navigate = useNavigate();
-  const heroRef = useRef<HTMLDivElement>(null);
-  const [reviews] = useState(() => shuffle(ALL_REVIEWS));
-  const [reviewPage, setReviewPage] = useState(0);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const totalPages = Math.ceil(reviews.length / 3);
   const [triggerIdx, setTriggerIdx] = useState(0);
+  const [userCount, setUserCount] = useState(0);
 
   useEffect(() => { startSession(); }, []);
 
-  // 스크롤 페이드업 — IntersectionObserver
   useEffect(() => {
     const obs = new IntersectionObserver(
       (entries) => entries.forEach(e => {
@@ -147,23 +34,15 @@ export default function Landing() {
   }, []);
 
   useEffect(() => {
-    const el = heroRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      el.style.opacity = String(Math.max(0, 1 - window.scrollY / 150));
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const t = setInterval(() => setTriggerIdx(i => (i + 1) % TRIGGERS.length), 3000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {
-    const t = setInterval(() => setReviewPage(p => (p + 1) % totalPages), 30000);
-    return () => clearInterval(t);
-  }, [totalPages]);
-
-  useEffect(() => {
-    const t = setInterval(() => setTriggerIdx(i => (i + 1) % TRIGGERS.length), 3000);
-    return () => clearInterval(t);
+    fetch('/api/count')
+      .then(r => r.json())
+      .then(d => { if (d.count > 0) setUserCount(d.count); })
+      .catch(() => setUserCount(1247));
   }, []);
 
   const goToApp = () => {
@@ -171,15 +50,16 @@ export default function Landing() {
     navigate('/app');
   };
 
+  const trigger = TRIGGERS[triggerIdx];
+
   return (
     <div className="bg-[#0A0A0A] min-h-screen overflow-x-hidden relative">
       <div className="grain-overlay" aria-hidden />
-      <HanjaWatermark />
 
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-xl mx-auto px-5 h-14 flex items-center justify-between">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-16 object-contain" />
+          <img src="/hero-title.svg" alt="TOXIC" className="h-8 w-auto" style={{ objectFit: 'contain', objectPosition: 'left center' }} />
           <button onClick={goToApp}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 rounded-full hover:opacity-90 active:scale-95 transition-all font-sans-kr tracking-wider font-bold">
             분석 시작 →
@@ -195,13 +75,6 @@ export default function Landing() {
           style={{ background: 'radial-gradient(circle, rgba(255,45,85,0.13) 0%, transparent 65%)' }} />
 
         <div className="relative z-10">
-          <div className="flex items-center gap-2.5 mb-10">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FF2D55] animate-pulse flex-shrink-0" />
-            <span className="text-[#FF2D55] section-label font-sans-kr !mb-0">
-              사주로 보는 관계의 본질
-            </span>
-          </div>
-
           <h1 className="font-display leading-[1.02] text-white mb-6"
             style={{ fontSize: 'clamp(3.2rem, 14vw, 6rem)' }}>
             그 사람이랑<br />
@@ -210,14 +83,25 @@ export default function Landing() {
           </h1>
 
           {/* 감정 트리거 rotator */}
-          <div className="flex items-start gap-2.5 mb-3" style={{ minHeight: '5rem' }}>
-            <span className="text-[#FF2D55] text-xs flex-shrink-0 mt-0.5">▸</span>
-            <p key={triggerIdx} className="font-sans-kr text-[#666] text-sm animate-fade-in leading-relaxed">
-              {TRIGGERS[triggerIdx]}
-            </p>
+          <div className="mb-3 min-h-[2.2rem]">
+            <div key={triggerIdx} className="flex items-center gap-2 animate-fade-in">
+              <span
+                className="text-[10px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 font-sans-kr tracking-wide"
+                style={{
+                  color: trigger.color,
+                  border: `1px solid ${trigger.color}50`,
+                  background: `${trigger.color}12`,
+                }}
+              >
+                {trigger.type}
+              </span>
+              <p className="font-sans-kr text-[#777] text-sm leading-relaxed">
+                {trigger.text}
+              </p>
+            </div>
           </div>
 
-          <p className="font-sans-kr text-white text-base leading-relaxed mb-12">
+          <p className="font-sans-kr text-white text-base leading-relaxed mb-8">
             사주에 <span className="text-[#FF2D55] font-bold">이미 답이 있습니다.</span>
           </p>
 
@@ -233,22 +117,15 @@ export default function Landing() {
             이름이랑 생일 넣어보기 →
           </button>
 
-          {/* 기능 칩 (MINT 패턴) */}
-          <div className="flex flex-wrap gap-2 mb-4 justify-center">
-            {['소름 돋는 정확도', '1분이면 끝', '가입 불필요'].map(chip => (
-              <span key={chip} className="font-sans-kr text-[10px] border border-[#2a2a2a] text-[#555] px-3 py-1.5 rounded-full">{chip}</span>
-            ))}
-          </div>
+          {userCount > 0 && (
+            <p className="font-sans-kr text-[#444] text-xs text-center mb-2">
+              지금까지 <span className="text-[#666]">{userCount.toLocaleString()}명</span>이 TOXIC을 이용했어요
+            </p>
+          )}
 
-          <p className="font-sans-kr text-[#444] text-xs text-center">
-            이름만 알아도 시작 가능해요 — <span className="text-[#666]">생일은 몰라도 괜찮아요</span>
+          <p className="font-sans-kr text-[#333] text-xs text-center">
+            사주로 보는 관계의 본질
           </p>
-        </div>
-
-        <div ref={heroRef}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-          <span className="text-[#444] text-[10px] uppercase tracking-[0.3em] font-sans-kr">scroll</span>
-          <div className="w-px h-12 bg-gradient-to-b from-[#FF2D55]/60 to-transparent animate-pulse" />
         </div>
       </section>
 
@@ -258,24 +135,19 @@ export default function Landing() {
       <section className="relative px-5 py-20 border-t border-white/[0.06] fade-section">
         <div className="max-w-xl mx-auto">
           <p className="font-sans-kr text-[#FF2D55] section-label text-center mb-2">FAMILIAR?</p>
-        <p className="font-sans-kr text-[#555] text-[10px] text-center mb-8">이 대화, 익숙하지 않나요?</p>
+          <p className="font-sans-kr text-[#555] text-[10px] text-center mb-8">이 대화, 익숙하지 않나요?</p>
 
-          {/* 카카오톡 스타일 대화창 */}
           <div className="overflow-hidden max-w-[320px] mx-auto mb-10 rounded-[20px]"
             style={{ background: '#1D1D1D', boxShadow: '0 24px 70px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.07)' }}>
 
-            {/* 헤더 — 실제 카카오톡 1:1 채팅방 (이름 절대 중앙) */}
             <div className="relative flex items-center justify-center h-12"
               style={{ background: '#252525', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              {/* 뒤로가기 */}
               <div className="absolute left-3 flex items-center">
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" className="opacity-55">
                   <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              {/* 이름 — 정중앙 */}
               <p className="font-sans-kr text-white text-[13.5px] font-bold">지훈</p>
-              {/* 우측 아이콘 */}
               <div className="absolute right-3 flex items-center gap-3.5 opacity-50">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                   <circle cx="11" cy="11" r="7" stroke="white" strokeWidth="2"/>
@@ -289,15 +161,11 @@ export default function Landing() {
               </div>
             </div>
 
-            {/* 날짜 */}
             <div className="pt-3.5 pb-2.5 text-center">
               <span className="font-sans-kr text-[#505050] text-[10px] bg-[#2A2A2A] px-3 py-1 rounded-full">2025년 3월 14일 금요일</span>
             </div>
 
-            {/* 메시지 영역 */}
             <div className="px-3 pb-4 space-y-2">
-
-              {/* 은지 발신 1 — 은지가 먼저 따짐 */}
               <div className="flex justify-end">
                 <div className="flex items-end gap-1.5">
                   <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 11:12</p>
@@ -308,7 +176,6 @@ export default function Landing() {
                 </div>
               </div>
 
-              {/* 지훈 수신 1 — 거짓말 */}
               <div className="flex gap-2 items-end">
                 <div className="w-8 h-8 rounded-[8px] flex-shrink-0 overflow-hidden flex items-center justify-center text-base"
                   style={{ background: 'linear-gradient(135deg, #B8D4F0 0%, #8FB8E8 100%)' }}>
@@ -326,7 +193,6 @@ export default function Landing() {
                 </div>
               </div>
 
-              {/* 은지 발신 2 — 증거 제시 */}
               <div className="flex justify-end">
                 <div className="flex items-end gap-1.5">
                   <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 11:32</p>
@@ -337,7 +203,6 @@ export default function Landing() {
                 </div>
               </div>
 
-              {/* 지훈 수신 2 — 침묵 */}
               <div className="flex gap-2 items-end">
                 <div className="w-8 flex-shrink-0" />
                 <div className="flex items-end gap-1.5">
@@ -349,7 +214,6 @@ export default function Landing() {
                 </div>
               </div>
 
-              {/* 은지 발신 3 — 마무리 */}
               <div className="flex justify-end">
                 <div className="flex items-end gap-1.5">
                   <p className="font-sans-kr text-[#454545] text-[9.5px] mb-0.5 flex-shrink-0">오후 11:48</p>
@@ -360,7 +224,6 @@ export default function Landing() {
                 </div>
               </div>
 
-              {/* 하단 구분 */}
               <div className="flex items-center gap-2 pt-1.5">
                 <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.04)' }} />
                 <p className="font-sans-kr text-[#FF2D55] text-[10px] px-1">사주에 이미 이유가 있었습니다</p>
@@ -391,7 +254,6 @@ export default function Landing() {
           </h2>
 
           <div className="space-y-3">
-            {/* 연인 카드 */}
             <button onClick={goToApp}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF2D55]/40 card-hover group">
               <div className="flex items-start justify-between">
@@ -408,7 +270,6 @@ export default function Landing() {
               </div>
             </button>
 
-            {/* 직장 카드 */}
             <button onClick={goToApp}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#BF5AF2]/40 card-hover group">
               <div className="flex items-start justify-between">
@@ -425,20 +286,19 @@ export default function Landing() {
               </div>
             </button>
 
-            {/* 가족 카드 */}
             <button onClick={goToApp}
-              className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF2D55]/40 card-hover group">
+              className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF9500]/40 card-hover group">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2.5">
-                    <span className="text-[#FF2D55] text-[10px] font-bold border border-[#FF2D55]/30 px-2.5 py-1 rounded-full font-sans-kr tracking-wide">가족 · 부모 · 형제</span>
+                    <span className="text-[#FF9500] text-[10px] font-bold border border-[#FF9500]/30 px-2.5 py-1 rounded-full font-sans-kr tracking-wide">가족 · 부모 · 형제</span>
                   </div>
                   <p className="font-sans-kr text-white text-sm font-bold mb-1.5">사랑하는데 왜 이렇게 아픈지</p>
                   <p className="font-sans-kr text-[#555] text-xs leading-relaxed">
                     성격 차이 아님 · 오행 구조 충돌 · 평생 반복되는 패턴의 원인
                   </p>
                 </div>
-                <span className="text-[#333] group-hover:text-[#FF2D55] transition-colors text-lg ml-3 flex-shrink-0 mt-1">→</span>
+                <span className="text-[#333] group-hover:text-[#FF9500] transition-colors text-lg ml-3 flex-shrink-0 mt-1">→</span>
               </div>
             </button>
           </div>
@@ -545,7 +405,6 @@ export default function Landing() {
           </div>
 
           <div className="border border-[#1e1e1e] p-6 mb-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#FF2D55]/[0.04] pointer-events-none select-none">沖</div>
             <div className="flex items-start gap-5 relative">
               <div className="border border-[#FF2D55] text-[#FF2D55] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
                 충<br /><span className="text-[10px] opacity-60">沖</span>
@@ -561,7 +420,6 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* 공감 후기 */}
           <div className="border border-[#1a1a1a] p-4 mb-8 bg-[#0A0A0A]">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-2.5 py-1 rounded-full font-sans-kr font-bold">연인</span>
@@ -581,7 +439,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          05. STORY — 직장인 (강화)
+          05. STORY — 직장인
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
@@ -610,7 +468,6 @@ export default function Landing() {
             <span className="text-[#888]">퇴사 전에 구조부터 파악해보세요.</span>
           </p>
 
-          {/* 직장인 공감 트리거 3개 */}
           <div className="space-y-3 mb-10">
             {[
               { icon: '⚡', text: '팀장이 나만 콕 찍어서 지적하는 것 같다면' },
@@ -649,7 +506,6 @@ export default function Landing() {
           </div>
 
           <div className="border border-[#1e1e1e] p-6 mb-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 font-display text-[120px] leading-none text-[#BF5AF2]/[0.04] pointer-events-none select-none">刑</div>
             <div className="flex items-start gap-5 relative">
               <div className="border border-[#BF5AF2] text-[#BF5AF2] font-display text-lg px-3 py-2 flex-shrink-0 w-16 text-center">
                 형<br /><span className="text-[10px] opacity-60">刑</span>
@@ -665,7 +521,6 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* 공감 후기 */}
           <div className="border border-[#1a1a1a] p-4 mb-8 bg-[#0A0A0A]">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] text-[#BF5AF2] border border-[#BF5AF2]/30 px-2.5 py-1 rounded-full font-sans-kr font-bold">직장</span>
@@ -689,18 +544,15 @@ export default function Landing() {
       ══════════════════════════════════════ */}
       <section className="relative border-t border-white/[0.06] overflow-hidden fade-section">
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.06) 0%, transparent 60%)' }} />
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" aria-hidden>
-          <span className="font-display text-[28vw] leading-none text-white/[0.018]">家</span>
-        </div>
+          style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,149,0,0.06) 0%, transparent 60%)' }} />
 
         <div className="max-w-xl mx-auto px-5 py-24 relative z-10">
           <div className="flex items-center gap-3 mb-4">
-            <span className="step-badge bg-[#FF2D55] text-white font-sans-kr tracking-widest">STORY 03</span>
+            <span className="step-badge bg-[#FF9500] text-white font-sans-kr tracking-widest">STORY 03</span>
           </div>
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-6 h-px bg-[#FF2D55]" />
-            <p className="text-[#FF2D55] section-label font-sans-kr">가족</p>
+            <div className="w-6 h-px bg-[#FF9500]" />
+            <p className="text-[#FF9500] section-label font-sans-kr">가족</p>
           </div>
 
           <div className="text-center mb-10">
@@ -710,7 +562,7 @@ export default function Landing() {
             </p>
             <p className="font-display leading-[1.08] mb-3"
               style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-              <span className="text-[#FF2D55]">왜 이렇게 아플까</span>
+              <span className="text-[#FF9500]">왜 이렇게 아플까</span>
             </p>
             <p className="font-sans-kr text-[#777] text-sm mt-6 leading-relaxed">
               억압이 아니에요. 오행의 흐름입니다.<br />
@@ -725,23 +577,23 @@ export default function Landing() {
               { hanja: '刑', name: '형', desc: '누적 갈등' },
             ].map(({ hanja, name, desc }) => (
               <div key={hanja} className="border border-[#1e1e1e] p-4 text-center bg-[#0A0A0A]">
-                <span className="font-display text-[#FF2D55]/60 text-3xl leading-none block mb-2">{hanja}</span>
+                <span className="font-display text-[#FF9500]/60 text-3xl leading-none block mb-2">{hanja}</span>
                 <p className="font-sans-kr text-white text-xs font-bold">{name}</p>
                 <p className="font-sans-kr text-[#555] text-[10px] mt-1">{desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="border-l-[2px] border-[#FF2D55] pl-6 py-4 bg-[#0D0D0D] mb-8">
+          <div className="border-l-[2px] border-[#FF9500] pl-6 py-4 bg-[#0D0D0D] mb-8">
             <p className="font-sans-kr text-[#999] text-sm leading-relaxed mb-1">가족이라 더 어렵고, 더 오래 아파요</p>
             <p className="font-sans-kr text-white text-sm leading-relaxed">
-              이건 성격 문제가 아니라 <span className="text-[#FF2D55] font-bold">구조의 문제</span>입니다.
+              이건 성격 문제가 아니라 <span className="text-[#FF9500] font-bold">구조의 문제</span>입니다.
             </p>
           </div>
 
           <div className="border border-[#1a1a1a] p-4 mb-8 bg-[#0A0A0A]">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-2.5 py-1 rounded-full font-sans-kr font-bold">가족</span>
+              <span className="text-[10px] text-[#FF9500] border border-[#FF9500]/30 px-2.5 py-1 rounded-full font-sans-kr font-bold">가족</span>
               <div className="flex gap-0.5">{[1,2,3,4,5].map(i=><span key={i} className="text-[10px] text-[#FF2D55]">★</span>)}</div>
             </div>
             <p className="font-sans-kr text-[#888] text-xs leading-relaxed">
@@ -751,7 +603,7 @@ export default function Landing() {
           </div>
 
           <button onClick={goToApp}
-            className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 active:scale-95 transition-all tracking-wide">
+            className="w-full border border-[#FF9500]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF9500]/10 active:scale-95 transition-all tracking-wide">
             가족 관계 분석하기 →
           </button>
         </div>
@@ -872,71 +724,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          09. SOCIAL PROOF — 후기
-      ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,45,85,0.06) 0%, transparent 50%)' }} />
-        <div className="max-w-xl mx-auto relative z-10">
-          <p className="text-[#FF2D55] section-label font-sans-kr text-center mb-1">SOCIAL PROOF</p>
-          <p className="text-[#555] text-[10px] font-sans-kr text-center mb-3">실제 반응</p>
-          <h2 className="font-display text-white text-center mb-12"
-            style={{ fontSize: 'clamp(2rem, 8vw, 3rem)' }}>
-            사람들이 뭐라 했냐면
-          </h2>
-
-          <div className="grid grid-cols-3 gap-px bg-[#1a1a1a] border border-[#1a1a1a] mb-12">
-            {[
-              { num: '4.4', unit: '/ 5', label: '평균 만족도', sub: '실제 리뷰 54개 기준' },
-              { num: '1분', unit: '', label: '분석 소요 시간', sub: '입력 후 AI 결과' },
-              { num: '54', unit: '개', label: '실제 후기', sub: '소름돋는다는 반응' },
-            ].map(({ num, unit, label, sub }) => (
-              <div key={label} className="bg-[#0A0A0A] py-7 text-center">
-                <div className="flex items-end justify-center gap-1 mb-1">
-                  <span className="font-display text-white text-3xl leading-none">{num}</span>
-                  {unit && <span className="font-display text-[#666] text-sm mb-0.5">{unit}</span>}
-                </div>
-                <p className="font-sans-kr text-[#777] text-[10px]">{label}</p>
-                <p className="font-sans-kr text-[#444] text-[9px] mt-0.5">{sub}</p>
-              </div>
-            ))}
-          </div>
-
-          <div key={reviewPage} className="animate-fade-in space-y-3 mb-8">
-            {reviews.slice(reviewPage * 3, reviewPage * 3 + 3).map((review, i) => (
-              <div key={i} className="border border-[#1a1a1a] p-5 bg-[#0A0A0A] transition-colors hover:border-[#2a2a2a]">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] text-[#FF2D55] border border-[#FF2D55]/30 px-2.5 py-1 rounded-full font-sans-kr font-bold tracking-wide">
-                    {review.tag}
-                  </span>
-                  <Stars count={review.stars} />
-                </div>
-                <p className="font-sans-kr text-white text-sm leading-relaxed mb-2">"{review.q}"</p>
-                <p className="font-sans-kr text-[#444] text-xs">— {review.r}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-center gap-3">
-            <button onClick={() => setReviewPage(p => (p - 1 + totalPages) % totalPages)}
-              className="text-[#555] hover:text-[#FF2D55] transition-colors text-base px-4 py-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="이전 리뷰">←</button>
-            <div className="flex gap-2">
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button key={i} onClick={() => setReviewPage(i)}
-                  className={`rounded-full transition-all duration-300 min-w-[16px] min-h-[16px] flex items-center justify-center ${i === reviewPage ? 'bg-[#FF2D55] w-4 h-2' : 'bg-[#444] w-2 h-2'}`}
-                  aria-label={`${i + 1}번째 페이지`} />
-              ))}
-            </div>
-            <button onClick={() => setReviewPage(p => (p + 1) % totalPages)}
-              className="text-[#555] hover:text-[#FF2D55] transition-colors text-base px-4 py-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
-              aria-label="다음 리뷰">→</button>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════
-          10. FINAL OFFER — mock UI
+          09. FINAL OFFER — mock UI
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
@@ -1008,7 +796,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          11. FINAL CTA
+          10. FINAL CTA
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-28 border-t border-white/[0.06] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none"
@@ -1034,11 +822,11 @@ export default function Landing() {
             지금 분석하기 →
           </button>
 
-          <div className="flex flex-wrap justify-center gap-2 mb-4">
-            {['1분이면 끝', '카카오 공유', '가입 불필요'].map(chip => (
-              <span key={chip} className="font-sans-kr text-[11px] border border-[#2a2a2a] text-[#666] px-3 py-1.5 rounded-full">{chip}</span>
-            ))}
-          </div>
+          {userCount > 0 && (
+            <p className="font-sans-kr text-[#444] text-xs mb-4">
+              지금까지 <span className="text-[#666]">{userCount.toLocaleString()}명</span>이 TOXIC을 이용했어요
+            </p>
+          )}
           <p className="font-sans-kr text-[#444] text-xs">1분 · 지금 바로</p>
         </div>
       </section>
