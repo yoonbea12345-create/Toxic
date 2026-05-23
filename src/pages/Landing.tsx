@@ -4,15 +4,15 @@ import { startSession } from '../utils/analytics';
 
 
 const TRIGGERS = [
-  { type: '연인', text: '6시간 읽씹하고 인스타는 올리고 있더라. 내가 예민한건가', color: '#FF2D55' },
-  { type: '직장', text: '나한테만 유독 이러는 것 같은데 기분탓인지 진짜인지 모르겠음', color: '#BF5AF2' },
-  { type: '가족', text: '엄마랑 말하면 꼭 싸움으로 끝남. 나만 이러나', color: '#FF9500' },
-  { type: '연인', text: '헤어진지 반년 됐는데 자꾸 생각남. 미련인지 뭔지', color: '#FF2D55' },
-  { type: '직장', text: '열심히 하는데 저 사람한텐 항상 지적만 받음. 내 잘못인가', color: '#BF5AF2' },
-  { type: '가족', text: '가족인데 같이 있으면 왜 이렇게 힘드냐 진짜', color: '#FF9500' },
-  { type: '연인', text: '맨날 같은 이유로 싸우고 화해하고 또 싸우고. 지침', color: '#FF2D55' },
-  { type: '직장', text: '저 사람 때문에 퇴사하고 싶은데 내가 소심한건가 걔가 이상한건가', color: '#BF5AF2' },
-  { type: '가족', text: '부모님한테 화내고 나면 죄책감드는데 근데 또 화남', color: '#FF9500' },
+  { type: '연인', text: '카톡 1만 보고 답장 안 온다면', color: '#FF2D55' },
+  { type: '직장', text: '월요일 아침마다 사표 쓰고싶다면', color: '#BF5AF2' },
+  { type: '가족', text: '엄마 전화만 와도 한숨 나온다면', color: '#FF9500' },
+  { type: '연인', text: '인스타 스토리만 백번 새로고침한다면', color: '#FF2D55' },
+  { type: '직장', text: '팀장 메시지 알림에 심장 철렁한다면', color: '#BF5AF2' },
+  { type: '가족', text: '명절 갈 생각만 해도 토할 거 같다면', color: '#FF9500' },
+  { type: '연인', text: '소개팅마다 두번째 만남이 없다면', color: '#FF2D55' },
+  { type: '직장', text: '면접 다섯번 떨어지고 멘탈 나갔다면', color: '#BF5AF2' },
+  { type: '가족', text: '아빠랑 밥 먹은 지 1년 넘었다면', color: '#FF9500' },
 ];
 
 const CheckIcon = ({ color }: { color: string }) => (
@@ -65,8 +65,8 @@ export default function Landing() {
 
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
-        <div className="max-w-xl mx-auto pl-0 pr-4 h-[100px] flex items-center justify-between">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block" />
+        <div className="max-w-xl mx-auto pl-0 pr-4 h-[100px] flex items-center justify-between overflow-hidden">
+          <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block flex-shrink-0" style={{ marginLeft: '-40px' }} />
           <button onClick={goToApp}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 rounded-full hover:opacity-90 active:scale-95 transition-all font-sans-kr tracking-wider font-bold">
             분석 시작 →
