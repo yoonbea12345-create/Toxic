@@ -762,7 +762,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         setApiProgress(100);
         setApiDone(true);
         const elapsed = Date.now() - startedAt;
-        const delay = Math.max(0, 3000 - elapsed) + 900;
+        const delay = Math.max(0, 3000 - elapsed) + 300;
         setTimeout(() => setShowLoading(false), delay);
       }
     })();
@@ -963,8 +963,8 @@ export default function StepResult({ myData, targetData, result, relationType, o
         </button>
       </div>
 
-      {/* 충돌 뱃지 + tooltip */}
-      {(result.conflicts.chung.length > 0 || result.conflicts.hyung.length > 0 ||
+      {/* 충돌 뱃지 + tooltip — 이름만 입력한 경우 더미 사주 기반이므로 숨김 */}
+      {hasDateData && (result.conflicts.chung.length > 0 || result.conflicts.hyung.length > 0 ||
         result.conflicts.hae.length > 0 || result.conflicts.pa.length > 0 || result.conflicts.hap.length > 0) && (
         <div>
           <p className="text-[#333] text-[9px] uppercase tracking-[0.2em] mb-2">사주 충돌 구조 — 탭하면 설명</p>

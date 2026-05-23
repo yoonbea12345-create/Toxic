@@ -43,6 +43,9 @@ export interface SajuResult {
   accuracyLevel: 'year' | 'month' | 'day' | 'full';
   myDangerBranches: Branch[];
   myDangerOhaeng: Ohaeng[];
+  saengRelation: { myToTarget: boolean; targetToMe: boolean };
+  myDayYin: boolean;
+  targetDayYin: boolean | null;
   // legacy fields for UI compatibility
   myBranch: Branch;
   myStem: Stem;
@@ -77,6 +80,14 @@ const BRANCH_OHAENG: Record<Branch, Ohaeng> = {
 const GEUK_MAP: Partial<Record<Ohaeng, Ohaeng>> = {
   목: '토', 토: '수', 수: '화', 화: '금', 금: '목',
 };
+
+// 오행 상생: key가 key2를 생함
+const SAENG_MAP: Partial<Record<Ohaeng, Ohaeng>> = {
+  목: '화', 화: '토', 토: '금', 금: '수', 수: '목',
+};
+
+// 음간 천간 (陰干)
+const YIN_STEMS = new Set<Stem>(['을', '정', '기', '신', '계']);
 
 // ─── 절기 데이터 (입춘·경칩·청명·입하·망종·소서·입추·백로·한로·입동·대설·소한) ───
 // [year]: [Jan소한, Feb입춘, Mar경칩, Apr청명, May입하, Jun망종, Jul소서, Aug입추, Sep백로, Oct한로, Nov입동, Dec대설]
@@ -375,16 +386,33 @@ function collectStems(pillars: (Pillar | null)[]): Stem[] {
   return pillars.filter((p): p is Pillar => p !== null).map(p => p.stem);
 }
 
+// 충(沖) 종류별 강도 가중치 — 에너지 특성에 따라 차등 적용
+const CHUNG_WEIGHT: Record<string, number> = {
+  '자오충(子午沖)': 28, // 수화 직충 — 가장 폭발적
+  '인신충(寅申沖)': 27, // 목금 직충 — 방향 정반대
+  '사해충(巳亥沖)': 23, // 화수 충 — 이상·현실 충돌
+  '묘유충(卯酉沖)': 22, // 음목·음금 — 감성·현실 충돌
+  '진술충(辰戌沖)': 22, // 토토 충 — 고집 대 고집
+  '축미충(丑未沖)': 20, // 토토 충 — 안정 vs 변화
+};
+
 // ─── 충돌 점수 계산 ──────────────────────────────────────────────
-function calcToxicScore(conflicts: SajuResult['conflicts']): number {
+function calcToxicScore(
+  conflicts: SajuResult['conflicts'],
+  saengRelation: { myToTarget: boolean; targetToMe: boolean },
+): number {
   let score = 30;
-  score += conflicts.chung.length * 25;
+  for (const c of conflicts.chung) {
+    score += CHUNG_WEIGHT[c.name] ?? 25;
+  }
   score += conflicts.hyung.length * 20;
   score += conflicts.hae.length * 10;
   score += conflicts.pa.length * 8;
   if (conflicts.geuk.exists) score += 15;
-  // 합이 많으면 점수 감소 (궁합이 있다는 의미)
   score -= conflicts.hap.length * 10;
+  // 상생이 있으면 충돌 에너지 일부 완화
+  if (saengRelation.myToTarget) score -= 8;
+  if (saengRelation.targetToMe) score -= 8;
   return Math.min(Math.max(score, 15), 99);
 }
 
@@ -404,6 +432,18 @@ function getMyDangerOhaeng(myStems: Stem[]): Ohaeng[] {
     if (GEUK_MAP[o]) danger.push(GEUK_MAP[o]!);
   }
   return [...new Set(danger)];
+}
+
+// ─── 오행 상생 관계 계산 ─────────────────────────────────────────
+function getSaengRelation(
+  myStems: Stem[],
+  targetStems: Stem[],
+): { myToTarget: boolean; targetToMe: boolean } {
+  const myOhaengs = myStems.map(s => STEM_OHAENG[s]);
+  const tgOhaengs = targetStems.map(s => STEM_OHAENG[s]);
+  const myToTarget = myOhaengs.some(o => tgOhaengs.some(t => SAENG_MAP[o] === t));
+  const targetToMe = tgOhaengs.some(o => myOhaengs.some(m => SAENG_MAP[o] === m));
+  return { myToTarget, targetToMe };
 }
 
 // ─── 정확도 레벨 ──────────────────────────────────────────────────
@@ -508,7 +548,10 @@ export function analyzeSaju(
     : getGeuk(myYear.stem, targetYear.stem);
 
   const conflicts = { chung, hyung, hae, pa, hap, geuk };
-  const toxicScore = calcToxicScore(conflicts);
+
+  // 오행 상생 계산
+  const saengRelation = getSaengRelation(myStems, targetStems);
+  const toxicScore = calcToxicScore(conflicts, saengRelation);
   const accuracyLevel = getAccuracyLevel(myDay, myHour, targetDay);
 
   const myDangerBranches = getMyDangerBranches(myBranches);
@@ -530,6 +573,9 @@ export function analyzeSaju(
     accuracyLevel,
     myDangerBranches,
     myDangerOhaeng,
+    saengRelation,
+    myDayYin: myDay ? YIN_STEMS.has(myDay.stem) : YIN_STEMS.has(myYear.stem),
+    targetDayYin: targetDay ? YIN_STEMS.has(targetDay.stem) : (hasTarget ? YIN_STEMS.has(targetYear.stem) : null),
     // legacy
     myBranch: myYear.branch,
     myStem: myYear.stem,

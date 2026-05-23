@@ -11,7 +11,7 @@ export async function fetchAIPhase1(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phase: 1, myData, targetData, relationType, result }),
-    signal: AbortSignal.timeout(70000),
+    signal: AbortSignal.timeout(90000),
   });
 
   if (!res.ok) throw new Error(`API ${res.status}`);
@@ -57,7 +57,7 @@ export async function fetchAIPhase2(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phase: 2, myData, targetData, relationType, result }),
-    signal: AbortSignal.timeout(58000),
+    signal: AbortSignal.timeout(90000),
   });
   if (!res.ok) throw new Error(`API ${res.status}`);
   const { data } = await res.json();

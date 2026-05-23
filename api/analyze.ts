@@ -158,11 +158,26 @@ function buildPhase1APrompt(myData: any, targetData: any, relationType: string, 
 }`;
   }
 
+  // 상생 정보 도출
+  const saeng = result.saengRelation;
+  const saengInfo = saeng?.myToTarget && saeng?.targetToMe ? '쌍방 상생 — 끌림이 있지만 갈등도 공존'
+    : saeng?.myToTarget ? '나→상대 상생(내가 상대를 북돋는 구조 — 내가 더 소모)'
+    : saeng?.targetToMe ? '상대→나 상생(상대가 나를 북돋는 구조 — 의존성 발생 가능)'
+    : '없음';
+  const myYinYang = result.myDayYin ? '음간(陰干) — 감추고 내면화하는 성향' : '양간(陽干) — 드러내고 직접적인 성향';
+  const tgYinYang = result.targetDayYin != null ? (result.targetDayYin ? '음간 — 감추고 내면화' : '양간 — 드러내고 직접') : '';
+  const myDayPillar = result.myDay ? `${result.myDay.stem}${result.myDay.branch}` : `${result.myYear?.stem}${result.myYear?.branch}(년주대체)`;
+  const tgDayPillar = result.targetDay ? `${result.targetDay.stem}${result.targetDay.branch}` : result.targetYear ? `${result.targetYear.stem}${result.targetYear.branch}(년주대체)` : '';
+
   if (hasTarget) {
-    return `[사주 데이터]
-나(${myData.gender}): ${myPillar} / 상대(${targetData.gender}): ${tgPillar}
+    return `[사주 데이터 — 일주(日柱)가 핵심]
+나(${myData.gender}, ${myYinYang}): ${myPillar}
+  → 일주(나 자신): ${myDayPillar}
+상대(${targetData.gender}${tgYinYang ? ', ' + tgYinYang : ''}): ${tgPillar}
+  → 일주(상대 자신): ${tgDayPillar}
 관계: ${relationType} | 독성지수: ${score}점
 충(沖): ${chung} | 형(刑): ${hyung} | 해(害): ${hae} | 극(剋): ${geuk}
+상생(相生): ${saengInfo}
 갈등요약: ${result.conflictSummary || ''} | 태그: ${result.tags?.join(',') || ''}
 
 [출력 형식] 순수 JSON만. 주석·마크다운 없이.
@@ -379,12 +394,20 @@ function buildPhase2Prompt(myData: any, targetData: any, relationType: string, r
   const score = result.toxicScore;
   const myPillar  = `${result.myYear?.stem}${result.myYear?.branch}년 ${result.myMonth ? result.myMonth.stem+result.myMonth.branch+'월' : ''} ${result.myDay ? result.myDay.stem+result.myDay.branch+'일' : ''}`.trim();
   const tgPillar  = `${result.targetYear?.stem}${result.targetYear?.branch}년 ${result.targetMonth ? result.targetMonth.stem+result.targetMonth.branch+'월' : ''} ${result.targetDay ? result.targetDay.stem+result.targetDay.branch+'일' : ''}`.trim();
+  const saeng = result.saengRelation;
+  const saengInfo = saeng?.myToTarget && saeng?.targetToMe ? '쌍방 상생'
+    : saeng?.myToTarget ? '나→상대 상생' : saeng?.targetToMe ? '상대→나 상생' : '없음';
+  const myDayPillar = result.myDay ? `${result.myDay.stem}${result.myDay.branch}` : `${result.myYear?.stem}${result.myYear?.branch}`;
+  const tgDayPillar = result.targetDay ? `${result.targetDay.stem}${result.targetDay.branch}` : `${result.targetYear?.stem}${result.targetYear?.branch}`;
+  const myYinYang = result.myDayYin ? '음간' : '양간';
+  const tgYinYang = result.targetDayYin != null ? (result.targetDayYin ? '음간' : '양간') : '';
 
-  return `[사주 데이터]
-나(${myData.gender}): ${myPillar}
-상대(${targetData.gender}): ${tgPillar}
+  return `[사주 데이터 — 일주(日柱) 중심 분석]
+나(${myData.gender}, ${myYinYang}): ${myPillar} | 일주: ${myDayPillar}
+상대(${targetData.gender}${tgYinYang ? ', ' + tgYinYang : ''}): ${tgPillar} | 일주: ${tgDayPillar}
 관계: ${relationType} | 독성지수: ${score}점
 충(沖): ${chung} | 형(刑): ${hyung} | 해(害): ${hae} | 극(剋): ${geuk}
+상생(相生): ${saengInfo}
 갈등요약: ${result.conflictSummary || ''} | 태그: ${result.tags?.join(',') || ''}
 
 [목표] 04번 섹션: "이 관계가 나에게 주는 영향"을 거울처럼 보여줘서 소름 돋게. 05번 섹션: 상대방 사주 기운으로 "상대방이 나를 어떻게 인식하는지" — 상대방의 오행·충돌구조를 뒤집어서 나를 바라보는 시선 분석. 추상적 표현 절대 금지, 구체적 장면·대화체·상대방 내면 독백까지. 06번 섹션: 계속 가야 할지 사주로 판정.
@@ -512,16 +535,41 @@ export default async function handler(req: any, res: any) {
         send({ type: 'progress', pct });
       });
 
-      const [msgA, msgB] = await Promise.all([streamA.finalMessage(), streamB.finalMessage()]);
+      const [settledA, settledB] = await Promise.allSettled([
+        streamA.finalMessage(),
+        streamB.finalMessage(),
+      ]);
 
-      const cA = msgA.content[0];
-      const cB = msgB.content[0];
-      if (cA.type !== 'text') throw new Error('Not text A');
-      if (cB.type !== 'text') throw new Error('Not text B');
+      let dataA: Record<string, any> = {};
+      let dataB: Record<string, any> = {};
 
-      const dataA = extractJson(cA.text);
-      const dataB = extractJson(cB.text);
-      send({ type: 'done', data: { ...dataA, ...dataB } });
+      if (settledA.status === 'fulfilled') {
+        const cA = settledA.value.content[0];
+        if (cA.type === 'text') {
+          try { dataA = extractJson(cA.text); } catch {}
+        }
+      } else {
+        console.error('[TOXIC API] Phase 1A 실패, 폴백 적용:', settledA.reason);
+        dataA = {
+          toxicSummary: result.conflictSummary?.slice(0, 20) || '구조적 충돌 관계',
+          coreConflict: { title: result.conflictType, description: result.conflictSummary },
+        };
+      }
+
+      if (settledB.status === 'fulfilled') {
+        const cB = settledB.value.content[0];
+        if (cB.type === 'text') {
+          try { dataB = extractJson(cB.text); } catch {}
+        }
+      } else {
+        console.error('[TOXIC API] Phase 1B 실패, 빈 데이터로 진행:', settledB.reason);
+      }
+
+      if (Object.keys(dataA).length === 0 && Object.keys(dataB).length === 0) {
+        send({ type: 'error', message: 'failed' });
+      } else {
+        send({ type: 'done', data: { ...dataA, ...dataB } });
+      }
     } catch (err) {
       console.error('[TOXIC API] phase 1 stream', err);
       send({ type: 'error', message: 'failed' });
@@ -536,7 +584,7 @@ export default async function handler(req: any, res: any) {
     const prompt = hasNameOnly
       ? buildPhase2NameOnlyPrompt(myData, targetData, relationType, result)
       : buildPhase2Prompt(myData, targetData, relationType, result);
-    const text = await callOpus(prompt, 5000);
+    const text = await callOpus(prompt, 5000, 90000);
     return res.status(200).json({ data: extractJson(text) });
   } catch (err) {
     console.error('[TOXIC API] phase', phase, err);
