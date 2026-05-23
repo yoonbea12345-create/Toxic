@@ -27,7 +27,11 @@ interface Stats {
   dropoff: { landing: number; step1: number; step2: number; step3: number };
   paywallImpressions: number;
   paywallClicks: number;
-  paywallPays: number;
+  sectionPays: number;
+  allPays: number;
+  sectionRevenue: number;
+  allRevenue: number;
+  totalRevenue: number;
   paywallCTR: number;
   paywallConversion: number;
   reviewSubmits: number;
@@ -52,7 +56,12 @@ function computeStats(events: EventRecord[]): Stats {
   const shares = count('share');
   const paywallImpressions = count('paywall_impression');
   const paywallClicks = count('paywall_click');
-  const paywallPays = count('paywall_pay');
+  const sectionPays = events.filter(e => e.event === 'paywall_pay' && e.props?.type === 'section').length;
+  const allPays = events.filter(e => e.event === 'paywall_pay' && e.props?.type === 'all').length;
+  const sectionRevenue = sectionPays * 500;
+  const allRevenue = allPays * 1900;
+  const totalRevenue = sectionRevenue + allRevenue;
+  const paywallPays = sectionPays + allPays;
 
   const scores = events
     .filter(e => e.event === 'step_complete_target-info' || e.event === 'step_complete_skip-target')
@@ -85,7 +94,11 @@ function computeStats(events: EventRecord[]): Stats {
     completionRate: results ? Math.round((results / total) * 100) : 0,
     paywallImpressions,
     paywallClicks,
-    paywallPays,
+    sectionPays,
+    allPays,
+    sectionRevenue,
+    allRevenue,
+    totalRevenue,
     paywallCTR: paywallImpressions ? Math.round((paywallClicks / paywallImpressions) * 100) : 0,
     paywallConversion: paywallClicks ? Math.round((paywallPays / paywallClicks) * 100) : 0,
     reviewSubmits,
@@ -172,6 +185,7 @@ export default function AdminPage() {
       localStorage.removeItem(EVENTS_KEY);
       localStorage.removeItem('toxic_session_times');
       localStorage.removeItem('toxic_unlocked_all');
+      ['s01', 's02', 's03', 's04', 's05', 's06'].forEach(id => localStorage.removeItem(`toxic_unlocked_${id}`));
       setEvents([]);
       setSessionTimes([]);
     }
@@ -274,14 +288,18 @@ export default function AdminPage() {
 
           {/* 유료 전환 검증 */}
           <div>
-            <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유료 전환 검증 (전체 단일 결제)</p>
+            <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유료 전환 검증</p>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <StatCard label="페이월 노출" value={stats.paywallImpressions} sub="결과 화면 진입 수" color="#fff" />
               <StatCard label="페이월 클릭" value={stats.paywallClicks} sub="잠금 해제 버튼" color="#F59E0B" />
             </div>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <StatCard label="개별 결제" value={`${stats.sectionPays}회`} sub={`₩${stats.sectionRevenue.toLocaleString()}`} color="#FF2D55" />
+              <StatCard label="전체 결제" value={`${stats.allPays}회`} sub={`₩${stats.allRevenue.toLocaleString()}`} color="#BF5AF2" />
+            </div>
             <div className="grid grid-cols-3 gap-3">
-              <StatCard label="결제 클릭" value={stats.paywallPays} sub="₩500 전체 열기" color="#FF2D55" />
-              <StatCard label="클릭율(CTR)" value={`${stats.paywallCTR}%`} sub="노출→클릭" color="#BF5AF2" />
+              <StatCard label="총 매출" value={`₩${stats.totalRevenue.toLocaleString()}`} sub="개별+전체 합산" color="#FF2D55" />
+              <StatCard label="CTR" value={`${stats.paywallCTR}%`} sub="노출→클릭" color="#BF5AF2" />
               <StatCard label="전환율" value={`${stats.paywallConversion}%`} sub="클릭→결제" color="#F59E0B" />
             </div>
           </div>

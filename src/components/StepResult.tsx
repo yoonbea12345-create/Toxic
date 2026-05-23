@@ -446,7 +446,7 @@ function BlurredPreview({ children, unlocked, onUnlock, teaser }: {
         >
           <span className="relative z-10 flex items-center gap-2">
             <LockIcon size={12} color="white" />
-            ₩{PRICE_ALL.toLocaleString()}으로 더 자세히 보기 →
+            ₩{PRICE_SECTION.toLocaleString()}으로 이 섹션 보기 →
           </span>
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
             style={{ background: 'rgba(255,255,255,0.07)' }} />
@@ -478,14 +478,16 @@ function LockIcon({ size = 20, color = '#FF2D55' }: { size?: number; color?: str
 }
 
 // ── 가격 상수 ─────────────────────────────────────────────────────────
-const PRICE_ALL = 500;
+const PRICE_SECTION = 500;
+const PRICE_ALL = 1900;
+const PRICE_ALL_ORIGINAL = 3000;
 
 // ── 결제 팝업 모달 ───────────────────────────────────────────────────
-function PaywallModal({ myName, conflictType, onClose, onPay }: {
-  myName: string;
+function PaywallModal({ conflictType, onClose, onPaySection, onPayAll }: {
   conflictType: string;
   onClose: () => void;
-  onPay: () => void;
+  onPaySection: () => void;
+  onPayAll: () => void;
 }) {
   return (
     <div
@@ -546,23 +548,29 @@ function PaywallModal({ myName, conflictType, onClose, onPay }: {
 
             <div className="h-px bg-[#111] mb-4" />
 
-            {/* Price */}
-            <div className="flex items-center justify-between mb-4 px-1">
-              <p className="font-sans-kr text-[#444] text-xs">전체 더보기 잠금 해제</p>
-              <div className="flex items-end gap-2">
-                <span className="font-sans-kr text-[#333] text-sm line-through">₩9,900</span>
-                <span className="font-display text-white text-4xl leading-none font-bold">₩{PRICE_ALL.toLocaleString()}</span>
-              </div>
-            </div>
+            {/* 섹션별 결제 */}
+            <button onClick={onPaySection}
+              className="w-full py-3.5 mb-2 border border-[#333] text-white font-bold text-sm tracking-wide relative overflow-hidden group font-sans-kr flex items-center justify-between px-5"
+              style={{ background: '#111' }}>
+              <span className="text-[#aaa] font-sans-kr text-sm">이 섹션만 보기</span>
+              <span className="font-display text-white text-xl font-bold">₩{PRICE_SECTION.toLocaleString()}</span>
+            </button>
 
-            <button onClick={onPay}
+            {/* 전체 결제 */}
+            <button onClick={onPayAll}
               className="w-full py-4 text-white font-bold text-base tracking-wide mb-3 relative overflow-hidden group font-sans-kr"
               style={{
                 background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)',
                 boxShadow: '0 0 40px rgba(255,45,85,0.45)',
               }}>
-              <span className="relative z-10">
-                {myName ? `${myName}님` : '지금'} ₩{PRICE_ALL.toLocaleString()}으로 전체 보기 →
+              <span className="relative z-10 flex items-center justify-between w-full px-1">
+                <span className="font-sans-kr">
+                  6개 전체 해제
+                  <span className="text-white/60 text-xs font-normal ml-2">
+                    ₩{PRICE_ALL_ORIGINAL.toLocaleString()}에서
+                  </span>
+                </span>
+                <span className="font-display text-2xl leading-none">₩{PRICE_ALL.toLocaleString()}</span>
               </span>
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{ background: 'rgba(255,255,255,0.08)' }} />
@@ -643,10 +651,21 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [recentHistory] = useState(() => loadHistory().slice(1, 4));
 
-  // 유료 전환 — 전체 단일 결제
-  const [isAllUnlocked, setIsAllUnlocked] = useState(() => {
-    try { return localStorage.getItem('toxic_unlocked_all') === '1'; } catch { return false; }
+  // 유료 전환 — 섹션별 결제
+  const [unlockedSections, setUnlockedSections] = useState<Set<string>>(() => {
+    try {
+      if (localStorage.getItem('toxic_unlocked_all') === '1') {
+        return new Set(['s01', 's02', 's03', 's04', 's05', 's06']);
+      }
+      const s = new Set<string>();
+      ['s01', 's02', 's03', 's04', 's05', 's06'].forEach(id => {
+        if (localStorage.getItem(`toxic_unlocked_${id}`) === '1') s.add(id);
+      });
+      return s;
+    } catch { return new Set(); }
   });
+  const isAllUnlocked = unlockedSections.size >= 6;
+  const [activeSection, setActiveSection] = useState<string>('s01');
   const [showPaywall, setShowPaywall] = useState(false);
   const [showFreeSuccess, setShowFreeSuccess] = useState(false);
 
@@ -657,19 +676,31 @@ export default function StepResult({ myData, targetData, result, relationType, o
     setTimeout(() => setToast(''), 2500);
   };
 
-  const handleOpenPaywall = () => {
-    trackEvent('paywall_click', { section: 'all' });
+  const handleOpenPaywall = (sectionId: string) => {
+    setActiveSection(sectionId);
+    trackEvent('paywall_click', { section: sectionId });
     setShowPaywall(true);
   };
 
-  const handlePayment = () => {
-    trackEvent('paywall_pay', { price: PRICE_ALL, section: 'all' });
+  const handleUnlockSection = () => {
+    trackEvent('paywall_pay', { price: PRICE_SECTION, section: activeSection, type: 'section' });
+    setShowPaywall(false);
+    setShowFreeSuccess(true);
+    try { localStorage.setItem(`toxic_unlocked_${activeSection}`, '1'); } catch {}
+    setTimeout(() => {
+      setUnlockedSections(prev => new Set([...prev, activeSection]));
+      setShowFreeSuccess(false);
+    }, 3200);
+  };
+
+  const handleUnlockAll = () => {
+    trackEvent('paywall_pay', { price: PRICE_ALL, type: 'all' });
     setShowPaywall(false);
     setShowFreeSuccess(true);
     try { localStorage.setItem('toxic_unlocked_all', '1'); } catch {}
     setTimeout(() => {
+      setUnlockedSections(new Set(['s01', 's02', 's03', 's04', 's05', 's06']));
       setShowFreeSuccess(false);
-      setIsAllUnlocked(true);
     }, 3200);
   };
 
@@ -827,10 +858,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
       {/* 결제 팝업 모달 */}
       {showPaywall && (
         <PaywallModal
-          myName={myData.name || ''}
           conflictType={result.conflictType}
           onClose={() => setShowPaywall(false)}
-          onPay={handlePayment}
+          onPaySection={handleUnlockSection}
+          onPayAll={handleUnlockAll}
         />
       )}
 
@@ -842,11 +873,12 @@ export default function StepResult({ myData, targetData, result, relationType, o
             <div>
               <p className="text-[#444] text-[9px] tracking-[0.15em] uppercase">한 번 결제 · 평생 다시 보기</p>
               <p className="text-white text-xs font-bold font-sans-kr mt-0.5">
-                <span className="text-[#555] line-through text-[10px] mr-1.5">₩9,900</span>
-                ₩{PRICE_ALL.toLocaleString()}
+                6개 전체
+                <span className="text-[#555] line-through text-[10px] mx-1.5">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
+                <span className="text-[#FF2D55]">₩{PRICE_ALL.toLocaleString()}</span>
               </p>
             </div>
-            <button onClick={handleOpenPaywall}
+            <button onClick={() => handleOpenPaywall('s01')}
               className="flex-shrink-0 px-5 py-2.5 text-white text-sm font-bold font-sans-kr tracking-wide"
               style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)', boxShadow: '0 0 20px rgba(255,45,85,0.35)' }}>
               지금 전체 보기 →
@@ -1028,7 +1060,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             )}
           </Card>
 
-            <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="감정 반응 패턴 · 에너지 역학 · 숨겨진 역학이 잠겨있습니다">
+            <BlurredPreview unlocked={unlockedSections.has('s01')} onUnlock={() => handleOpenPaywall('s01')} teaser="감정 반응 패턴 · 에너지 역학 · 숨겨진 역학이 잠겨있습니다">
               <div className="space-y-3">
                 {(ai.conflictAnalysis?.chung || ai.conflictAnalysis?.hyung ||
                   ai.conflictAnalysis?.geuk ||
@@ -1135,7 +1167,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="나머지 갈등 상황 · 갈등 트리거 · 관계별 특성이 잠겨있습니다">
+            <BlurredPreview unlocked={unlockedSections.has('s02')} onUnlock={() => handleOpenPaywall('s02')} teaser="나머지 갈등 상황 · 갈등 트리거 · 관계별 특성이 잠겨있습니다">
               <div className="space-y-3">
                 {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
                   <Card key={i}>
@@ -1207,7 +1239,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
             {ai.avoidanceGuide ? (
-              <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="실전 팁 · 선긋기 · 현실적 전망이 잠겨있습니다">
+              <BlurredPreview unlocked={unlockedSections.has('s03')} onUnlock={() => handleOpenPaywall('s03')} teaser="실전 팁 · 선긋기 · 현실적 전망이 잠겨있습니다">
                 <div className="space-y-3">
                   <Card>
                     <SubLabel text="실전 팁" />
@@ -1256,7 +1288,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
             {ai.personalImpact ? (
-              <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="이 관계가 나를 갉아먹는 신호 · 잃어가고 있는 것이 잠겨있습니다">
+              <BlurredPreview unlocked={unlockedSections.has('s04')} onUnlock={() => handleOpenPaywall('s04')} teaser="이 관계가 나를 갉아먹는 신호 · 잃어가고 있는 것이 잠겨있습니다">
                 <div className="space-y-3">
                   {ai.personalImpact.warningSignals?.length > 0 && (
                     <Card>
@@ -1299,7 +1331,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
             {ai.howTheySeeMe ? (
-              <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser={`${result.targetStem}일(日) 기준 — 상대가 혼자 나를 평가하는 방식이 잠겨있습니다`}>
+              <BlurredPreview unlocked={unlockedSections.has('s05')} onUnlock={() => handleOpenPaywall('s05')} teaser={`${result.targetStem}일(日) 기준 — 상대가 혼자 나를 평가하는 방식이 잠겨있습니다`}>
                 <div className="space-y-3">
                   <Card>
                     <SubLabel text="상대방이 나 때문에 자극받는 것" />
@@ -1345,7 +1377,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
             {ai.continuationAssessment ? (
-              <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="구조적 분석 · 레드라인 · 관계 지속 가능성이 잠겨있습니다">
+              <BlurredPreview unlocked={unlockedSections.has('s06')} onUnlock={() => handleOpenPaywall('s06')} teaser="구조적 분석 · 레드라인 · 관계 지속 가능성이 잠겨있습니다">
                 <div className="space-y-3">
                   <Card>
                     <SubLabel text="구조적 분석" />
@@ -1394,7 +1426,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             )}
           </Card>
 
-            <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="나의 위험 유형 · 숨겨진 패턴이 잠겨있습니다">
+            <BlurredPreview unlocked={unlockedSections.has('s01')} onUnlock={() => handleOpenPaywall('s01')} teaser="나의 위험 유형 · 숨겨진 패턴이 잠겨있습니다">
               <div className="space-y-3">
                 {ai.dangerTypes && ai.dangerTypes.length > 0 && (
                   <>
@@ -1443,7 +1475,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="추가 갈등 상황 · 갈등 트리거 · 반복 패턴이 잠겨있습니다">
+            <BlurredPreview unlocked={unlockedSections.has('s02')} onUnlock={() => handleOpenPaywall('s02')} teaser="추가 갈등 상황 · 갈등 트리거 · 반복 패턴이 잠겨있습니다">
               <div className="space-y-3">
                 {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
                   <Card key={i}>
@@ -1496,7 +1528,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
             {ai.avoidanceGuide ? (
-              <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall}>
+              <BlurredPreview unlocked={unlockedSections.has('s03')} onUnlock={() => handleOpenPaywall('s03')}>
                 <div className="space-y-3">
                   <Card>
                     <SubLabel text="실전 팁" />
