@@ -4,15 +4,15 @@ import { startSession } from '../utils/analytics';
 
 
 const TRIGGERS = [
-  { type: '연인', text: '좋아했는데 자꾸 상처만 받는다면', color: '#FF2D55' },
-  { type: '직장', text: '저 팀장이 왜 나만 싫어하는지 모르겠다면', color: '#BF5AF2' },
-  { type: '가족', text: '부모님이랑 항상 부딪히는 이유를 모르겠다면', color: '#FF9500' },
-  { type: '연인', text: '헤어졌는데 자꾸 그 사람이 생각난다면', color: '#FF2D55' },
-  { type: '직장', text: '회의 때마다 같은 사람이랑 또 충돌했다면', color: '#BF5AF2' },
-  { type: '가족', text: '가족인데 왜 이렇게 불편한지 이해 안 된다면', color: '#FF9500' },
-  { type: '연인', text: '맨날 같은 이유로 싸운다면', color: '#FF2D55' },
-  { type: '직장', text: '퇴사하고 싶은데 그 사람 때문인지 내 탓인지 모르겠다면', color: '#BF5AF2' },
-  { type: '가족', text: '사랑하는데 왜 이렇게 아픈지 모르겠다면', color: '#FF9500' },
+  { type: '연인', text: '남친이 6시간 읽씹하고 "일했어" 한마디인데, 내가 예민한 건지 그게 맞는 건지 모르겠다면', color: '#FF2D55' },
+  { type: '직장', text: '팀장이 내 말만 자르고 옆자리 동료 말은 다 들어주는데, 내 착각인지 진짜인지 헷갈린다면', color: '#BF5AF2' },
+  { type: '가족', text: '엄마랑 30분만 있으면 꼭 싸우는데, 내가 못된 건지 원래 이런 건지 모르겠다면', color: '#FF9500' },
+  { type: '연인', text: '헤어지고 6개월이 지났는데 자기 전에 자꾸 그 사람이 생각난다면', color: '#FF2D55' },
+  { type: '직장', text: '나만 칭찬은 없고 지적만 받는 것 같은데 기분 탓인지 진짜인지 모르겠다면', color: '#BF5AF2' },
+  { type: '가족', text: '사랑하는 건 아는데 가족이 제일 나를 지치게 한다면', color: '#FF9500' },
+  { type: '연인', text: '싸울 때마다 똑같은 말이 나오는데, 아무리 노력해도 안 고쳐진다면', color: '#FF2D55' },
+  { type: '직장', text: '퇴사할까 말까 고민인데 내가 약한 건지, 진짜 저 사람이 문제인지 모르겠다면', color: '#BF5AF2' },
+  { type: '가족', text: '부모님한테 화가 나면서도 죄책감이 드는데, 나쁜 딸인 건지 모르겠다면', color: '#FF9500' },
 ];
 
 const CheckIcon = ({ color }: { color: string }) => (
@@ -65,8 +65,8 @@ export default function Landing() {
 
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
-        <div className="max-w-xl mx-auto pl-0 pr-4 h-[84px] flex items-center justify-between">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-[76px] w-auto block" />
+        <div className="max-w-xl mx-auto pl-0 pr-4 h-[100px] flex items-center justify-between">
+          <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block" />
           <button onClick={goToApp}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 rounded-full hover:opacity-90 active:scale-95 transition-all font-sans-kr tracking-wider font-bold">
             분석 시작 →
@@ -131,58 +131,7 @@ export default function Landing() {
           <div className="max-w-[300px] mx-auto">
             <div className="rounded-[2.4rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 32px 80px rgba(0,0,0,0.9)' }}>
               <div className="flex justify-center pt-3 pb-1.5 bg-[#111]"><div className="w-20 h-[3px] bg-[#222] rounded-full" /></div>
-              <div style={{ background: '#1D1D1D' }}>
-                <div className="relative flex items-center justify-center h-11" style={{ background: '#252525', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="absolute left-3"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" className="opacity-55"><path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
-                  <p className="font-sans-kr text-white text-[13px] font-bold">지훈 ❤️</p>
-                  <div className="absolute right-3 flex items-center gap-3 opacity-50">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="white" strokeWidth="2"/><path d="M21 21l-4-4" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="white"/><circle cx="12" cy="19" r="1.5" fill="white"/></svg>
-                  </div>
-                </div>
-                <div className="pt-2.5 pb-2 text-center"><span className="font-sans-kr text-[#505050] text-[9px] bg-[#2A2A2A] px-2.5 py-0.5 rounded-full">2025년 3월 14일 금요일</span></div>
-                <div className="px-3 pb-4 space-y-2.5">
-                  <div className="flex justify-end">
-                    <div className="flex items-end gap-1"><p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 11:12</p>
-                      <div className="px-3 py-2 max-w-[180px]" style={{ background: '#FEE500', borderRadius: '12px 2px 12px 12px' }}><p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">6시간째 읽씹이네</p></div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-end">
-                    <div className="relative w-8 h-8 rounded-[8px] flex-shrink-0 overflow-hidden" style={{ background: '#555' }}>
-                      <svg className="absolute inset-0 w-full h-full p-1.5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" fill="#fff" fillOpacity="0.6"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" fill="#fff" fillOpacity="0.6"/></svg>
-                      <img src="/profile-jihoon.png" alt="지훈" className="absolute inset-0 w-full h-full object-cover" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    </div>
-                    <div><p className="font-sans-kr text-[#686868] text-[10px] mb-1">지훈</p>
-                      <div className="flex items-end gap-1">
-                        <div className="px-3 py-2 max-w-[180px]" style={{ background: '#3A3A3A', borderRadius: '2px 12px 12px 12px' }}><p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">일하느라 못봤어</p></div>
-                        <p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 11:31</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="flex items-end gap-1"><p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 11:32</p>
-                      <div className="px-3 py-2 max-w-[195px]" style={{ background: '#FEE500', borderRadius: '12px 2px 12px 12px' }}><p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">일하는데 인스타는 올렸더라</p></div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-end">
-                    <div className="relative w-8 h-8 rounded-[8px] flex-shrink-0 overflow-hidden" style={{ background: '#555' }}>
-                      <svg className="absolute inset-0 w-full h-full p-1.5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" fill="#fff" fillOpacity="0.6"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" fill="#fff" fillOpacity="0.6"/></svg>
-                      <img src="/profile-jihoon.png" alt="지훈" className="absolute inset-0 w-full h-full object-cover" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    </div>
-                    <div><p className="font-sans-kr text-[#686868] text-[10px] mb-1">지훈</p>
-                      <div className="flex items-end gap-1">
-                        <div className="px-3 py-2" style={{ background: '#3A3A3A', borderRadius: '2px 12px 12px 12px' }}><p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">…</p></div>
-                        <p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 11:47</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="flex items-end gap-1"><p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 11:48</p>
-                      <div className="px-3 py-2 max-w-[175px]" style={{ background: '#FEE500', borderRadius: '12px 2px 12px 12px' }}><p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">할 말 없지</p></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <img src="/chat-lover.png" alt="연인 대화" className="w-full block" />
               <div className="flex justify-center py-2.5 bg-[#111]"><div className="w-14 h-[3px] bg-[#222] rounded-full" /></div>
             </div>
           </div>
@@ -202,70 +151,7 @@ export default function Landing() {
           <div className="max-w-[300px] mx-auto">
             <div className="rounded-[2.4rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 32px 80px rgba(0,0,0,0.9)' }}>
               <div className="flex justify-center pt-3 pb-1.5 bg-[#111]"><div className="w-20 h-[3px] bg-[#222] rounded-full" /></div>
-              <div style={{ background: '#1D1D1D' }}>
-                <div className="relative flex items-center justify-center h-11" style={{ background: '#252525', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="absolute left-3"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" className="opacity-55"><path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
-                  <p className="font-sans-kr text-white text-[13px] font-bold">지혜</p>
-                  <div className="absolute right-3 flex items-center gap-3 opacity-50">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="white" strokeWidth="2"/><path d="M21 21l-4-4" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="white"/><circle cx="12" cy="19" r="1.5" fill="white"/></svg>
-                  </div>
-                </div>
-                <div className="pt-2.5 pb-2 text-center"><span className="font-sans-kr text-[#505050] text-[9px] bg-[#2A2A2A] px-2.5 py-0.5 rounded-full">2025년 3월 14일 금요일</span></div>
-                <div className="px-3 pb-4 space-y-2.5">
-                  <div className="flex gap-2 items-end">
-                    <div className="relative w-8 h-8 rounded-[8px] flex-shrink-0 overflow-hidden" style={{ background: '#4a7c59' }}>
-                      <svg className="absolute inset-0 w-full h-full p-1.5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" fill="#fff" fillOpacity="0.6"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" fill="#fff" fillOpacity="0.6"/></svg>
-                      <img src="/profile-jihye.png" alt="지혜" className="absolute inset-0 w-full h-full object-cover" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    </div>
-                    <div><p className="font-sans-kr text-[#686868] text-[10px] mb-1">지혜</p>
-                      <div className="flex items-end gap-1">
-                        <div className="px-3 py-2 max-w-[185px]" style={{ background: '#3A3A3A', borderRadius: '2px 12px 12px 12px' }}><p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">어 어제 걔 잠깐 만났어ㅎㅎ</p></div>
-                        <p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 8:17</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="flex items-end gap-1"><p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 8:21</p>
-                      <div className="px-3 py-2 max-w-[175px]" style={{ background: '#FEE500', borderRadius: '12px 2px 12px 12px' }}><p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">어? 나한테 말 안했잖아</p></div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-end">
-                    <div className="relative w-8 h-8 rounded-[8px] flex-shrink-0 overflow-hidden" style={{ background: '#4a7c59' }}>
-                      <svg className="absolute inset-0 w-full h-full p-1.5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" fill="#fff" fillOpacity="0.6"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" fill="#fff" fillOpacity="0.6"/></svg>
-                      <img src="/profile-jihye.png" alt="지혜" className="absolute inset-0 w-full h-full object-cover" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    </div>
-                    <div><p className="font-sans-kr text-[#686868] text-[10px] mb-1">지혜</p>
-                      <div className="flex items-end gap-1">
-                        <div className="px-3 py-2 max-w-[175px]" style={{ background: '#3A3A3A', borderRadius: '2px 12px 12px 12px' }}><p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">그냥 밥만 먹은건데</p></div>
-                        <p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 8:22</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="flex items-end gap-1"><p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 8:23</p>
-                      <div className="px-3 py-2 max-w-[200px]" style={{ background: '#FEE500', borderRadius: '12px 2px 12px 12px' }}><p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">야 너 어제 내 남친이랑 둘이 만났어?</p></div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-end">
-                    <div className="relative w-8 h-8 rounded-[8px] flex-shrink-0 overflow-hidden" style={{ background: '#4a7c59' }}>
-                      <svg className="absolute inset-0 w-full h-full p-1.5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" fill="#fff" fillOpacity="0.6"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" fill="#fff" fillOpacity="0.6"/></svg>
-                      <img src="/profile-jihye.png" alt="지혜" className="absolute inset-0 w-full h-full object-cover" onError={e => { e.currentTarget.style.display = 'none'; }} />
-                    </div>
-                    <div><p className="font-sans-kr text-[#686868] text-[10px] mb-1">지혜</p>
-                      <div className="flex items-end gap-1">
-                        <div className="px-3 py-2 max-w-[200px]" style={{ background: '#3A3A3A', borderRadius: '2px 12px 12px 12px' }}><p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">걔가 먼저 만나자 한거고 그냥 밥만 먹은건데 내가 왜 너한테 보고해야돼?</p></div>
-                        <p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 8:26</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-end">
-                    <div className="flex items-end gap-1"><p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 8:27</p>
-                      <div className="px-3 py-2 max-w-[185px]" style={{ background: '#FEE500', borderRadius: '12px 2px 12px 12px' }}><p className="font-sans-kr text-[#1A1A1A] text-[12px] leading-[1.5] font-medium">보고가 아니라 말은 해줄수 있잖아</p></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <img src="/chat-friend.png" alt="친구 대화" className="w-full block" />
               <div className="flex justify-center py-2.5 bg-[#111]"><div className="w-14 h-[3px] bg-[#222] rounded-full" /></div>
             </div>
           </div>
@@ -285,38 +171,7 @@ export default function Landing() {
           <div className="max-w-[300px] mx-auto">
             <div className="rounded-[2.4rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 32px 80px rgba(0,0,0,0.9)' }}>
               <div className="flex justify-center pt-3 pb-1.5 bg-[#111]"><div className="w-20 h-[3px] bg-[#222] rounded-full" /></div>
-              <div style={{ background: '#1D1D1D' }}>
-                <div className="relative flex items-center justify-center h-11" style={{ background: '#252525', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div className="absolute left-3"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" className="opacity-55"><path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
-                  <p className="font-sans-kr text-white text-[13px] font-bold">이진호 팀장님</p>
-                  <div className="absolute right-3 flex items-center gap-3 opacity-50">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="white" strokeWidth="2"/><path d="M21 21l-4-4" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="1.5" fill="white"/><circle cx="12" cy="12" r="1.5" fill="white"/><circle cx="12" cy="19" r="1.5" fill="white"/></svg>
-                  </div>
-                </div>
-                <div className="pt-2.5 pb-2 text-center"><span className="font-sans-kr text-[#505050] text-[9px] bg-[#2A2A2A] px-2.5 py-0.5 rounded-full">2025년 3월 10일 월요일</span></div>
-                <div className="px-3 pb-4 space-y-2.5">
-                  {[
-                    { text: '김주임 저번에 내가 보고하라 했던 아이템 제대로 한거맞아?', time: '오후 2:03' },
-                    { text: '왜 이렇게 밖에 못하지?', time: '오후 2:04' },
-                    { text: '데드라인 아직 멀었으니까 다시 해와', time: '오후 2:05' },
-                    { text: '엊그제 내가 하라했던 방향으로만 하라니까', time: '오후 2:06' },
-                    { text: '왜 자꾸 나를 힘들게 하나?', time: '오후 2:08' },
-                  ].map((msg, idx) => (
-                    <div key={idx} className="flex gap-2 items-end">
-                      <div className="w-8 h-8 rounded-[8px] flex-shrink-0 flex items-center justify-center" style={{ background: '#555' }}>
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" fill="#fff" fillOpacity="0.65"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6" fill="#fff" fillOpacity="0.65"/></svg>
-                      </div>
-                      <div><p className="font-sans-kr text-[#686868] text-[10px] mb-1">이진호 팀장님</p>
-                        <div className="flex items-end gap-1">
-                          <div className="px-3 py-2 max-w-[210px]" style={{ background: '#3A3A3A', borderRadius: '2px 12px 12px 12px' }}><p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">{msg.text}</p></div>
-                          <p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">{msg.time}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <img src="/chat-work.png" alt="직장 대화" className="w-full block" />
               <div className="flex justify-center py-2.5 bg-[#111]"><div className="w-14 h-[3px] bg-[#222] rounded-full" /></div>
             </div>
           </div>
@@ -448,10 +303,6 @@ export default function Landing() {
             ))}
           </div>
 
-          <button onClick={goToApp}
-            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-95 transition-all tracking-wide cta-glow-red">
-            이름이랑 생일 넣어보기 →
-          </button>
         </div>
       </section>
 
@@ -905,10 +756,6 @@ export default function Landing() {
             </div>
           </div>
 
-          <button onClick={goToApp}
-            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-95 transition-all tracking-wide cta-glow-red">
-            지금 바로 분석하기 →
-          </button>
         </div>
       </section>
 
