@@ -65,8 +65,8 @@ export default function Landing() {
 
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
-        <div className="max-w-xl mx-auto pl-0 pr-4 h-14 flex items-center justify-between">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-[47px] w-auto block" />
+        <div className="max-w-xl mx-auto pl-0 pr-4 h-[72px] flex items-center justify-between">
+          <img src="/hero-title.svg" alt="TOXIC" className="h-[62px] w-auto block" />
           <button onClick={goToApp}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 rounded-full hover:opacity-90 active:scale-95 transition-all font-sans-kr tracking-wider font-bold">
             분석 시작 →
@@ -833,48 +833,83 @@ export default function Landing() {
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.05) 0%, transparent 60%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
-          <h2 className="font-display text-white text-center mb-12"
+          <h2 className="font-display text-white text-center mb-16"
             style={{ fontSize: 'clamp(2rem, 8vw, 3.2rem)' }}>
             딱 <span className="text-[#FF2D55]">1분</span>이면 됩니다
           </h2>
 
-          <div className="flex flex-col items-center gap-0">
-            {[
-              {
-                step: 'STEP 1',
-                title: '이름 · 생년월일 입력',
-                desc: '내 정보와 그 사람의 이름, 생년월일을 입력해요. 이름만 알아도 시작 가능하고, 생일은 몰라도 괜찮아요.',
-                sub: '이름만 OK · 생일 몰라도 가능',
-              },
-              {
-                step: 'STEP 2',
-                title: '사주 분석',
-                desc: '사주팔자를 기반으로 충(沖)·형(刑)·해(害)·극(剋) 관계를 계산하고 실제 갈등 패턴을 도출합니다.',
-                sub: '전통 사주 해석',
-              },
-              {
-                step: 'STEP 3',
-                title: '갈등 구조 결과',
-                desc: '왜 안 맞는지, 어떤 상황에서 충돌하는지, 앞으로 어떻게 해야 하는지 — 구체적인 가이드가 나옵니다.',
-                sub: '5개 섹션 · 상세 분석',
-              },
-            ].map(({ step, title, desc, sub }, idx, arr) => (
-              <div key={step} className="w-full text-center">
-                <span className="step-badge bg-[#FF2D55] text-white font-sans-kr">{step}</span>
-                <p className="font-sans-kr text-white text-sm font-bold mb-1.5">{title}</p>
-                <p className="font-sans-kr text-[#666] text-xs leading-relaxed mb-3">{desc}</p>
-                <span className="text-[#444] text-[10px] border border-[#222] px-2.5 py-1 rounded-full font-sans-kr">{sub}</span>
-                {idx < arr.length - 1 && (
-                  <div className="w-px h-8 mx-auto mt-6 mb-2"
-                    style={{ background: 'linear-gradient(to bottom, rgba(255,45,85,0.6), transparent)' }} />
-                )}
-                {idx < arr.length - 1 && <div className="mb-6" />}
+          {/* Step 1 */}
+          <div className="mb-4">
+            <span className="step-badge bg-[#FF2D55] text-white font-sans-kr">STEP 1</span>
+            <p className="font-sans-kr text-white text-sm font-bold mb-1">내 정보 입력</p>
+            <p className="font-sans-kr text-[#555] text-xs leading-relaxed mb-6">이름과 생년월일을 입력해요. 이름만 알아도 시작 가능해요.</p>
+            <div className="max-w-[260px] mx-auto">
+              <div className="rounded-[2.2rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 24px 70px rgba(0,0,0,0.85)' }}>
+                <div className="flex justify-center pt-2.5 pb-1 bg-[#111]"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
+                <img src="/step-1.png" alt="STEP 1 내 정보 입력" className="w-full block" />
+                <div className="flex justify-center py-2 bg-[#111]"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* 연결선 */}
+          <div className="flex justify-center my-6">
+            <div className="w-px h-10" style={{ background: 'linear-gradient(to bottom, rgba(255,45,85,0.5), transparent)' }} />
+          </div>
+
+          {/* Step 2 */}
+          <div className="mb-4">
+            <span className="step-badge bg-[#FF2D55] text-white font-sans-kr">STEP 2</span>
+            <p className="font-sans-kr text-white text-sm font-bold mb-1">관계 유형 선택</p>
+            <p className="font-sans-kr text-[#555] text-xs leading-relaxed mb-6">연인, 친구, 직장, 가족 — 분석 결과가 관계에 맞게 해석됩니다.</p>
+            <div className="max-w-[260px] mx-auto">
+              <div className="rounded-[2.2rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 24px 70px rgba(0,0,0,0.85)' }}>
+                <div className="flex justify-center pt-2.5 pb-1 bg-[#111]"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
+                <img src="/step-2.png" alt="STEP 2 관계 유형 선택" className="w-full block" />
+                <div className="flex justify-center py-2 bg-[#111]"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
+              </div>
+            </div>
+          </div>
+
+          {/* 연결선 */}
+          <div className="flex justify-center my-6">
+            <div className="w-px h-10" style={{ background: 'linear-gradient(to bottom, rgba(255,45,85,0.5), transparent)' }} />
+          </div>
+
+          {/* Step 3 */}
+          <div className="mb-4">
+            <span className="step-badge bg-[#FF2D55] text-white font-sans-kr">STEP 3</span>
+            <p className="font-sans-kr text-white text-sm font-bold mb-1">상대방 정보 입력</p>
+            <p className="font-sans-kr text-[#555] text-xs leading-relaxed mb-6">아는 만큼만 입력해도 분석 가능. 이름만 있어도 시작할 수 있어요.</p>
+            <div className="max-w-[260px] mx-auto">
+              <div className="rounded-[2.2rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 24px 70px rgba(0,0,0,0.85)' }}>
+                <div className="flex justify-center pt-2.5 pb-1 bg-[#111]"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
+                <img src="/step-3.png" alt="STEP 3 상대방 정보 입력" className="w-full block" />
+                <div className="flex justify-center py-2 bg-[#111]"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
+              </div>
+            </div>
+          </div>
+
+          {/* 결과 */}
+          <div className="flex justify-center my-6">
+            <div className="w-px h-10" style={{ background: 'linear-gradient(to bottom, rgba(255,45,85,0.5), transparent)' }} />
+          </div>
+
+          <div className="mb-10">
+            <span className="step-badge font-sans-kr" style={{ background: '#1a0a0a', border: '1px solid #FF2D55', color: '#FF2D55' }}>RESULT</span>
+            <p className="font-sans-kr text-white text-sm font-bold mb-1">갈등 구조 분석 완료</p>
+            <p className="font-sans-kr text-[#555] text-xs leading-relaxed mb-6">충·형·해·극 구조로 왜 안 맞는지, 어떤 패턴인지 상세히 나옵니다.</p>
+            <div className="max-w-[260px] mx-auto">
+              <div className="rounded-[2.2rem] overflow-hidden" style={{ border: '1.5px solid #FF2D55', background: '#111', boxShadow: '0 24px 70px rgba(0,0,0,0.85), 0 0 40px rgba(255,45,85,0.15)' }}>
+                <div className="flex justify-center pt-2.5 pb-1 bg-[#111]"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
+                <img src="/step-result.png" alt="분석 결과" className="w-full block" />
+                <div className="flex justify-center py-2 bg-[#111]"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
+              </div>
+            </div>
           </div>
 
           <button onClick={goToApp}
-            className="w-full mt-10 bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-95 transition-all tracking-wide cta-glow-red">
+            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-95 transition-all tracking-wide cta-glow-red">
             지금 바로 분석하기 →
           </button>
         </div>
