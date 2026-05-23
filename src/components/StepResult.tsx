@@ -416,7 +416,7 @@ function BlurredPreview({ children, unlocked, onUnlock }: {
   return (
     <div className="relative min-h-[140px]">
       <div className="select-none pointer-events-none"
-        style={{ filter: 'blur(5px)', opacity: 0.55 }}>
+        style={{ filter: 'blur(3px)', opacity: 0.82 }}>
         {children}
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 px-4">
@@ -929,21 +929,21 @@ export default function StepResult({ myData, targetData, result, relationType, o
             {result.conflicts.hae.map(h => (
               <button key={h.name}
                 onClick={() => setConflictTooltip(conflictTooltip === `hae-${h.name}` ? null : `hae-${h.name}`)}
-                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `hae-${h.name}` ? 'border-[#FF9800] bg-[#FF9800]/15 text-[#FF9800]' : 'border-[#FF9800]/40 text-[#FF9800] bg-[#FF9800]/8'}`}>
+                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `hae-${h.name}` ? 'border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]' : 'border-[#F59E0B]/40 text-[#F59E0B] bg-[#F59E0B]/8'}`}>
                 해 · {h.name}
               </button>
             ))}
             {result.conflicts.pa.map(p => (
               <button key={p.name}
                 onClick={() => setConflictTooltip(conflictTooltip === `pa-${p.name}` ? null : `pa-${p.name}`)}
-                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `pa-${p.name}` ? 'border-[#607D8B] bg-[#607D8B]/15 text-[#607D8B]' : 'border-[#607D8B]/40 text-[#607D8B] bg-[#607D8B]/8'}`}>
+                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `pa-${p.name}` ? 'border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]' : 'border-[#F59E0B]/40 text-[#F59E0B] bg-[#F59E0B]/8'}`}>
                 파 · {p.name}
               </button>
             ))}
             {result.conflicts.hap.length > 0 && (
               <button
                 onClick={() => setConflictTooltip(conflictTooltip === 'hap' ? null : 'hap')}
-                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === 'hap' ? 'border-[#4CAF50] bg-[#4CAF50]/15 text-[#4CAF50]' : 'border-[#4CAF50]/40 text-[#4CAF50] bg-[#4CAF50]/8'}`}>
+                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === 'hap' ? 'border-[#BF5AF2] bg-[#BF5AF2]/15 text-[#BF5AF2]' : 'border-[#BF5AF2]/40 text-[#BF5AF2] bg-[#BF5AF2]/8'}`}>
                 합 요소 있음
               </button>
             )}
@@ -953,7 +953,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {conflictTooltip && (() => {
             const type = conflictTooltip.split('-')[0];
             const name = conflictTooltip.includes('-') ? conflictTooltip.split('-').slice(1).join('-') : '';
-            const COLOR: Record<string, string> = { chung: '#FF2D55', hyung: '#BF5AF2', hae: '#FF9800', pa: '#607D8B', hap: '#4CAF50' };
+            const COLOR: Record<string, string> = { chung: '#FF2D55', hyung: '#BF5AF2', hae: '#F59E0B', pa: '#F59E0B', hap: '#BF5AF2' };
             const DESC: Record<string, string> = {
               chung: `충(沖)은 두 기운이 정반대 방향으로 부딪히는 관계입니다. ${name ? `${name}은` : ''} 서로의 에너지가 충돌해 다툼이 잦고, 예상치 못한 변화가 갑자기 터질 수 있습니다.`,
               hyung: `형(刑)은 서로를 압박하고 자극하는 관계입니다. ${name ? `${name}은` : ''} 말하지 못한 긴장이 쌓이고, 관계가 점점 답답하게 짓눌리는 느낌이 납니다.`,
@@ -965,7 +965,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             return (
               <div className="mt-2 px-4 py-3 border animate-fade-in"
                 style={{ borderColor: `${c}30`, background: `${c}08` }}>
-                <p className="text-xs leading-relaxed" style={{ color: c === '#607D8B' ? '#7a99a8' : c }}>
+                <p className="text-xs leading-relaxed" style={{ color: c }}>
                   {DESC[type] ?? ''}
                 </p>
               </div>
@@ -1274,12 +1274,12 @@ export default function StepResult({ myData, targetData, result, relationType, o
           {phase2Loading ? (
             <Phase2Skeleton />
           ) : ai.howTheySeeMe ? (
-            <Card accent="#FF9500">
+            <Card accent="#F59E0B">
               <SubLabel text="상대방 사주로 읽히는 나의 에너지" />
               <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.energyReading}</p>
             </Card>
           ) : (
-            <Card accent="#FF9500">
+            <Card accent="#F59E0B">
               <SubLabel text="상대방이 나를 보는 시선" />
               <p className="text-[#888] text-sm leading-relaxed">
                 상대방의 사주 기운은 나의 에너지를 독특한 방식으로 읽습니다. 충돌 구조가 있을수록 상대방 눈에 나는 더 강렬하게 각인됩니다.
@@ -1303,7 +1303,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
                     <SubLabel text="상대방이 혼자 나를 평가하는 방식" />
                     <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.theirPrivateVerdict}</p>
                   </Card>
-                  <div className="border border-[#FF9500]/20 p-5 bg-[#FF9500]/5">
+                  <div className="border border-[#F59E0B]/20 p-5 bg-[#F59E0B]/5">
                     <SubLabel text="상대방이 나에게 진짜로 원하는 것" />
                     <p className="text-[#aaa] text-sm leading-relaxed">{ai.howTheySeeMe.howTheyNeedMe}</p>
                   </div>
@@ -1375,7 +1375,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 <p className="text-[#888] text-sm leading-relaxed mb-4">{ai.myCharacter.core}</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="border border-[#1a1a1a] p-3">
-                    <p className="text-[#4CAF50] text-[10px] mb-1.5">강점</p>
+                    <p className="text-[#BF5AF2] text-[10px] mb-1.5">강점</p>
                     <p className="text-[#888] text-xs leading-relaxed">{ai.myCharacter.strength}</p>
                   </div>
                   <div className="border border-[#1a1a1a] p-3">
