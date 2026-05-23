@@ -532,6 +532,7 @@ export function analyzeSaju(
   const myBranches = collectBranches([myYear, myMonth, myDay, myHour]);
   const myStems = collectStems([myYear, myMonth, myDay, myHour]);
   const targetBranches = collectBranches([targetYear, targetMonth, targetDay]);
+  const targetStems = collectStems([targetYear, targetMonth, targetDay]);
 
   const chung = checkChung(myBranches, targetBranches);
   const hyung = [
