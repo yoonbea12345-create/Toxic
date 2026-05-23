@@ -171,10 +171,7 @@ export default function AdminPage() {
     if (confirm('모든 분석 데이터 + 유료 잠금 상태를 초기화할까요?')) {
       localStorage.removeItem(EVENTS_KEY);
       localStorage.removeItem('toxic_session_times');
-      localStorage.removeItem('toxic_premium');
-      localStorage.removeItem('toxic_premium_03');
-      localStorage.removeItem('toxic_premium_04');
-      localStorage.removeItem('toxic_premium_05');
+      localStorage.removeItem('toxic_unlocked_all');
       setEvents([]);
       setSessionTimes([]);
     }
@@ -216,7 +213,7 @@ export default function AdminPage() {
           <p className="text-[#FF2D55] text-[10px] uppercase tracking-widest mb-1">TOXIC ADMIN</p>
           <h1 className="text-white text-2xl font-bold">시장검증 대시보드</h1>
           {fetchState === 'loading' && <p className="text-[#444] text-xs mt-1">데이터 불러오는 중...</p>}
-          {fetchState === 'error' && <p className="text-[#FF9800] text-xs mt-1">서버 연결 실패 — 로컬 데이터 표시 중 (Vercel에 ADMIN_SECRET=1229 env 설정 필요)</p>}
+          {fetchState === 'error' && <p className="text-[#F59E0B] text-xs mt-1">서버 연결 실패 — 로컬 데이터 표시 중 (Vercel에 ADMIN_SECRET=1229 env 설정 필요)</p>}
         </div>
         <div className="flex gap-2">
           <button onClick={handleClear}
@@ -277,15 +274,15 @@ export default function AdminPage() {
 
           {/* 유료 전환 검증 */}
           <div>
-            <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유료 전환 검증 (04·05 섹션)</p>
+            <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유료 전환 검증 (전체 단일 결제)</p>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <StatCard label="페이월 노출" value={stats.paywallImpressions} sub="결과 화면 진입 수" color="#fff" />
-              <StatCard label="페이월 클릭" value={stats.paywallClicks} sub="잠금 해제 버튼" color="#FF9800" />
+              <StatCard label="페이월 클릭" value={stats.paywallClicks} sub="잠금 해제 버튼" color="#F59E0B" />
             </div>
             <div className="grid grid-cols-3 gap-3">
-              <StatCard label="결제 클릭" value={stats.paywallPays} sub="₩100 버튼" color="#FF2D55" />
+              <StatCard label="결제 클릭" value={stats.paywallPays} sub="₩500 전체 열기" color="#FF2D55" />
               <StatCard label="클릭율(CTR)" value={`${stats.paywallCTR}%`} sub="노출→클릭" color="#BF5AF2" />
-              <StatCard label="전환율" value={`${stats.paywallConversion}%`} sub="클릭→결제" color="#4CAF50" />
+              <StatCard label="전환율" value={`${stats.paywallConversion}%`} sub="클릭→결제" color="#F59E0B" />
             </div>
           </div>
 
@@ -294,7 +291,7 @@ export default function AdminPage() {
             <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">기타 행동</p>
             <div className="grid grid-cols-3 gap-3">
               <StatCard label="상대 생략" value={stats.skipTarget} sub="역산 모드" color="#888" />
-              <StatCard label="공유 시도" value={stats.shareAttempts} sub="카카오·링크·이미지" color="#4CAF50" />
+              <StatCard label="공유 시도" value={stats.shareAttempts} sub="카카오·링크·이미지" color="#BF5AF2" />
               <StatCard label="재분석" value={stats.resets} sub="처음부터 다시" color="#888" />
             </div>
           </div>
@@ -303,7 +300,7 @@ export default function AdminPage() {
           <div>
             <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유저 후기</p>
             <div className="grid grid-cols-2 gap-3">
-              <StatCard label="후기 제출" value={stats.reviewSubmits} sub="결과 페이지 제출 수" color="#4CAF50" />
+              <StatCard label="후기 제출" value={stats.reviewSubmits} sub="결과 페이지 제출 수" color="#BF5AF2" />
               <StatCard label="평균 별점" value={stats.avgReviewStars} sub="/ 5.0" color="#F59E0B" />
             </div>
           </div>
