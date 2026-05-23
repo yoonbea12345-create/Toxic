@@ -902,7 +902,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           style={{ background: 'rgba(6,6,6,0.97)', borderTop: '1px solid rgba(255,45,85,0.25)' }}>
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between gap-3">
             <div>
-              <p className="text-[#444] text-[9px] tracking-[0.15em] uppercase">결제 후 24시간 모든 분석 잠금 해제</p>
+              <p className="text-[#FF2D55] text-[11px] font-bold tracking-wide font-sans-kr">24시간 모든 관계 6개 영역 잠금 해제</p>
               <p className="text-white text-xs font-bold font-sans-kr mt-0.5">
                 6개 전체
                 <span className="text-[#555] line-through text-[10px] mx-1.5">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
