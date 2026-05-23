@@ -126,7 +126,7 @@ export default function Landing() {
         <div className="max-w-xl mx-auto">
           <p className="font-sans-kr text-[#FF2D55] section-label mb-3">연인</p>
           <p className="font-display text-white mb-8" style={{ fontSize: 'clamp(1.6rem, 6.5vw, 2.4rem)' }}>
-            연인과의 반복되는 갈등엔<br /><span className="text-[#FF2D55]">숨은 이유가 있습니다.</span>
+            연인과의 반복되는 싸움엔<br /><span className="text-[#FF2D55]">숨은 이유가 있습니다.</span>
           </p>
           <div className="max-w-[300px] mx-auto">
             <div className="rounded-[2.4rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 32px 80px rgba(0,0,0,0.9)' }}>
