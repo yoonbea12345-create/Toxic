@@ -402,14 +402,14 @@ function Card({ children, accent, className = '' }: { children: React.ReactNode;
 function CompletionReveal() {
   const areas = ['나와 안맞는 이유', '충돌 상황 분석', '실전 가이드', '관계 영향', '상대방 시선', '최종 판정'];
   return (
-    <div className="border border-[#1e1e1e] bg-[#0D0D0D] px-4 py-3">
-      <p className="text-[#333] text-[9px] uppercase tracking-widest mb-2.5">6개 영역 분석 완료</p>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+    <div className="border border-[#FF2D55]/25 bg-[#0D0D0D] px-4 py-4">
+      <p className="text-[#FF2D55] text-xs font-bold tracking-wider mb-3 font-sans-kr">✓ 6개 영역 분석 완료</p>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
         {areas.map((area, i) => (
-          <div key={i} className="flex items-center gap-1.5 animate-fade-in"
+          <div key={i} className="flex items-center gap-2 animate-fade-in"
             style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both', opacity: 0 }}>
-            <span className="text-[#FF2D55] text-[9px]">✓</span>
-            <span className="text-[#444] text-[10px] font-sans-kr">{area}</span>
+            <span className="text-[#FF2D55] text-xs font-bold flex-shrink-0">✓</span>
+            <span className="text-[#e8e8e8] text-[13px] font-medium font-sans-kr">{area}</span>
           </div>
         ))}
       </div>
