@@ -338,29 +338,24 @@ function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
 }
 
 function ScoreGauge({ score }: { score: number }) {
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDash = (score / 100) * circumference;
   const color = score >= 80 ? '#FF2D55' : score >= 60 ? '#BF5AF2' : '#F59E0B';
   const label = score >= 80 ? '강한 충돌' : score >= 60 ? '중간 충돌' : '경미한 충돌';
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative w-36 h-36">
-        <svg className="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
-          <circle cx="60" cy="60" r={radius} fill="none" stroke="#1a1a1a" strokeWidth="8" />
-          <circle cx="60" cy="60" r={radius} fill="none"
-            stroke={color} strokeWidth="8"
-            strokeDasharray={`${strokeDash} ${circumference}`}
-            strokeLinecap="round"
-            style={{ transition: 'stroke-dasharray 1.2s ease' }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold text-white font-sans">{score}</span>
-          <span className="text-[#555] text-xs">/ 100</span>
+    <div className="w-full">
+      <div className="flex items-baseline justify-between mb-1.5">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-[#888] text-[10px] uppercase tracking-[0.2em]">독성 지수</span>
+          <span className="text-xs font-semibold" style={{ color }}>{label}</span>
+        </div>
+        <div className="flex items-baseline gap-0.5">
+          <span className="font-sans font-bold text-base" style={{ color }}>{score}</span>
+          <span className="text-[#555] text-[10px]">/100</span>
         </div>
       </div>
-      <p className="text-sm font-medium mt-2" style={{ color }}>{label}</p>
+      <div className="w-full h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+        <div className="h-full rounded-full"
+          style={{ width: `${score}%`, background: color, transition: 'width 1.2s ease' }} />
+      </div>
     </div>
   );
 }
@@ -411,6 +406,27 @@ function CompletionReveal() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ScrollHint() {
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY < 200);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  if (!visible) return null;
+  return (
+    <div className="fixed bottom-24 left-3 z-30 flex flex-col items-center gap-1 pointer-events-none animate-fade-in">
+      <span className="text-[#555] text-[9px] uppercase tracking-[0.25em] [writing-mode:vertical-rl] rotate-180">scroll</span>
+      <div className="w-px h-8" style={{ background: 'linear-gradient(to bottom, transparent, #FF2D55)' }} />
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+        style={{ color: '#FF2D55', animation: 'scroll-bounce 1.6s ease-in-out infinite' }}>
+        <path d="M7 10l5 5 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <style>{`@keyframes scroll-bounce { 0%, 100% { transform: translateY(0); opacity: 1 } 50% { transform: translateY(4px); opacity: 0.5 } }`}</style>
     </div>
   );
 }
@@ -855,7 +871,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   };
 
   return (
-    <div className="animate-fade-in max-w-lg mx-auto px-4 py-8 space-y-4 pb-24">
+    <div className="animate-fade-in max-w-lg mx-auto px-4 pt-3 pb-24 space-y-4">
 
       {/* 결제 팝업 모달 */}
       {showPaywall && (
@@ -865,28 +881,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
           onPaySection={handleUnlockSection}
           onPayAll={handleUnlockAll}
         />
-      )}
-
-      {/* 하단 고정 CTA */}
-      {!isAllUnlocked && !showPaywall && (
-        <div className="fixed bottom-0 left-0 right-0 z-40"
-          style={{ background: 'rgba(6,6,6,0.97)', borderTop: '1px solid rgba(255,45,85,0.25)' }}>
-          <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[#444] text-[9px] tracking-[0.15em] uppercase">한 번 결제 · 평생 다시 보기</p>
-              <p className="text-white text-xs font-bold font-sans-kr mt-0.5">
-                6개 전체
-                <span className="text-[#555] line-through text-[10px] mx-1.5">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
-                <span className="text-[#FF2D55]">₩{PRICE_ALL.toLocaleString()}</span>
-              </p>
-            </div>
-            <button onClick={() => handleOpenPaywall('s01')}
-              className="flex-shrink-0 px-5 py-2.5 text-white text-sm font-bold font-sans-kr tracking-wide"
-              style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)', boxShadow: '0 0 20px rgba(255,45,85,0.35)' }}>
-              지금 전체 보기 →
-            </button>
-          </div>
-        </div>
       )}
 
       {/* 결제 성공 오버레이 */}
@@ -902,116 +896,66 @@ export default function StepResult({ myData, targetData, result, relationType, o
         </div>
       )}
 
-      {/* 헤더 */}
-      <div className="text-center">
-        <p className="text-[#555] text-[10px] uppercase tracking-[0.3em] mb-3">TOXIC 분석 결과</p>
-        <div className="flex justify-center mb-4">
-          <span className="text-[10px] px-3 py-1 rounded-full border font-medium"
-            style={{ color: accuracyInfo.color, borderColor: `${accuracyInfo.color}40`, backgroundColor: `${accuracyInfo.color}15` }}>
-            {accuracyInfo.label} · {accuracyInfo.desc}
-          </span>
-        </div>
+      {/* 스크롤 유도 화살표 — 좌측 floating */}
+      <ScrollHint />
 
-        {hasTarget ? (
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-12 h-12 rounded-full bg-[#FF2D55]/20 border border-[#FF2D55]/30 flex items-center justify-center text-lg">
-                {myData.gender === '남' ? '♂' : '♀'}
-              </div>
-              <span className="text-white text-xs">{myData.name || '나'}</span>
-              <span className="text-[#555] text-xs">{result.myStem}{result.myBranch}년</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-8 h-px bg-[#FF2D55]" />
-              <span className="text-[#FF2D55] text-xs font-bold">VS</span>
-              <div className="w-8 h-px bg-[#FF2D55]" />
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-12 h-12 rounded-full bg-[#BF5AF2]/20 border border-[#BF5AF2]/30 flex items-center justify-center text-lg">
-                {targetData.gender === '남' ? '♂' : '♀'}
-              </div>
-              <span className="text-white text-xs">{targetData.name || '상대'}</span>
-              {hasDateData && <span className="text-[#555] text-xs">{result.targetStem}{result.targetBranch}년</span>}
-              {!hasDateData && targetData.name && <span className="text-[#BF5AF2] text-[10px]">이름 기반 분석</span>}
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-14 h-14 rounded-full bg-[#FF2D55]/20 border border-[#FF2D55]/30 flex items-center justify-center text-2xl mb-2">
-              {myData.gender === '남' ? '♂' : '♀'}
-            </div>
-            <span className="text-white text-sm">{myData.name || '나'}</span>
-            <span className="text-[#555] text-xs mt-1">내 위험 유형 분석</span>
-          </div>
-        )}
-
-        <ScoreGauge score={result.toxicScore} />
-      </div>
-
-      {/* 빠른 공유 */}
-      <div className="flex justify-center gap-2">
-        <button onClick={handleKakaoShare}
-          className="px-4 py-2 bg-[#FEE500] text-[#3C1E1E] text-xs font-bold hover:opacity-90 transition-opacity">
-          카카오톡 공유
-        </button>
-        <button onClick={handleSaveImage}
-          className="px-4 py-2 border border-[#1e1e1e] text-[#888] text-xs hover:border-[#FF2D55]/40 hover:text-white transition-colors">
-          이미지 저장
-        </button>
-        <button onClick={handleCopyLink}
-          className="px-4 py-2 border border-[#1e1e1e] text-[#888] text-xs hover:border-[#FF2D55]/40 hover:text-white transition-colors">
-          링크 복사
-        </button>
-      </div>
-
-      {/* 충돌 뱃지 + tooltip — 이름만 입력한 경우 더미 사주 기반이므로 숨김 */}
+      {/* ── 사주 충돌 구조 — 색깔별 그룹 ── */}
       {hasDateData && (result.conflicts.chung.length > 0 || result.conflicts.hyung.length > 0 ||
         result.conflicts.hae.length > 0 || result.conflicts.pa.length > 0 || result.conflicts.hap.length > 0) && (
-        <div>
-          <p className="text-[#333] text-[9px] uppercase tracking-[0.2em] mb-2">사주 충돌 구조 — 탭하면 설명</p>
-          <div className="flex flex-wrap gap-2">
-            {result.conflicts.chung.map(c => (
-              <button key={c.name}
-                onClick={() => setConflictTooltip(conflictTooltip === `chung-${c.name}` ? null : `chung-${c.name}`)}
-                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `chung-${c.name}` ? 'border-[#FF2D55] bg-[#FF2D55]/15 text-[#FF2D55]' : 'border-[#FF2D55]/40 text-[#FF2D55] bg-[#FF2D55]/8'}`}>
-                충 · {c.name}
-              </button>
-            ))}
-            {result.conflicts.hyung.map(h => (
-              <button key={h.name}
-                onClick={() => setConflictTooltip(conflictTooltip === `hyung-${h.name}` ? null : `hyung-${h.name}`)}
-                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `hyung-${h.name}` ? 'border-[#BF5AF2] bg-[#BF5AF2]/15 text-[#BF5AF2]' : 'border-[#BF5AF2]/40 text-[#BF5AF2] bg-[#BF5AF2]/8'}`}>
-                형 · {h.name}
-              </button>
-            ))}
-            {result.conflicts.hae.map(h => (
-              <button key={h.name}
-                onClick={() => setConflictTooltip(conflictTooltip === `hae-${h.name}` ? null : `hae-${h.name}`)}
-                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `hae-${h.name}` ? 'border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]' : 'border-[#F59E0B]/40 text-[#F59E0B] bg-[#F59E0B]/8'}`}>
-                해 · {h.name}
-              </button>
-            ))}
-            {result.conflicts.pa.map(p => (
-              <button key={p.name}
-                onClick={() => setConflictTooltip(conflictTooltip === `pa-${p.name}` ? null : `pa-${p.name}`)}
-                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === `pa-${p.name}` ? 'border-[#F59E0B] bg-[#F59E0B]/15 text-[#F59E0B]' : 'border-[#F59E0B]/40 text-[#F59E0B] bg-[#F59E0B]/8'}`}>
-                파 · {p.name}
-              </button>
-            ))}
-            {result.conflicts.hap.length > 0 && (
-              <button
-                onClick={() => setConflictTooltip(conflictTooltip === 'hap' ? null : 'hap')}
-                className={`text-[11px] px-3 py-1.5 border transition-all ${conflictTooltip === 'hap' ? 'border-[#BF5AF2] bg-[#BF5AF2]/15 text-[#BF5AF2]' : 'border-[#BF5AF2]/40 text-[#BF5AF2] bg-[#BF5AF2]/8'}`}>
-                합 요소 있음
-              </button>
-            )}
+        <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-4">
+          <p className="text-[#888] text-[10px] uppercase tracking-[0.25em] mb-3 font-semibold">사주 충돌 구조 <span className="text-[#555] normal-case tracking-normal ml-1">— 탭하면 설명</span></p>
+          <div className="space-y-2.5">
+            {(() => {
+              const groups: { key: string; label: string; hanja: string; color: string; items: { name: string; tooltipKey: string }[]; isGroup?: boolean }[] = [];
+              if (result.conflicts.chung.length > 0)
+                groups.push({ key: 'chung', label: '충', hanja: '沖', color: '#FF2D55',
+                  items: result.conflicts.chung.map(c => ({ name: c.name, tooltipKey: `chung-${c.name}` })) });
+              if (result.conflicts.hyung.length > 0)
+                groups.push({ key: 'hyung', label: '형', hanja: '刑', color: '#BF5AF2',
+                  items: result.conflicts.hyung.map(h => ({ name: h.name, tooltipKey: `hyung-${h.name}` })) });
+              if (result.conflicts.hae.length > 0)
+                groups.push({ key: 'hae', label: '해', hanja: '害', color: '#F59E0B',
+                  items: result.conflicts.hae.map(h => ({ name: h.name, tooltipKey: `hae-${h.name}` })) });
+              if (result.conflicts.pa.length > 0)
+                groups.push({ key: 'pa', label: '파', hanja: '破', color: '#F59E0B',
+                  items: result.conflicts.pa.map(p => ({ name: p.name, tooltipKey: `pa-${p.name}` })) });
+              if (result.conflicts.hap.length > 0)
+                groups.push({ key: 'hap', label: '합', hanja: '合', color: '#BF5AF2',
+                  items: [{ name: '요소 있음', tooltipKey: 'hap' }], isGroup: true });
+              return groups.map(g => (
+                <div key={g.key} className="flex items-center gap-3">
+                  <div className="flex items-baseline gap-1 w-12 flex-shrink-0">
+                    <span className="font-display text-base" style={{ color: g.color }}>{g.label}</span>
+                    <span className="text-[10px]" style={{ color: `${g.color}80` }}>{g.hanja}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 flex-1">
+                    {g.items.map(it => {
+                      const active = conflictTooltip === it.tooltipKey;
+                      return (
+                        <button key={it.tooltipKey}
+                          onClick={() => setConflictTooltip(active ? null : it.tooltipKey)}
+                          className="text-[11px] px-2.5 py-1 border transition-all"
+                          style={{
+                            borderColor: active ? g.color : `${g.color}40`,
+                            background: active ? `${g.color}20` : `${g.color}10`,
+                            color: active ? '#fff' : g.color,
+                          }}>
+                          {it.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ));
+            })()}
           </div>
 
-          {/* 인라인 tooltip 설명 */}
+          {/* 인라인 tooltip 설명 — 다크모드 대비 강화 */}
           {conflictTooltip && (() => {
             const type = conflictTooltip.split('-')[0];
             const name = conflictTooltip.includes('-') ? conflictTooltip.split('-').slice(1).join('-') : '';
             const COLOR: Record<string, string> = { chung: '#FF2D55', hyung: '#BF5AF2', hae: '#F59E0B', pa: '#F59E0B', hap: '#BF5AF2' };
+            const TITLE: Record<string, string> = { chung: '충 (沖)', hyung: '형 (刑)', hae: '해 (害)', pa: '파 (破)', hap: '합 (合)' };
             const DESC: Record<string, string> = {
               chung: `충(沖)은 두 기운이 정반대 방향으로 부딪히는 관계입니다. ${name ? `${name}은` : ''} 서로의 에너지가 충돌해 다툼이 잦고, 예상치 못한 변화가 갑자기 터질 수 있습니다.`,
               hyung: `형(刑)은 서로를 압박하고 자극하는 관계입니다. ${name ? `${name}은` : ''} 말하지 못한 긴장이 쌓이고, 관계가 점점 답답하게 짓눌리는 느낌이 납니다.`,
@@ -1021,9 +965,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
             };
             const c = COLOR[type] ?? '#888';
             return (
-              <div className="mt-2 px-4 py-3 border animate-fade-in"
-                style={{ borderColor: `${c}30`, background: `${c}08` }}>
-                <p className="text-xs leading-relaxed" style={{ color: c }}>
+              <div className="mt-3 px-4 py-3 border-l-2 animate-fade-in"
+                style={{ borderColor: c, background: '#161616' }}>
+                <p className="text-[11px] font-bold mb-1.5 tracking-wider uppercase" style={{ color: c }}>{TITLE[type] ?? ''}</p>
+                <p className="text-[13px] leading-relaxed text-[#e8e8e8]">
                   {DESC[type] ?? ''}
                 </p>
               </div>
@@ -1563,6 +1508,97 @@ export default function StepResult({ myData, targetData, result, relationType, o
             {tag}
           </span>
         ))}
+      </div>
+
+      {/* ── 전체 잠금 해제 CTA — 스크롤 내려서 분석 본 뒤 자연스럽게 ── */}
+      {!isAllUnlocked && (
+        <div className="border p-5 relative overflow-hidden"
+          style={{ borderColor: '#FF2D55', background: 'linear-gradient(135deg, #0d0507 0%, #0a0410 100%)' }}>
+          <div className="absolute top-0 right-0 w-40 h-40 pointer-events-none"
+            style={{ background: 'radial-gradient(circle at top right, rgba(255,45,85,0.18), transparent 65%)' }} />
+          <div className="relative">
+            <p className="text-[#FF2D55] text-[10px] font-bold tracking-[0.25em] uppercase mb-2">여기까지 보셨다면</p>
+            <p className="font-display text-white text-2xl leading-tight mb-1">잠긴 영역도 보면<br />납득이 됩니다</p>
+            <p className="font-sans-kr text-[#999] text-xs leading-relaxed mb-5">
+              한 영역씩 풀면 ₩{PRICE_SECTION.toLocaleString()} · 전부 풀면 한 번에 끝납니다
+            </p>
+            <button onClick={() => handleOpenPaywall('s01')}
+              className="w-full py-4 font-bold text-white text-base font-sans-kr"
+              style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)', boxShadow: '0 0 32px rgba(255,45,85,0.35)' }}>
+              <span className="flex items-center justify-center gap-2">
+                <LockIcon size={14} color="white" />
+                전체 잠금 해제
+                <span className="text-[#ffd5dd] text-xs line-through ml-1">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
+                <span className="text-white">₩{PRICE_ALL.toLocaleString()}</span>
+              </span>
+            </button>
+            <p className="text-center text-[#666] text-[10px] mt-3">한 번 결제 · 평생 다시 보기</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── 분석 정보 (부수) — 사용자 / 점수 / 공유 ── */}
+      <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-4 space-y-4">
+        <p className="text-[#666] text-[10px] uppercase tracking-[0.25em] font-semibold">분석 정보</p>
+
+        {hasTarget ? (
+          <div className="flex items-center justify-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#FF2D55]/15 border border-[#FF2D55]/30 flex items-center justify-center text-sm">
+                {myData.gender === '남' ? '♂' : '♀'}
+              </div>
+              <div className="leading-tight">
+                <p className="text-white text-xs font-medium">{myData.name || '나'}</p>
+                {hasDateData && <p className="text-[#555] text-[10px]">{result.myStem}{result.myBranch}년</p>}
+              </div>
+            </div>
+            <span className="text-[#FF2D55] text-[10px] font-bold tracking-widest">VS</span>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-[#BF5AF2]/15 border border-[#BF5AF2]/30 flex items-center justify-center text-sm">
+                {targetData.gender === '남' ? '♂' : '♀'}
+              </div>
+              <div className="leading-tight">
+                <p className="text-white text-xs font-medium">{targetData.name || '상대'}</p>
+                {hasDateData && <p className="text-[#555] text-[10px]">{result.targetStem}{result.targetBranch}년</p>}
+                {!hasDateData && targetData.name && <p className="text-[#BF5AF2] text-[10px]">이름 기반</p>}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2">
+            <div className="w-9 h-9 rounded-full bg-[#FF2D55]/15 border border-[#FF2D55]/30 flex items-center justify-center text-base">
+              {myData.gender === '남' ? '♂' : '♀'}
+            </div>
+            <div className="leading-tight">
+              <p className="text-white text-sm font-medium">{myData.name || '나'}</p>
+              <p className="text-[#555] text-[10px]">내 위험 유형 분석</p>
+            </div>
+          </div>
+        )}
+
+        <ScoreGauge score={result.toxicScore} />
+
+        <div className="flex items-center justify-center">
+          <span className="text-[10px] px-2.5 py-1 rounded-full border font-medium"
+            style={{ color: accuracyInfo.color, borderColor: `${accuracyInfo.color}40`, backgroundColor: `${accuracyInfo.color}12` }}>
+            {accuracyInfo.label} · {accuracyInfo.desc}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 pt-1">
+          <button onClick={handleKakaoShare}
+            className="py-2 bg-[#FEE500] text-[#3C1E1E] text-[11px] font-bold hover:opacity-90 transition-opacity">
+            카카오톡 공유
+          </button>
+          <button onClick={handleSaveImage}
+            className="py-2 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
+            이미지 저장
+          </button>
+          <button onClick={handleCopyLink}
+            className="py-2 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
+            링크 복사
+          </button>
+        </div>
       </div>
 
       {/* 공유 이미지 카드 */}
