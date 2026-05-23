@@ -419,7 +419,7 @@ function ScrollHint() {
   }, []);
   if (!visible) return null;
   return (
-    <div className="fixed bottom-24 left-3 z-30 flex flex-col items-center gap-1 pointer-events-none animate-fade-in">
+    <div className="fixed bottom-24 right-3 z-30 flex flex-col items-center gap-1 pointer-events-none animate-fade-in">
       <span className="text-[#555] text-[9px] uppercase tracking-[0.25em] [writing-mode:vertical-rl] rotate-180">scroll</span>
       <div className="w-px h-8" style={{ background: 'linear-gradient(to bottom, transparent, #FF2D55)' }} />
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
