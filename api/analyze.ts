@@ -6,6 +6,7 @@ const client = new Anthropic({
   defaultHeaders: { 'anthropic-beta': 'prompt-caching-2024-07-31' },
 });
 
+const MODEL_OPUS   = 'claude-opus-4-7';
 const MODEL_SONNET = 'claude-sonnet-4-6';
 const MODEL_HAIKU  = 'claude-haiku-4-5-20251001';
 
@@ -23,6 +24,35 @@ const SYSTEM_CACHED: Anthropic.TextBlockParam & { cache_control: { type: 'epheme
 7. 한국어 전용. 전문 용어는 괄호 안에 쉬운 설명 필수.`,
   cache_control: { type: 'ephemeral' },
 };
+
+async function callOpus(
+  prompt: string,
+  maxTokens: number,
+  timeoutMs = 55000,
+): Promise<string> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const msg = await client.messages.create(
+      {
+        model: MODEL_OPUS,
+        max_tokens: maxTokens,
+        system: [SYSTEM_CACHED],
+        messages: [{ role: 'user', content: prompt }],
+        stream: false,
+      },
+      { signal: controller.signal } as never,
+    );
+    clearTimeout(timer);
+    const c = msg.content[0];
+    if (c.type !== 'text') throw new Error('Not text');
+    return c.text;
+  } catch {
+    clearTimeout(timer);
+    // Sonnet 폴백
+    return callSonnet(prompt, maxTokens, 38000);
+  }
+}
 
 async function callSonnet(
   prompt: string,
@@ -82,6 +112,7 @@ function extractJson(text: string) {
 // ─── Phase 1A: 핵심 갈등 + 감정 패턴 ───────────────────────────────
 function buildPhase1APrompt(myData: any, targetData: any, relationType: string, result: any): string {
   const hasTarget = Boolean(targetData?.birthdate);
+  const hasNameOnly = Boolean(targetData?.name && !targetData?.birthdate);
   const chung = result.conflicts.chung.map((c: any) => c.name).join(', ') || '없음';
   const hyung = result.conflicts.hyung.map((h: any) => h.name).join(', ') || '없음';
   const hae   = result.conflicts.hae?.map((h: any) => h.name).join(', ') || '없음';
@@ -89,6 +120,43 @@ function buildPhase1APrompt(myData: any, targetData: any, relationType: string, 
   const score = result.toxicScore;
   const myPillar = `${result.myYear?.stem}${result.myYear?.branch}년 ${result.myMonth ? result.myMonth.stem+result.myMonth.branch+'월' : ''} ${result.myDay ? result.myDay.stem+result.myDay.branch+'일' : ''}`.trim();
   const tgPillar = hasTarget ? `${result.targetYear?.stem}${result.targetYear?.branch}년 ${result.targetMonth ? result.targetMonth.stem+result.targetMonth.branch+'월' : ''} ${result.targetDay ? result.targetDay.stem+result.targetDay.branch+'일' : ''}`.trim() : '';
+
+  if (hasNameOnly) {
+    return `[사주 데이터]
+나(${myData.gender}): ${myPillar}
+위험 지지: ${result.myDangerBranches?.join(',') || '없음'} | 위험 오행: ${result.myDangerOhaeng?.join(',') || '없음'}
+독성지수(내 기질 기반): ${score}점
+
+[관계 맥락]
+상대방: ${targetData.name}(${targetData.gender}) | 관계: ${relationType} | 생년월일 미입력
+
+[분석 지침]
+- 내 사주 기질이 "${targetData.name}"과의 ${relationType} 관계에서 만드는 충돌 구조 분석
+- "${targetData.name}"이라는 이름을 모든 문장에서 직접 사용해 철저히 개인화
+- 추상적 표현 절대 금지. 구체적 대화·감정·신체 반응으로 묘사
+- 내 오행과 위험 지지가 이 관계에서 어떻게 작동하는지를 중심으로
+[출력 형식] 순수 JSON만.
+
+{
+  "toxicSummary": "20자 이내. ${targetData.name}과의 ${relationType} 관계를 꿰뚫는 한마디.",
+  "coreConflict": {
+    "title": "12자 이내. 이 충돌의 이름.",
+    "description": "5문장. ①내 사주 기질이 ${targetData.name}과의 ${relationType} 관계에서 왜 구조적으로 안 맞는지 — 내 오행 에너지를 일상 행동으로 번역. ②${targetData.name}과 어떤 순간에 갈등이 시작되는지 — 구체적인 생활 장면 묘사. ③그 순간 나 속에서 무슨 말이 올라오는지, ${targetData.name}은 어떻게 반응하는지 — 내면 독백까지. ④${targetData.name} 눈에 나는 어떤 사람으로 보이고, 나 눈에 ${targetData.name}은 어떤 사람인지 — 구체적으로. ⑤이 갈등이 노력해도 반복될 수밖에 없는 구조적 이유."
+  },
+  "conflictAnalysis": {
+    "chung": "내 사주 위험 지지(${result.myDangerBranches?.join(',') || '없음'})가 ${targetData.name}과의 관계에서 어떤 충돌 에너지를 만드는지 3문장. 실제 대화체로('${targetData.name}이 이렇게 말하면 나는 속으로 이런 생각이 든다' 형식).",
+    "hyung": null,
+    "hae": null,
+    "geuk": ${result.myDangerOhaeng?.length > 0 ? `"내 오행이 ${targetData.name}과의 관계에서 만드는 에너지 소모 구조 — 어느 쪽이 더 지치고 어떤 방식으로 빠져나가는지 3문장."` : 'null'}
+  },
+  "emotionalPattern": {
+    "myPattern": "3문장. 내가 ${targetData.name}과 갈등이 생겼을 때 — 어떤 말에 특히 상처받는지, 그 순간 속으로 무슨 말이 올라오는지, 어떻게 처리하는지(참는지/터뜨리는지/냉각되는지).",
+    "targetPattern": "3문장. ${targetData.name}이 ${relationType}으로서 갈등 상황에서 보일 법한 반응 — 특유의 말투와 행동, 그게 나에게 어떻게 들리는지, 왜 그렇게 반응하는지.",
+    "cycle": "3문장. ${targetData.name}과 반복되는 갈등 사이클 — 어떤 사소한 일에서 시작되는지, 어떻게 커지는지, 가라앉고 왜 또 반복되는지. 읽으면서 '맞아 딱 이래' 싶게."
+  },
+  "hiddenDynamic": "3문장. ${targetData.name}과의 관계에서 두 사람이 스스로 인식 못하는 무의식적 갈등 패턴 — 처음 끌린 이유가 지금 갈등의 이유가 되는 아이러니, 내가 의식 못하고 ${targetData.name}에게 하는 것, 왜 쉽게 바뀌지 않는지."
+}`;
+  }
 
   if (hasTarget) {
     return `[사주 데이터]
@@ -141,11 +209,67 @@ function buildPhase1APrompt(myData: any, targetData: any, relationType: string, 
 // ─── Phase 1B: 시나리오·회피 가이드 (병렬 실행) ──────────────────
 function buildPhase1BPrompt(myData: any, targetData: any, relationType: string, result: any): string {
   const hasTarget = Boolean(targetData?.birthdate);
+  const hasNameOnly = Boolean(targetData?.name && !targetData?.birthdate);
   const chung = result.conflicts.chung.map((c: any) => c.name).join(', ') || '없음';
   const geuk  = result.conflicts.geuk?.exists ? result.conflicts.geuk.direction : '없음';
   const score = result.toxicScore;
   const myYr  = `${result.myYear?.stem}${result.myYear?.branch}`;
   const tgYr  = hasTarget ? `${result.targetYear?.stem}${result.targetYear?.branch}` : '';
+
+  if (hasNameOnly) {
+    return `[사주 데이터]
+나(${myData.gender}): ${myYr}년
+위험 지지: ${result.myDangerBranches?.join(',') || '없음'} | 위험 오행: ${result.myDangerOhaeng?.join(',') || '없음'}
+관계: ${relationType} | 상대: ${targetData.name}(${targetData.gender}) | 독성지수: ${score}점
+
+[목표] ${targetData.name}과의 ${relationType} 관계에서 실제로 터질 법한 갈등 시나리오와 실용적 가이드. "${targetData.name}"을 계속 사용해 개인화.
+[출력 형식] 순수 JSON만.
+
+{
+  "conflictScenarios": [
+    {
+      "situation": "25자 이내. ${targetData.name}과의 ${relationType} 관계에서 실제 일어날 법한 구체적 장면.",
+      "whatHappens": "5문장. ①${targetData.name}이 정확히 어떻게 말하거나 행동하는지(대화체로). ②그 말·행동이 나에게 어떻게 들리고 느껴지는지. ③그 순간 나 안에서 어떤 감정이 올라오는지 — 속마음 독백까지. ④내가 어떻게 반응하고, 그게 ${targetData.name}에게 어떻게 보이는지. ⑤그날 이후 어떤 식으로 남는지.",
+      "whySaju": "2문장. 내 사주 기질이 왜 이 패턴을 만드는지."
+    },
+    {
+      "situation": "25자 이내. 다른 맥락의 장면.",
+      "whatHappens": "5문장. 같은 형식으로.",
+      "whySaju": "2문장."
+    },
+    {
+      "situation": "25자 이내. 누적된 감정이 터지는 장면.",
+      "whatHappens": "5문장. 앞 두 상황이 쌓인 결과로 생기는 더 큰 갈등.",
+      "whySaju": "2문장."
+    }
+  ],
+  "triggerPoints": [
+    "${targetData.name}이 이 말을 하면 무조건 올라오는 것 — 직접 인용",
+    "${targetData.name}이 이 행동을 하면 방어적이 되는 것",
+    "이 상황이 되면 나도 모르게 반응하는 것",
+    "${targetData.name}이 이 태도를 보이면 대화가 안 되는 것",
+    "이 패턴이 반복되면 관계 전체에 회의감이 드는 것"
+  ],
+  "relationSpecific": "3문장. ${relationType} 관계이기 때문에 ${targetData.name}과의 갈등이 특히 더 아픈 이유 — 다른 관계 유형이었다면 넘어갈 수 있는 것이 왜 이 관계에서 더 크게 느껴지는지.",
+  "realisticOutlook": "3문장. ${targetData.name}과의 갈등 구조를 인식하지 못하면 어떻게 되는지, 인식하면 어떤 가능성이 있는지, 노력으로 바꿀 수 없는 것은 무엇인지.",
+  "energyDynamic": {
+    "whoLoses": "2문장. ${targetData.name}과의 관계에서 에너지를 더 쓰는 쪽과 이유.",
+    "drainMechanism": "2문장. 에너지가 빠지는 정확한 메커니즘 — ${targetData.name}과 어떤 대화 직후 특히 지치는지.",
+    "longTermEffect": "2문장. 이 패턴이 6개월, 1년 쌓이면 나에게 생기는 변화."
+  },
+  "avoidanceGuide": {
+    "mindset": "3문장. ${targetData.name}과의 관계에서 덜 소모되기 위한 핵심 마인드셋.",
+    "practicalTips": [
+      "${targetData.name}과 갈등 징조가 보일 때 구체적으로 어떻게 행동할지",
+      "${targetData.name}이 특정 반응 보일 때 나는 무엇을 해야 하는지",
+      "${targetData.name}과의 관계에서 절대 하면 안 되는 것 — 왜 역효과인지 포함",
+      "${targetData.name}과 갈등 후 나 자신 회복을 위해 할 것",
+      "${targetData.name}과의 관계를 오래 유지하려면 만들어야 할 루틴"
+    ],
+    "boundaries": "3문장. ${targetData.name}과의 관계에서 지켜야 할 선 — ①이 상황이 되면 대화 멈춰야 함. ②이 패턴 반복되면 관계 형태 바꿔야 함. ③이 신호 보이면 관계 자체 재고해야 함."
+  }
+}`;
+  }
 
   if (hasTarget) {
     return `[사주 데이터]
@@ -294,6 +418,50 @@ function buildPhase2Prompt(myData: any, targetData: any, relationType: string, r
 }`;
 }
 
+// ─── Phase 2 (이름 전용): 관계 영향 + 상대방 시선 + 판정 ───────────
+function buildPhase2NameOnlyPrompt(myData: any, targetData: any, relationType: string, result: any): string {
+  const score = result.toxicScore;
+  const myPillar = `${result.myYear?.stem}${result.myYear?.branch}년 ${result.myMonth ? result.myMonth.stem+result.myMonth.branch+'월' : ''} ${result.myDay ? result.myDay.stem+result.myDay.branch+'일' : ''}`.trim();
+
+  return `[사주 데이터]
+나(${myData.gender}): ${myPillar}
+위험 지지: ${result.myDangerBranches?.join(',') || '없음'} | 위험 오행: ${result.myDangerOhaeng?.join(',') || '없음'}
+갈등 성향: ${result.conflictType || ''} | 독성지수: ${score}점
+
+[관계 맥락]
+상대방: ${targetData.name}(${targetData.gender}) | 관계: ${relationType} | 생년월일 미입력
+
+[목표] 04번: "${targetData.name}"과의 이 관계가 나에게 주는 영향. 05번: ${targetData.name}이 나를 어떻게 인식하는지 — 내 사주 기질이 상대방 눈에 어떻게 읽히는지. 06번: 계속 가야 할지 판정. 모두 "${targetData.name}"을 직접 사용해 개인화. 추상적 표현 절대 금지.
+[출력 형식] 순수 JSON만.
+
+{
+  "personalImpact": {
+    "onMe": "4문장. ${targetData.name}과의 관계가 나에게 주는 실제 영향. ①에너지 측면 — ${targetData.name}과 만난 날 vs 안 만난 날이 어떻게 다른지. ②감정·자존감 측면 — 이 관계 안에서 나는 어떤 버전의 나인지. ③일상 영향 — ${targetData.name} 때문에 다른 것에 어떤 영향이 가는지. ④내가 의식하지 못하고 있던 것.",
+    "warningSignals": [
+      "${targetData.name}에게 연락 오면 몸이 먼저 반응하는 방식 — 신체 감각으로",
+      "${targetData.name}을 만난 날 감정 상태 변화 — 이전과 달라진 것",
+      "${targetData.name} 때문에 바뀐 내 행동 패턴",
+      "${targetData.name}에 대해 반복되는 생각 패턴",
+      "${targetData.name}과의 관계가 다른 관계나 일에 미치는 영향"
+    ],
+    "whatYouLose": "3문장. ${targetData.name}과의 관계를 유지하면서 서서히 잃어가는 것들 — 에너지, 내 어떤 모습, 원래 원했던 것."
+  },
+  "howTheySeeMe": {
+    "energyReading": "4문장. 내 사주 기질(${myPillar})이 ${targetData.name}의 눈에 어떻게 읽히는지 — ①처음 나를 봤을 때 어떻게 느꼈을지. ②내 에너지의 어떤 부분이 ${targetData.name}을 자극하는지. ③${targetData.name}이 나를 속으로 어떤 '유형의 사람'으로 분류했는지. ④시간이 지나면서 그 인식이 어떻게 굳어졌는지.",
+    "whatIrritates": "4문장. 내가 의도 없이 ${targetData.name}의 심기를 건드리는 것들 — ①내 어떤 말·행동 방식이 ${targetData.name}을 긁는지 대화체로. ②${targetData.name}이 '또 시작이다' 싶어하는 내 패턴. ③그 순간 ${targetData.name} 안에서 어떤 감정이 올라오는지 — 내면 독백. ④${targetData.name}이 나한테 거리를 두는 진짜 이유.",
+    "whatDrawsThem": "3문장. 갈등이 있는데도 ${targetData.name}이 나를 놓지 못하는 이유 — 끌림의 아이러니, ${targetData.name}이 나에게서 무의식적으로 채우려는 것.",
+    "theirPrivateVerdict": "4문장. ${targetData.name}이 혼자 있을 때 나를 어떻게 평가하는지 대화체로 — 긍정 하나, 부정 하나, 기억에 박힌 내 장면, 직접 말 못하는 것.",
+    "howTheyNeedMe": "3문장. ${targetData.name}이 이 관계에서 나에게 진짜로 원하는 것 — 말로 안 하지만 행동으로 드러나는 욕구, 내가 이걸 해줄 때 ${targetData.name}이 안도하는 것."
+  },
+  "continuationAssessment": {
+    "structuralAnalysis": "4문장. ${targetData.name}과의 관계 구조 분석 — 충돌 뿌리, 노력으로 바꿀 수 있는 것 vs 바꿀 수 없는 것, 지금까지 반복됐을 패턴, 구조를 알고 이어간다는 것의 의미.",
+    "whatItTakes": "3문장. ${targetData.name}과 계속하기로 결심했다면 현실적으로 필요한 변화.",
+    "redLine": "3문장. ${targetData.name}과의 관계에서 재고해야 할 레드라인 — 구체적 행동·패턴·신호로.",
+    "verdict": "3문장. ${targetData.name}과의 ${relationType} 관계에 대한 사주 구조 기반 최종 판정 — 솔직하고 단호하되 잔인하지 않게."
+  }
+}`;
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -301,7 +469,7 @@ export default async function handler(req: any, res: any) {
 
   const { phase, myData, targetData, relationType, result } = req.body;
 
-  if (phase === 2 && !targetData?.birthdate) {
+  if (phase === 2 && !targetData?.birthdate && !targetData?.name) {
     return res.status(200).json({ data: null });
   }
 
@@ -321,13 +489,13 @@ export default async function handler(req: any, res: any) {
 
     try {
       const streamA = client.messages.stream({
-        model: MODEL_SONNET,
+        model: MODEL_OPUS,
         max_tokens: 6000,
         system: [SYSTEM_CACHED],
         messages: [{ role: 'user', content: buildPhase1APrompt(myData, targetData, relationType, result) }],
       });
       const streamB = client.messages.stream({
-        model: MODEL_SONNET,
+        model: MODEL_OPUS,
         max_tokens: 8000,
         system: [SYSTEM_CACHED],
         messages: [{ role: 'user', content: buildPhase1BPrompt(myData, targetData, relationType, result) }],
@@ -363,11 +531,12 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    // Phase 2: Sonnet
-    const text = await callSonnet(
-      buildPhase2Prompt(myData, targetData, relationType, result),
-      5000,
-    );
+    // Phase 2: Opus (이름 전용 / 생년월일 있는 경우 분기)
+    const hasNameOnly = Boolean(targetData?.name && !targetData?.birthdate);
+    const prompt = hasNameOnly
+      ? buildPhase2NameOnlyPrompt(myData, targetData, relationType, result)
+      : buildPhase2Prompt(myData, targetData, relationType, result);
+    const text = await callOpus(prompt, 5000);
     return res.status(200).json({ data: extractJson(text) });
   } catch (err) {
     console.error('[TOXIC API] phase', phase, err);

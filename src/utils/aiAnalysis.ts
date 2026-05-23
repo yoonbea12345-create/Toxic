@@ -52,7 +52,7 @@ export async function fetchAIPhase2(
   relationType: RelationType,
   result: SajuResult,
 ): Promise<any> {
-  if (!targetData.birthdate) return null;
+  if (!targetData.birthdate && !targetData.name) return null;
   const res = await fetch('/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

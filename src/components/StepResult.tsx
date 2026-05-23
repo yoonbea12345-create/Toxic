@@ -704,7 +704,8 @@ export default function StepResult({ myData, targetData, result, relationType, o
     }, 3200);
   };
 
-  const hasTarget = Boolean(targetData.birthdate);
+  const hasTarget = Boolean(targetData.birthdate || targetData.name);
+  const hasDateData = Boolean(targetData.birthdate);
   const accuracyInfo = ACCURACY_LABELS[result.accuracyLevel] ?? ACCURACY_LABELS.year;
 
   // MINT 방식 로딩: gap*coeff + 최소 floor → 수학적으로 절대 멈추지 않음
@@ -929,7 +930,8 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 {targetData.gender === '남' ? '♂' : '♀'}
               </div>
               <span className="text-white text-xs">{targetData.name || '상대'}</span>
-              <span className="text-[#555] text-xs">{result.targetStem}{result.targetBranch}년</span>
+              {hasDateData && <span className="text-[#555] text-xs">{result.targetStem}{result.targetBranch}년</span>}
+              {!hasDateData && targetData.name && <span className="text-[#BF5AF2] text-[10px]">이름 기반 분석</span>}
             </div>
           </div>
         ) : (
@@ -1331,7 +1333,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
             {ai.howTheySeeMe ? (
-              <BlurredPreview unlocked={unlockedSections.has('s05')} onUnlock={() => handleOpenPaywall('s05')} teaser={`${result.targetStem}일(日) 기준 — 상대가 혼자 나를 평가하는 방식이 잠겨있습니다`}>
+              <BlurredPreview unlocked={unlockedSections.has('s05')} onUnlock={() => handleOpenPaywall('s05')} teaser={hasDateData ? `${result.targetStem}일(日) 기준 — 상대가 혼자 나를 평가하는 방식이 잠겨있습니다` : `${targetData.name || '상대방'}이 혼자 나를 평가하는 방식이 잠겨있습니다`}>
                 <div className="space-y-3">
                   <Card>
                     <SubLabel text="상대방이 나 때문에 자극받는 것" />
