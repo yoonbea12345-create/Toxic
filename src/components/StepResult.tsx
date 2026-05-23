@@ -737,9 +737,8 @@ export default function StepResult({ myData, targetData, result, relationType, o
     })();
   }, []);
 
-  // Phase 2: 결과 화면이 뜨는 순간 시작
+  // Phase 2: 로딩 화면 중 Phase 1과 병렬 실행
   useEffect(() => {
-    if (showLoading) return;
     (async () => {
       try {
         const data = await fetchAIPhase2(myData, targetData, relationType, result);
@@ -755,7 +754,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         setPhase2Loading(false);
       }
     })();
-  }, [showLoading]);
+  }, []);
 
   // 결과 화면 진입 시 세션 타임 기록 — 반드시 조건부 return 전에 위치해야 함
   useEffect(() => {
