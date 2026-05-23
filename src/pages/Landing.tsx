@@ -428,25 +428,22 @@ export default function Landing() {
             다양한 상황에 맞는 분석결과를 직접 보세요
           </p>
 
-          {/* 폰 목업 3개 나란히 */}
-          <div className="flex gap-3 items-start mb-10">
+          {/* 폰 목업 1개씩 세로 나열 */}
+          <div className="flex flex-col gap-10 mb-10">
             {[
-              { src: '/result-slide-1.png', label: '충돌 원인' },
-              { src: '/result-slide-3.png', label: '갈등 패턴' },
-              { src: '/result-slide-5.png', label: '관계 구조' },
-            ].map(({ src, label }) => (
-              <div key={label} className="flex-1 flex flex-col items-center">
-                <div className="w-full rounded-[1.6rem] overflow-hidden"
-                  style={{ background: '#111', border: '1.5px solid #2A2A2A', boxShadow: '0 24px 60px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04)' }}>
-                  <div className="flex justify-center pt-2 pb-0.5">
-                    <div className="w-7 h-[3px] bg-[#2A2A2A] rounded-full" />
-                  </div>
+              { src: '/result-slide-1.png', label: '충돌 원인', desc: '사주 구조에서 비롯된 근본적인 갈등 원인' },
+              { src: '/result-slide-3.png', label: '갈등 패턴', desc: '반복되는 싸움 패턴과 충돌 상황 분석' },
+              { src: '/result-slide-5.png', label: '관계 구조', desc: '두 사람의 오행 관계와 앞으로의 방향' },
+            ].map(({ src, label, desc }) => (
+              <div key={label} className="flex flex-col items-center">
+                <p className="font-sans-kr text-white text-sm font-bold mb-1 text-center">{label}</p>
+                <p className="font-sans-kr text-[#555] text-xs mb-5 text-center">{desc}</p>
+                <div className="max-w-[280px] w-full mx-auto rounded-[2rem] overflow-hidden"
+                  style={{ background: '#111', border: '1.5px solid #2A2A2A', boxShadow: '0 32px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04)' }}>
+                  <div className="flex justify-center pt-3 pb-1"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
                   <img src={src} alt={label} className="w-full block" />
-                  <div className="flex justify-center pt-1 pb-1.5">
-                    <div className="w-5 h-[2px] bg-[#2A2A2A] rounded-full" />
-                  </div>
+                  <div className="flex justify-center pt-1 pb-2.5"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
                 </div>
-                <p className="font-sans-kr text-[#444] text-[10px] mt-2 text-center tracking-wide">{label}</p>
               </div>
             ))}
           </div>
