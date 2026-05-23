@@ -484,7 +484,7 @@ export default function Landing() {
           </h2>
           <h2 className="font-display leading-[1.08] mb-6"
             style={{ fontSize: 'clamp(2.4rem, 9.5vw, 4.5rem)', wordBreak: 'keep-all' }}>
-            왜 이렇게 <span className="text-[#FF2D55]">안 맞지?</span>
+            왜 이렇게 <span className="text-[#BF5AF2]">안 맞지?</span>
           </h2>
 
           <p className="font-sans-kr text-[#666] text-sm leading-relaxed mb-10">
