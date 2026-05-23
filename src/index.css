@@ -164,7 +164,7 @@ select {
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  margin-bottom: 0.75rem;
+  line-height: 1;
 }
 
 /* ── 스텝 배지 (pill) ── */
