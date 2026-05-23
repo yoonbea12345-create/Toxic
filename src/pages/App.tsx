@@ -90,7 +90,6 @@ export default function AppPage() {
     trackEvent('reset');
   };
 
-  const stepNumber = { 'my-info': 1, 'relation': 2, 'target-info': 3, 'result': 3 };
 
   return (
     <div className="min-h-screen bg-bg">
