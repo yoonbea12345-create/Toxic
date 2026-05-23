@@ -75,7 +75,7 @@ export default function Landing() {
       </nav>
 
       {/* ══════════════════════════════════════
-          01. HERO
+          HERO
       ══════════════════════════════════════ */}
       <section className="relative min-h-screen flex flex-col justify-center px-5 pt-28 pb-20 max-w-xl mx-auto">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
@@ -93,7 +93,6 @@ export default function Landing() {
             <span className="text-[#FF2D55]">안 맞는 걸까</span>
           </h1>
 
-          {/* 감정 트리거 rotator */}
           <div className="mb-1 min-h-[2.2rem]">
             <div key={triggerIdx} className="animate-fade-in">
               <p className="font-sans-kr text-[#777] text-sm leading-relaxed">
@@ -120,7 +119,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          01b. 연인 — 카카오톡 폰 목업
+          연인 — 카카오톡 폰 목업
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-20 border-t border-white/[0.06] fade-section">
         <div className="max-w-xl mx-auto">
@@ -140,7 +139,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          01c. 친구 — 카카오톡 폰 목업
+          친구 — 카카오톡 폰 목업
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-20 border-t border-white/[0.06] fade-section">
         <div className="max-w-xl mx-auto">
@@ -160,7 +159,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          01d. 직장 — 카카오톡 폰 목업
+          직장 — 카카오톡 폰 목업
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-20 border-t border-white/[0.06] fade-section">
         <div className="max-w-xl mx-auto">
@@ -180,7 +179,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          02. 페르소나 퀵 셀렉트
+          페르소나 퀵 셀렉트
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="max-w-xl mx-auto">
@@ -192,7 +191,6 @@ export default function Landing() {
           </h2>
 
           <div className="space-y-3">
-            {/* 연인 */}
             <button onClick={goToApp}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF2D55]/40 card-hover group">
               <div className="flex items-start justify-between">
@@ -209,7 +207,6 @@ export default function Landing() {
               </div>
             </button>
 
-            {/* 친구·지인 */}
             <button onClick={goToApp}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#30D158]/40 card-hover group">
               <div className="flex items-start justify-between">
@@ -226,7 +223,6 @@ export default function Landing() {
               </div>
             </button>
 
-            {/* 직장·상사·동료 */}
             <button onClick={goToApp}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#BF5AF2]/40 card-hover group">
               <div className="flex items-start justify-between">
@@ -243,7 +239,6 @@ export default function Landing() {
               </div>
             </button>
 
-            {/* 가족·부모·형제 */}
             <button onClick={goToApp}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF9500]/40 card-hover group">
               <div className="flex items-start justify-between">
@@ -264,7 +259,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          WHY TOXIC — 기존 앱 vs TOXIC
+          WHY TOXIC
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-20 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
@@ -322,54 +317,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          03. 실제 결과 프리뷰
-      ══════════════════════════════════════ */}
-      <section className="relative py-20 border-t border-white/[0.06] overflow-hidden fade-section">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,45,85,0.14) 0%, transparent 55%)' }} />
-
-        <div className="max-w-xl mx-auto px-5 relative z-10">
-          <h2 className="font-display leading-[1.08] text-white text-center mb-1"
-            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-            이게 실제로
-          </h2>
-          <h2 className="font-display leading-[1.08] text-[#FF2D55] text-center mb-3"
-            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-            나오는 분석입니다
-          </h2>
-          <p className="font-sans-kr text-[#555] text-center text-sm mb-10">
-            왜 안 맞는지, 어디서 터지는지 구조로 보여줍니다
-          </p>
-
-          {/* 폰 목업 1개씩 세로 나열 */}
-          <div className="flex flex-col gap-10 mb-10">
-            {[
-              { src: '/result-slide-1.png', label: '충돌 원인', desc: '사주 구조에서 비롯된 근본적인 갈등 원인' },
-              { src: '/result-slide-3.png', label: '갈등 패턴', desc: '반복되는 싸움 패턴과 충돌 상황 분석' },
-              { src: '/result-slide-5.png', label: '관계 구조', desc: '두 사람의 오행 관계와 앞으로의 방향' },
-            ].map(({ src, label, desc }) => (
-              <div key={label} className="flex flex-col items-center">
-                <p className="font-sans-kr text-white text-sm font-bold mb-1 text-center">{label}</p>
-                <p className="font-sans-kr text-[#555] text-xs mb-5 text-center">{desc}</p>
-                <div className="max-w-[280px] w-full mx-auto rounded-[2rem] overflow-hidden"
-                  style={{ background: '#111', border: '1.5px solid #2A2A2A', boxShadow: '0 32px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04)' }}>
-                  <div className="flex justify-center pt-3 pb-1"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
-                  <img src={src} alt={label} className="w-full block" />
-                  <div className="flex justify-center pt-1 pb-2.5"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button onClick={goToApp}
-            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-95 transition-all tracking-wide cta-glow-red">
-            이름이랑 생일 넣어보기 →
-          </button>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════
-          04. STORY — 연인
+          STORY 01 — 연인
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
@@ -428,9 +376,9 @@ export default function Landing() {
               <div className="flex gap-0.5">{[1,2,3,4,5].map(i=><span key={i} className="text-[10px] text-[#FF2D55]">★</span>)}</div>
             </div>
             <p className="font-sans-kr text-[#888] text-xs leading-relaxed">
-              "연애 3년 내내 왜 싸웠는지 1분 만에 나왔어요. 이걸 3년 전에 알았더라면..."
+              "헤어지고 나서 이유를 몰라 계속 내 탓만 했는데. 사주 구조 보니까 그냥 애초에 충돌 구조였어요."
             </p>
-            <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 24세 여성</p>
+            <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 27세 남성</p>
           </div>
 
           <button onClick={goToApp}
@@ -441,7 +389,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          05. STORY — 친구·지인
+          STORY 02 — 친구·지인
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
@@ -526,7 +474,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          06. STORY — 직장인
+          STORY 03 — 직장인
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
@@ -598,9 +546,9 @@ export default function Landing() {
               <div className="flex gap-0.5">{[1,2,3,4,5].map(i=><span key={i} className="text-[10px] text-[#FF2D55]">★</span>)}</div>
             </div>
             <p className="font-sans-kr text-[#888] text-xs leading-relaxed">
-              "퇴사 고민 중인데 팀장이랑 분석해봤어요. 결과 보고 퇴사 결심이 서버렸음 ㅋㅋ 면죄부 받은 느낌"
+              "팀장이 나만 미워하는 줄 알았는데 사주 보니까 구조적으로 충돌할 수밖에 없는 관계였음. 그냥 이직하기로 했어요."
             </p>
-            <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 28세 여성</p>
+            <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 31세 남성</p>
           </div>
 
           <button onClick={goToApp}
@@ -611,7 +559,7 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          07. STORY — 가족
+          STORY 04 — 가족
       ══════════════════════════════════════ */}
       <section className="relative border-t border-white/[0.06] overflow-hidden fade-section">
         <div className="absolute inset-0 pointer-events-none"
@@ -679,7 +627,53 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          09. HOW IT WORKS — 3단계
+          실제 결과 프리뷰 (STORY 이후)
+      ══════════════════════════════════════ */}
+      <section className="relative py-20 border-t border-white/[0.06] overflow-hidden fade-section">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,45,85,0.14) 0%, transparent 55%)' }} />
+
+        <div className="max-w-xl mx-auto px-5 relative z-10">
+          <h2 className="font-display leading-[1.08] text-white text-center mb-1"
+            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+            이게 실제로
+          </h2>
+          <h2 className="font-display leading-[1.08] text-[#FF2D55] text-center mb-3"
+            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+            나오는 분석입니다
+          </h2>
+          <p className="font-sans-kr text-[#555] text-center text-sm mb-10">
+            왜 안 맞는지, 어디서 터지는지 구조로 보여줍니다
+          </p>
+
+          <div className="flex flex-col gap-10 mb-10">
+            {[
+              { src: '/result-slide-1.png', label: '충돌 원인', desc: '사주 구조에서 비롯된 근본적인 갈등 원인' },
+              { src: '/result-slide-3.png', label: '갈등 패턴', desc: '반복되는 싸움 패턴과 충돌 상황 분석' },
+              { src: '/result-slide-5.png', label: '관계 구조', desc: '두 사람의 오행 관계와 앞으로의 방향' },
+            ].map(({ src, label, desc }) => (
+              <div key={label} className="flex flex-col items-center">
+                <p className="font-sans-kr text-white text-sm font-bold mb-1 text-center">{label}</p>
+                <p className="font-sans-kr text-[#555] text-xs mb-5 text-center">{desc}</p>
+                <div className="max-w-[280px] w-full mx-auto rounded-[2rem] overflow-hidden"
+                  style={{ background: '#111', border: '1.5px solid #2A2A2A', boxShadow: '0 32px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04)' }}>
+                  <div className="flex justify-center pt-3 pb-1"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
+                  <img src={src} alt={label} className="w-full block" />
+                  <div className="flex justify-center pt-1 pb-2.5"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button onClick={goToApp}
+            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-95 transition-all tracking-wide cta-glow-red">
+            이름이랑 생일 넣어보기 →
+          </button>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          HOW IT WORKS — 3단계
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
@@ -690,7 +684,6 @@ export default function Landing() {
             딱 <span className="text-[#FF2D55]">1분</span>이면 됩니다
           </h2>
 
-          {/* Step 1 */}
           <div className="mb-4">
             <span className="step-badge bg-[#FF2D55] text-white font-sans-kr">STEP 1</span>
             <p className="font-sans-kr text-white text-sm font-bold mb-1">내 정보 입력</p>
@@ -704,12 +697,10 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* 연결선 */}
           <div className="flex justify-center my-6">
             <div className="w-px h-10" style={{ background: 'linear-gradient(to bottom, rgba(255,45,85,0.5), transparent)' }} />
           </div>
 
-          {/* Step 2 */}
           <div className="mb-4">
             <span className="step-badge bg-[#FF2D55] text-white font-sans-kr">STEP 2</span>
             <p className="font-sans-kr text-white text-sm font-bold mb-1">관계 유형 선택</p>
@@ -723,12 +714,10 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* 연결선 */}
           <div className="flex justify-center my-6">
             <div className="w-px h-10" style={{ background: 'linear-gradient(to bottom, rgba(255,45,85,0.5), transparent)' }} />
           </div>
 
-          {/* Step 3 */}
           <div className="mb-4">
             <span className="step-badge bg-[#FF2D55] text-white font-sans-kr">STEP 3</span>
             <p className="font-sans-kr text-white text-sm font-bold mb-1">상대방 정보 입력</p>
@@ -742,7 +731,6 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* 결과 */}
           <div className="flex justify-center my-6">
             <div className="w-px h-10" style={{ background: 'linear-gradient(to bottom, rgba(255,45,85,0.5), transparent)' }} />
           </div>
@@ -759,12 +747,49 @@ export default function Landing() {
               </div>
             </div>
           </div>
-
         </div>
       </section>
 
       {/* ══════════════════════════════════════
-          10. FINAL CTA
+          FAQ
+      ══════════════════════════════════════ */}
+      <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
+        <div className="max-w-xl mx-auto">
+          <p className="font-sans-kr text-[#FF2D55] section-label text-center mb-2">FAQ</p>
+          <h2 className="font-display text-white text-center mb-10"
+            style={{ fontSize: 'clamp(1.8rem, 7vw, 2.8rem)' }}>
+            자주 묻는 질문
+          </h2>
+          <div className="space-y-3">
+            {[
+              {
+                q: '사주를 잘 몰라도 되나요?',
+                a: '전혀 몰라도 됩니다. 충·형·해·극 같은 용어는 TOXIC이 알아서 일상 언어로 풀어서 설명해줍니다. 생년월일만 입력하면 됩니다.',
+              },
+              {
+                q: '상대방 생년월일 없이 이름만 있어도 분석되나요?',
+                a: '됩니다. 이름만 있어도 내 사주 기반으로 관계 성향과 갈등 구조를 분석합니다. 생년월일이 있으면 충·형·해 등 실제 충돌 구조까지 정밀하게 나옵니다.',
+              },
+              {
+                q: '분석 정확도는 어느 정도인가요?',
+                a: '생년월일과 출생 시간을 모두 입력하면 4주 8자 기반 완전 분석이 가능합니다. AI가 사주 데이터와 결합해 해석하기 때문에 일반 사주 앱보다 관계 맥락에 특화된 분석이 나옵니다.',
+              },
+              {
+                q: '결과까지 얼마나 걸리나요?',
+                a: 'AI 분석 특성상 30~50초 소요됩니다. 분석 중에 사주 용어 설명과 진행 상황을 실시간으로 보여드립니다.',
+              },
+            ].map(({ q, a }) => (
+              <div key={q} className="border border-[#1e1e1e] p-5 bg-[#0D0D0D]">
+                <p className="font-sans-kr text-white text-sm font-bold mb-3">{q}</p>
+                <p className="font-sans-kr text-[#666] text-sm leading-relaxed">{a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          FINAL CTA
       ══════════════════════════════════════ */}
       <section className="relative px-5 py-28 border-t border-white/[0.06] overflow-hidden">
         <div className="absolute inset-0 pointer-events-none"
@@ -808,7 +833,7 @@ export default function Landing() {
               개인정보처리방침
             </button>
             <span className="text-[#222] text-xs">·</span>
-            <p className="font-sans-kr text-[#333] text-xs">© 2025 TOXIC. All rights reserved.</p>
+            <p className="font-sans-kr text-[#333] text-xs">© 2026 TOXIC. All rights reserved.</p>
           </div>
         </div>
       </footer>

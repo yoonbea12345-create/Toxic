@@ -144,8 +144,9 @@ const SAJU_QUOTES = [
   '음양(陰陽)의 균형이 깨지면 관계에서 항상 한쪽이 더 소모됩니다.',
 ];
 
-function AILoadingScreen({ hasTarget, score, result, progress }: {
+function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
   hasTarget: boolean;
+  hasDateData: boolean;
   score: number;
   result: SajuResult;
   progress: number;
@@ -192,7 +193,7 @@ function AILoadingScreen({ hasTarget, score, result, progress }: {
           <p className="text-[#1e1e1e] text-[8px]">年</p>
         </div>
 
-        {hasTarget && result.targetYear && (
+        {hasTarget && hasDateData && result.targetYear && (
           <>
             <div className="flex flex-col gap-1 items-center">
               <div className="w-px h-5 bg-[#1a1a1a]" />
@@ -606,11 +607,11 @@ function FreeSuccessOverlay({ visible, myName }: { visible: boolean; myName: str
             <path d="M5 13l4 4L19 7" stroke="#FF2D55" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
-        <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.35em] mb-4 font-sans-kr">SPECIAL OFFER</p>
+        <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.35em] mb-4 font-sans-kr">UNLOCK</p>
         <p className="text-white text-xl font-bold leading-snug mb-3 font-sans-kr">
-          {name}님만을 위해<br />
-          전체 분석<br />
-          <span className="text-[#FF2D55]">100회 무료</span> 제공!
+          {name}님<br />
+          분석 내용<br />
+          <span className="text-[#FF2D55]">전체 잠금 해제</span> 중
         </p>
         <p className="text-[#444] text-xs leading-relaxed font-sans-kr">잠금이 해제됩니다...</p>
         <div className="mt-5 w-full h-px bg-[#1a1a1a] overflow-hidden">
@@ -797,7 +798,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   }, [showLoading]);
 
   if (showLoading) {
-    return <AILoadingScreen hasTarget={hasTarget} score={result.toxicScore} result={result} progress={displayProgress} />;
+    return <AILoadingScreen hasTarget={hasTarget} hasDateData={hasDateData} score={result.toxicScore} result={result} progress={displayProgress} />;
   }
 
   const handleSaveImage = async () => {
@@ -1530,7 +1531,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
             {ai.avoidanceGuide ? (
-              <BlurredPreview unlocked={unlockedSections.has('s03')} onUnlock={() => handleOpenPaywall('s03')}>
+              <BlurredPreview unlocked={unlockedSections.has('s03')} onUnlock={() => handleOpenPaywall('s03')} teaser="실전 팁 · 선긋기 · 내 갈등 패턴 해소법이 잠겨있습니다">
                 <div className="space-y-3">
                   <Card>
                     <SubLabel text="실전 팁" />
