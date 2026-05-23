@@ -4,15 +4,15 @@ import { startSession } from '../utils/analytics';
 
 
 const TRIGGERS = [
-  { type: '연인', text: '카톡 1만 보고 답장 안 온다면', color: '#FF2D55' },
-  { type: '직장', text: '월요일 아침마다 사표 쓰고싶다면', color: '#BF5AF2' },
-  { type: '가족', text: '엄마 전화만 와도 한숨 나온다면', color: '#FF9500' },
-  { type: '연인', text: '인스타 스토리만 백번 새로고침한다면', color: '#FF2D55' },
-  { type: '직장', text: '팀장 메시지 알림에 심장 철렁한다면', color: '#BF5AF2' },
-  { type: '가족', text: '명절 갈 생각만 해도 토할 거 같다면', color: '#FF9500' },
-  { type: '연인', text: '소개팅마다 두번째 만남이 없다면', color: '#FF2D55' },
-  { type: '직장', text: '면접 다섯번 떨어지고 멘탈 나갔다면', color: '#BF5AF2' },
-  { type: '가족', text: '아빠랑 밥 먹은 지 1년 넘었다면', color: '#FF9500' },
+  { type: '연인', text: '연인과 안 맞아도 너무 안 맞는다면', color: '#FF2D55' },
+  { type: '직장', text: '상사에게 항상 안 좋은 소리만 듣는다면', color: '#BF5AF2' },
+  { type: '가족', text: '부모님과 너무 안 맞는다면', color: '#FF9500' },
+  { type: '친구', text: '친구와 항상 싸우기만 한다면', color: '#30D158' },
+  { type: '연인', text: '헤어진 이유를 아직도 모르겠다면', color: '#FF2D55' },
+  { type: '직장', text: '팀장이랑 왜 이렇게 안 맞는지 모르겠다면', color: '#BF5AF2' },
+  { type: '가족', text: '가족인데 같이 있으면 너무 힘들다면', color: '#FF9500' },
+  { type: '친구', text: '친한 친구랑 왜 자꾸 어긋나는지 모르겠다면', color: '#30D158' },
+  { type: '연인', text: '연애가 항상 상처로 끝난다면', color: '#FF2D55' },
 ];
 
 const CheckIcon = ({ color }: { color: string }) => (
