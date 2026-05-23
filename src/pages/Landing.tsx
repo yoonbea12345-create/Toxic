@@ -220,7 +220,7 @@ export default function Landing() {
                     </div>
                     <div><p className="font-sans-kr text-[#686868] text-[10px] mb-1">지혜</p>
                       <div className="flex items-end gap-1">
-                        <div className="px-3 py-2 max-w-[185px]" style={{ background: '#3A3A3A', borderRadius: '2px 12px 12px 12px' }}><p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">어 오빠 어제 잠깐 봤어 ㅎㅎ</p></div>
+                        <div className="px-3 py-2 max-w-[185px]" style={{ background: '#3A3A3A', borderRadius: '2px 12px 12px 12px' }}><p className="font-sans-kr text-[#F0F0F0] text-[12px] leading-[1.5]">어 어제 걔 잠깐 만났어ㅎㅎ</p></div>
                         <p className="font-sans-kr text-[#454545] text-[8.5px] mb-0.5 flex-shrink-0">오후 8:17</p>
                       </div>
                     </div>
