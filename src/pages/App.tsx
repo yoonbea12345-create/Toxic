@@ -96,7 +96,7 @@ export default function AppPage() {
     <div className="min-h-screen bg-bg">
       <header className="border-b border-border px-4 py-4 flex items-center justify-between max-w-lg mx-auto">
         <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity">
-          <img src="/logo.svg" alt="TOXIC" className="h-14 object-contain" />
+          <img src="/hero-title.svg" alt="TOXIC" className="h-10 w-auto object-contain" />
         </button>
         <div className="flex items-center gap-3">
           {(step === 'relation' || step === 'target-info') && (
