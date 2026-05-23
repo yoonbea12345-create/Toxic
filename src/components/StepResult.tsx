@@ -549,10 +549,9 @@ function PaywallModal({ myName, conflictType, onClose, onPay }: {
             {/* Price */}
             <div className="flex items-center justify-between mb-4 px-1">
               <p className="font-sans-kr text-[#444] text-xs">전체 더보기 잠금 해제</p>
-              <p className="text-[#2a2a2a] text-[9px] font-sans-kr mt-0.5">AI 분석 원가 ₩380 — 시장검증 특가</p>
               <div className="flex items-end gap-2">
-                <span className="font-sans-kr text-[#2a2a2a] text-xs line-through">₩9,900</span>
-                <span className="font-display text-white text-3xl leading-none">₩{PRICE_ALL.toLocaleString()}</span>
+                <span className="font-sans-kr text-[#333] text-sm line-through">₩9,900</span>
+                <span className="font-display text-white text-4xl leading-none font-bold">₩{PRICE_ALL.toLocaleString()}</span>
               </div>
             </div>
 
