@@ -103,7 +103,7 @@ export default function Landing() {
           </div>
 
           <p className="font-sans-kr text-white text-base leading-relaxed mb-8">
-            사주에 <span className="text-[#FF2D55] font-bold">이미 답이 있습니다.</span>
+            사주에 <span className="text-[#FF2D55] font-bold">모든 답이 있습니다.</span>
           </p>
 
           <button onClick={goToApp}
