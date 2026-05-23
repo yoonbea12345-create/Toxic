@@ -94,9 +94,9 @@ export default function AppPage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <header className="border-b border-border px-4 py-4 flex items-center justify-between max-w-lg mx-auto">
-        <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-10 w-auto object-contain" />
+      <header className="border-b border-border pl-0 pr-4 flex items-center justify-between max-w-lg mx-auto overflow-hidden" style={{ height: '100px' }}>
+        <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity flex-shrink-0">
+          <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block flex-shrink-0" style={{ marginLeft: '-24px' }} />
         </button>
         <div className="flex items-center gap-3">
           {(step === 'relation' || step === 'target-info') && (
