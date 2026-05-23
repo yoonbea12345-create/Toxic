@@ -425,7 +425,7 @@ function BlurredPreview({ children, unlocked, onUnlock, teaser }: {
   return (
     <>
       {teaser && (
-        <p className="text-[#555] text-[11px] pb-2 font-sans-kr border-l-2 border-[#FF2D55]/40 pl-3 ml-1 mb-1 italic">{teaser}</p>
+        <p className="text-[#cfcfcf] text-[13px] leading-snug pb-2 font-sans-kr border-l-2 border-[#FF2D55]/70 pl-3 ml-1 mb-1 font-medium">{teaser}</p>
       )}
       <div className="relative min-h-[140px]">
       <div className="select-none pointer-events-none"

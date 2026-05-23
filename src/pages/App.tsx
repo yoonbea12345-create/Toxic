@@ -95,18 +95,18 @@ export default function AppPage() {
     <div className="min-h-screen bg-bg">
       <header className="border-b border-border pl-0 pr-4 flex items-center justify-between max-w-lg mx-auto overflow-hidden" style={{ height: '100px' }}>
         <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity flex-shrink-0">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block flex-shrink-0" />
+          <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block flex-shrink-0" style={{ marginLeft: '-12px' }} />
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-end gap-1.5">
+          <span className="text-[#444] text-[10px] tracking-[0.12em]">사주로 보는 관계의 본질</span>
           {(step === 'relation' || step === 'target-info') && (
             <button
               onClick={handleBack}
-              className="text-[#555] text-sm hover:text-white transition-colors px-2"
+              className="text-[#777] text-xs hover:text-white transition-colors"
             >
               ← 이전
             </button>
           )}
-          <span className="text-[#444] text-[10px] tracking-[0.12em]">사주로 보는 관계의 본질</span>
         </div>
       </header>
 

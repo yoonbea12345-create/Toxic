@@ -131,7 +131,7 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
           {isTarget && (
             <p className="text-[#555] text-[11px] mt-2 font-sans-kr">
               {!selectedYear
-                ? '연도만 알아도 분석 가능해요'
+                ? '이름만 알아도 분석 가능해요'
                 : !selectedMonth
                   ? '월까지 입력하면 더 정밀한 분석이 가능해요'
                   : !selectedDay
@@ -229,9 +229,7 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
           disabled={!isReady}
           className="w-full py-4 mt-2 gradient-red rounded-sm text-white font-semibold text-base disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-opacity"
         >
-          {isTarget
-            ? (accuracyLevel === 'year' ? '연도로 분석하기 →' : !selectedYear && !data.name ? '이름 없이 분석하기 →' : '다음 →')
-            : '다음 →'}
+          {isTarget ? '상대방과의 사주관계 분석하기 →' : '다음 →'}
         </button>
 
         {/* 상대방 생일 아예 모를 때 */}
@@ -240,7 +238,7 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
             onClick={onSkip}
             className="w-full py-3 border border-[#333] rounded-sm text-[#666] text-sm hover:border-[#555] hover:text-[#888] transition-all font-sans-kr"
           >
-            상대 생일을 전혀 몰라요 → 내 위험 유형만 분석
+            상대와의 관계 말고 내 위험 유형만 분석하기
           </button>
         )}
       </div>

@@ -66,7 +66,7 @@ export default function Landing() {
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-xl mx-auto pl-0 pr-4 h-[100px] flex items-center justify-between overflow-hidden">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block flex-shrink-0" />
+          <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block flex-shrink-0" style={{ marginLeft: '-12px' }} />
           <button onClick={goToApp}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 rounded-full hover:opacity-90 active:scale-95 transition-all font-sans-kr tracking-wider font-bold">
             분석 시작 →
@@ -332,11 +332,11 @@ export default function Landing() {
           </div>
 
           <h2 className="font-display leading-[1.08] text-white mb-2"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            style={{ fontSize: 'clamp(2.4rem, 9vw, 3.6rem)', wordBreak: 'keep-all' }}>
             헤어진 이유를
           </h2>
           <h2 className="font-display leading-[1.08] text-[#FF2D55] mb-6"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            style={{ fontSize: 'clamp(2.4rem, 9vw, 3.6rem)', wordBreak: 'keep-all' }}>
             이제야 알았다
           </h2>
 
@@ -404,11 +404,11 @@ export default function Landing() {
           </div>
 
           <h2 className="font-display leading-[1.08] text-white mb-2"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)', wordBreak: 'keep-all' }}>
+            style={{ fontSize: 'clamp(2.4rem, 9vw, 3.6rem)', wordBreak: 'keep-all' }}>
             친구인데 자꾸
           </h2>
           <h2 className="font-display leading-[1.08] mb-6"
-            style={{ fontSize: 'clamp(2.4rem, 9.5vw, 4.5rem)', wordBreak: 'keep-all' }}>
+            style={{ fontSize: 'clamp(2.4rem, 9vw, 3.6rem)', wordBreak: 'keep-all' }}>
             왜 <span className="text-[#30D158]">상처받지?</span>
           </h2>
 
@@ -489,11 +489,11 @@ export default function Landing() {
           </div>
 
           <h2 className="font-display leading-[1.08] text-white mb-2"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)', wordBreak: 'keep-all' }}>
+            style={{ fontSize: 'clamp(2.4rem, 9vw, 3.6rem)', wordBreak: 'keep-all' }}>
             저 팀장이랑
           </h2>
           <h2 className="font-display leading-[1.08] mb-6"
-            style={{ fontSize: 'clamp(2.4rem, 9.5vw, 4.5rem)', wordBreak: 'keep-all' }}>
+            style={{ fontSize: 'clamp(2.4rem, 9vw, 3.6rem)', wordBreak: 'keep-all' }}>
             왜 이렇게 <span className="text-[#BF5AF2]">안 맞지?</span>
           </h2>
 
@@ -575,11 +575,11 @@ export default function Landing() {
           </div>
 
           <h2 className="font-display leading-[1.08] text-white mb-2"
-            style={{ fontSize: 'clamp(2.8rem, 11vw, 4.5rem)' }}>
+            style={{ fontSize: 'clamp(2.4rem, 9vw, 3.6rem)', wordBreak: 'keep-all' }}>
             가족인데
           </h2>
           <h2 className="font-display leading-[1.08] mb-6"
-            style={{ fontSize: 'clamp(2.4rem, 9.5vw, 4.5rem)' }}>
+            style={{ fontSize: 'clamp(2.4rem, 9vw, 3.6rem)', wordBreak: 'keep-all' }}>
             <span className="text-[#FF9500]">왜 이렇게 불편할까</span>
           </h2>
           <p className="font-sans-kr text-[#666] text-sm leading-relaxed mb-10">
