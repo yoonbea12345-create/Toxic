@@ -396,17 +396,6 @@ function Card({ children, accent, className = '' }: { children: React.ReactNode;
   );
 }
 
-function ToggleBtn({ open, onToggle }: { open: boolean; onToggle: () => void }) {
-  return (
-    <button
-      onClick={onToggle}
-      className="w-full py-2.5 border border-[#1e1e1e] text-[#555] text-xs hover:border-[#FF2D55]/40 hover:text-[#FF2D55] transition-colors mt-1"
-    >
-      {open ? '접기 ↑' : '더보기 ↓'}
-    </button>
-  );
-}
-
 function CompletionReveal() {
   const areas = ['나와 안맞는 이유', '충돌 상황 분석', '실전 가이드', '관계 영향', '상대방 시선', '최종 판정'];
   return (
@@ -464,6 +453,7 @@ function BlurredPreview({ children, unlocked, onUnlock, teaser }: {
         </button>
       </div>
     </div>
+    </>
   );
 }
 
@@ -662,9 +652,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [showFreeSuccess, setShowFreeSuccess] = useState(false);
 
   const ai: AIAnalysis = { ...aiPhase1, ...aiPhase2 };
-
-  const isOpen = (_id: string) => true;
-  const toggleSection = (_id: string) => {};
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -1221,7 +1208,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            ai.avoidanceGuide ? (
+            {ai.avoidanceGuide ? (
               <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="실전 팁 · 선긋기 · 현실적 전망이 잠겨있습니다">
                 <div className="space-y-3">
                   <Card>
@@ -1249,7 +1236,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
                   )}
                 </div>
               </BlurredPreview>
-            ) : phase2Loading ? <Phase2Skeleton /> : null
+            ) : phase2Loading ? <Phase2Skeleton /> : null}
 
           {/* ════ 04 이 관계가 나에게 주는 영향 ════ */}
           <SectionHeader number="04" title="이 관계가 나에게 주는 영향" subtitle="지금 이 관계가 나에게 하고 있는 것" />
@@ -1270,7 +1257,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            ai.personalImpact ? (
+            {ai.personalImpact ? (
               <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="이 관계가 나를 갉아먹는 신호 · 잃어가고 있는 것이 잠겨있습니다">
                 <div className="space-y-3">
                   {ai.personalImpact.warningSignals?.length > 0 && (
@@ -1292,7 +1279,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
                   </div>
                 </div>
               </BlurredPreview>
-            ) : phase2Loading ? <Phase2Skeleton /> : null
+            ) : phase2Loading ? <Phase2Skeleton /> : null}
 
           {/* ════ 05 상대는 나를 어떻게 생각하는지 ════ */}
           <SectionHeader number="05" title="상대는 나를 어떻게 생각하는지" subtitle="상대방 눈에 비친 나의 모습" />
@@ -1313,7 +1300,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            ai.howTheySeeMe ? (
+            {ai.howTheySeeMe ? (
               <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser={`${result.targetStem}일(日) 기준 — 상대가 혼자 나를 평가하는 방식이 잠겨있습니다`}>
                 <div className="space-y-3">
                   <Card>
@@ -1334,7 +1321,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
                   </div>
                 </div>
               </BlurredPreview>
-            ) : phase2Loading ? <Phase2Skeleton /> : null
+            ) : phase2Loading ? <Phase2Skeleton /> : null}
 
           {/* ════ 06 이 관계, 계속 가야 할까? ════ */}
           <SectionHeader number="06" title="이 관계, 계속 가야 할까?" subtitle="사주 구조로 보는 냉철한 판단" />
@@ -1359,7 +1346,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </div>
           )}
 
-            ai.continuationAssessment ? (
+            {ai.continuationAssessment ? (
               <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="구조적 분석 · 레드라인 · 관계 지속 가능성이 잠겨있습니다">
                 <div className="space-y-3">
                   <Card>
@@ -1376,7 +1363,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
                   </Card>
                 </div>
               </BlurredPreview>
-            ) : phase2Loading ? <Phase2Skeleton /> : null
+            ) : phase2Loading ? <Phase2Skeleton /> : null}
         </div>
       )}
 
@@ -1510,7 +1497,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            ai.avoidanceGuide ? (
+            {ai.avoidanceGuide ? (
               <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall}>
                 <div className="space-y-3">
                   <Card>
@@ -1532,7 +1519,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
                   </Card>
                 </div>
               </BlurredPreview>
-            ) : null
+            ) : null}
         </div>
       )}
 
