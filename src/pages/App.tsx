@@ -107,23 +107,7 @@ export default function AppPage() {
               ← 이전
             </button>
           )}
-          {step !== 'result' && (
-            <div className="flex gap-1.5">
-              {[1, 2, 3].map(n => (
-                <div
-                  key={n}
-                  className={`h-1 rounded-full transition-all duration-300 ${n <= stepNumber[step] ? 'bg-accent-red w-6' : 'bg-border w-3'}`}
-                />
-              ))}
-            </div>
-          )}
-          {step === 'result' && (
-            <div className="flex gap-1.5">
-              {[1, 2, 3].map(n => (
-                <div key={n} className="h-1 w-6 rounded-full bg-accent-red" />
-              ))}
-            </div>
-          )}
+          <span className="text-[#444] text-[10px] tracking-[0.12em]">사주로 보는 관계의 본질</span>
         </div>
       </header>
 

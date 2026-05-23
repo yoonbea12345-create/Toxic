@@ -76,10 +76,10 @@ interface AIAnalysis {
 }
 
 const ACCURACY_LABELS: Record<string, { label: string; color: string; desc: string }> = {
-  full:  { label: '완전 분석', color: '#4CAF50', desc: '4주 8자 기반' },
-  day:   { label: '정밀 분석', color: '#2196F3', desc: '년·월·일주 기반' },
-  month: { label: '심화 분석', color: '#FF9800', desc: '년·월주 기반' },
-  year:  { label: '기본 분석', color: '#9E9E9E', desc: '년주 기반' },
+  full:  { label: '완전 분석', color: '#FF2D55', desc: '4주 8자 기반' },
+  day:   { label: '정밀 분석', color: '#BF5AF2', desc: '년·월·일주 기반' },
+  month: { label: '심화 분석', color: '#F59E0B', desc: '년·월주 기반' },
+  year:  { label: '기본 분석', color: '#F59E0B', desc: '년주 기반' },
 };
 
 const LOADING_STEPS = [
@@ -894,7 +894,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
       <div className="flex justify-center gap-2">
         <button onClick={handleKakaoShare}
           className="px-4 py-2 bg-[#FEE500] text-[#3C1E1E] text-xs font-bold hover:opacity-90 transition-opacity">
-          카카오 공유
+          카카오톡 공유
         </button>
         <button onClick={handleSaveImage}
           className="px-4 py-2 border border-[#1e1e1e] text-[#888] text-xs hover:border-[#FF2D55]/40 hover:text-white transition-colors">
