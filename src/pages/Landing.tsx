@@ -135,7 +135,7 @@ export default function Landing() {
               <div className="flex justify-center py-2.5 bg-[#111]"><div className="w-14 h-[3px] bg-[#222] rounded-full" /></div>
             </div>
           </div>
-          <p className="font-sans-kr text-[#555] text-sm text-center mt-6">노력 부족이 아니에요<br />애초에 충돌할 수 밖에 없는 사주 구조일 수 있어요.</p>
+          <p className="font-sans-kr text-[#555] text-sm text-center mt-6">사랑이 모자란 게 아니에요<br />애초에 부딪힐 수밖에 없는 사주 구조일 수 있어요.</p>
         </div>
       </section>
 
@@ -155,7 +155,7 @@ export default function Landing() {
               <div className="flex justify-center py-2.5 bg-[#111]"><div className="w-14 h-[3px] bg-[#222] rounded-full" /></div>
             </div>
           </div>
-          <p className="font-sans-kr text-[#555] text-sm text-center mt-6">노력 부족이 아니에요<br />애초에 충돌할 수 밖에 없는 사주 구조일 수 있어요.</p>
+          <p className="font-sans-kr text-[#555] text-sm text-center mt-6">나쁜 사람이 아니에요<br />애초에 어긋날 수밖에 없는 사주 구조일 수 있어요.</p>
         </div>
       </section>
 
@@ -175,7 +175,7 @@ export default function Landing() {
               <div className="flex justify-center py-2.5 bg-[#111]"><div className="w-14 h-[3px] bg-[#222] rounded-full" /></div>
             </div>
           </div>
-          <p className="font-sans-kr text-[#555] text-sm text-center mt-6">노력 부족이 아니에요<br />애초에 충돌할 수 밖에 없는 사주 구조일 수 있어요.</p>
+          <p className="font-sans-kr text-[#555] text-sm text-center mt-6">실력이 부족한 게 아니에요<br />애초에 갈등할 수밖에 없는 사주 구조일 수 있어요.</p>
         </div>
       </section>
 
