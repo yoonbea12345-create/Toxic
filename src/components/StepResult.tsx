@@ -603,9 +603,9 @@ function PaywallModal({ conflictType, onClose, onPaySection, onPayAll }: {
             <div className="flex items-center justify-center gap-3 text-[#222] text-[9px] font-sans-kr">
               <span>🔒 즉시 잠금 해제</span>
               <span>·</span>
-              <span>안전 결제</span>
+              <span>24시간 유효</span>
               <span>·</span>
-              <span>100% 환불</span>
+              <span>안전 결제</span>
             </div>
           </div>
         </div>
@@ -678,12 +678,17 @@ export default function StepResult({ myData, targetData, result, relationType, o
   // 유료 전환 — 섹션별 결제
   const [unlockedSections, setUnlockedSections] = useState<Set<string>>(() => {
     try {
-      if (localStorage.getItem('toxic_unlocked_all') === '1') {
+      const now = Date.now();
+      const allExp = Number(localStorage.getItem('toxic_unlocked_all') || 0);
+      if (allExp > now) {
         return new Set(['s01', 's02', 's03', 's04', 's05', 's06']);
       }
+      if (allExp > 0 && allExp <= now) localStorage.removeItem('toxic_unlocked_all');
       const s = new Set<string>();
       ['s01', 's02', 's03', 's04', 's05', 's06'].forEach(id => {
-        if (localStorage.getItem(`toxic_unlocked_${id}`) === '1') s.add(id);
+        const exp = Number(localStorage.getItem(`toxic_unlocked_${id}`) || 0);
+        if (exp > now) s.add(id);
+        else if (exp > 0) localStorage.removeItem(`toxic_unlocked_${id}`);
       });
       return s;
     } catch { return new Set(); }
@@ -706,11 +711,13 @@ export default function StepResult({ myData, targetData, result, relationType, o
     setShowPaywall(true);
   };
 
+  const UNLOCK_TTL_MS = 24 * 60 * 60 * 1000; // 24시간
+
   const handleUnlockSection = () => {
     trackEvent('paywall_pay', { price: PRICE_SECTION, section: activeSection, type: 'section' });
     setShowPaywall(false);
     setShowFreeSuccess(true);
-    try { localStorage.setItem(`toxic_unlocked_${activeSection}`, '1'); } catch {}
+    try { localStorage.setItem(`toxic_unlocked_${activeSection}`, String(Date.now() + UNLOCK_TTL_MS)); } catch {}
     setTimeout(() => {
       setUnlockedSections(prev => new Set([...prev, activeSection]));
       setShowFreeSuccess(false);
@@ -721,7 +728,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
     trackEvent('paywall_pay', { price: PRICE_ALL, type: 'all' });
     setShowPaywall(false);
     setShowFreeSuccess(true);
-    try { localStorage.setItem('toxic_unlocked_all', '1'); } catch {}
+    try { localStorage.setItem('toxic_unlocked_all', String(Date.now() + UNLOCK_TTL_MS)); } catch {}
     setTimeout(() => {
       setUnlockedSections(new Set(['s01', 's02', 's03', 's04', 's05', 's06']));
       setShowFreeSuccess(false);
@@ -895,7 +902,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           style={{ background: 'rgba(6,6,6,0.97)', borderTop: '1px solid rgba(255,45,85,0.25)' }}>
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between gap-3">
             <div>
-              <p className="text-[#444] text-[9px] tracking-[0.15em] uppercase">한 번 결제 · 평생 다시 보기</p>
+              <p className="text-[#444] text-[9px] tracking-[0.15em] uppercase">결제 후 24시간 모든 분석 잠금 해제</p>
               <p className="text-white text-xs font-bold font-sans-kr mt-0.5">
                 6개 전체
                 <span className="text-[#555] line-through text-[10px] mx-1.5">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
