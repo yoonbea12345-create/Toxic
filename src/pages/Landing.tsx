@@ -6,12 +6,12 @@ import { startSession } from '../utils/analytics';
 const TRIGGERS = [
   { type: '연인', text: '좋아했는데 자꾸 상처만 받는다면', color: '#FF2D55' },
   { type: '직장', text: '저 팀장이 왜 나만 싫어하는지 모르겠다면', color: '#BF5AF2' },
-  { type: '가족', text: '부모님이랑 부딪히는 이유를 모르겠다면', color: '#FF9500' },
+  { type: '가족', text: '부모님이랑 항상 부딪히는 이유를 모르겠다면', color: '#FF9500' },
   { type: '연인', text: '헤어졌는데 자꾸 그 사람이 생각난다면', color: '#FF2D55' },
   { type: '직장', text: '회의 때마다 같은 사람이랑 또 충돌했다면', color: '#BF5AF2' },
-  { type: '가족', text: '가족인데 왜 이렇게 불편한지 모르겠다면', color: '#FF9500' },
+  { type: '가족', text: '가족인데 왜 이렇게 불편한지 이해 안 된다면', color: '#FF9500' },
   { type: '연인', text: '맨날 같은 이유로 싸운다면', color: '#FF2D55' },
-  { type: '직장', text: '퇴사하고 싶은데 그 사람 때문인지 모르겠다면', color: '#BF5AF2' },
+  { type: '직장', text: '퇴사하고 싶은데 그 사람 때문인지 내 탓인지 모르겠다면', color: '#BF5AF2' },
   { type: '가족', text: '사랑하는데 왜 이렇게 아픈지 모르겠다면', color: '#FF9500' },
 ];
 
@@ -65,8 +65,8 @@ export default function Landing() {
 
       {/* ── NAV ── */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
-        <div className="max-w-xl mx-auto pl-0 pr-4 h-[72px] flex items-center justify-between">
-          <img src="/hero-title.svg" alt="TOXIC" className="h-[62px] w-auto block" />
+        <div className="max-w-xl mx-auto pl-0 pr-4 h-[84px] flex items-center justify-between">
+          <img src="/hero-title.svg" alt="TOXIC" className="h-[76px] w-auto block" />
           <button onClick={goToApp}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 rounded-full hover:opacity-90 active:scale-95 transition-all font-sans-kr tracking-wider font-bold">
             분석 시작 →
