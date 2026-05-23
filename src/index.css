@@ -167,6 +167,16 @@ select {
   line-height: 1;
 }
 
+/* ── Black Han Sans 좌측 베어링 보정 ──
+   좌측 정렬된 디스플레이 헤딩(font-display)을 작은 font-sans-kr 라벨·박스·작대기의
+   시각적 좌측 끝과 정렬시키기 위해 -3px 보정. text-center는 제외해서
+   중앙 정렬 헤딩에는 영향 없음. */
+h1.font-display:not(.text-center),
+h2.font-display:not(.text-center),
+p.font-display:not(.text-center) {
+  margin-left: -3px;
+}
+
 /* ── 스텝 배지 (pill) ── */
 .step-badge {
   display: inline-block;

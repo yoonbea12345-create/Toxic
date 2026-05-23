@@ -179,34 +179,34 @@ function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
   const tipY = 100 + R * Math.sin(tipAngle);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: '#131313' }}>
+    <div className="flex flex-col items-center px-4 pt-8 pb-12"
+      style={{ background: '#131313', minHeight: 'calc(100vh - 100px)' }}>
 
       {/* Saju year cards — compact */}
-      <div className="flex items-center gap-5 mb-10">
-        <div className="flex flex-col items-center gap-1.5">
-          <p className="text-[#2a2a2a] text-[9px] tracking-[0.25em] uppercase">나</p>
-          <div className="w-11 h-13 border border-[#181818] bg-[#080808] flex flex-col items-center justify-center px-2 py-2 gap-0.5">
-            <span className="font-display text-lg leading-none" style={{ color }}>{result.myYear?.stem ?? '?'}</span>
-            <span className="font-display text-lg leading-none text-[#555]">{result.myYear?.branch ?? '?'}</span>
+      <div className="flex items-center gap-6 mb-10">
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-[#bbb] text-sm font-bold tracking-[0.25em] uppercase">나</p>
+          <div className="w-14 h-16 border border-[#252525] bg-[#080808] flex flex-col items-center justify-center px-2 py-2 gap-1">
+            <span className="font-display text-xl leading-none" style={{ color }}>{result.myYear?.stem ?? '?'}</span>
+            <span className="font-display text-xl leading-none text-[#666]">{result.myYear?.branch ?? '?'}</span>
           </div>
-          <p className="text-[#1e1e1e] text-[8px]">年</p>
+          <p className="text-[#555] text-[11px]">年</p>
         </div>
 
         {hasTarget && hasDateData && result.targetYear && (
           <>
             <div className="flex flex-col gap-1 items-center">
-              <div className="w-px h-5 bg-[#1a1a1a]" />
-              <span className="font-display text-xs" style={{ color: `${color}60` }}>VS</span>
-              <div className="w-px h-5 bg-[#1a1a1a]" />
+              <div className="w-px h-5 bg-[#2a2a2a]" />
+              <span className="font-display text-base font-bold" style={{ color: `${color}99` }}>VS</span>
+              <div className="w-px h-5 bg-[#2a2a2a]" />
             </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <p className="text-[#2a2a2a] text-[9px] tracking-[0.25em] uppercase">상대</p>
-              <div className="w-11 h-13 border border-[#181818] bg-[#080808] flex flex-col items-center justify-center px-2 py-2 gap-0.5">
-                <span className="font-display text-lg leading-none" style={{ color: color2 }}>{result.targetYear.stem}</span>
-                <span className="font-display text-lg leading-none text-[#555]">{result.targetYear.branch}</span>
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-[#bbb] text-sm font-bold tracking-[0.25em] uppercase">상대</p>
+              <div className="w-14 h-16 border border-[#252525] bg-[#080808] flex flex-col items-center justify-center px-2 py-2 gap-1">
+                <span className="font-display text-xl leading-none" style={{ color: color2 }}>{result.targetYear.stem}</span>
+                <span className="font-display text-xl leading-none text-[#666]">{result.targetYear.branch}</span>
               </div>
-              <p className="text-[#1e1e1e] text-[8px]">年</p>
+              <p className="text-[#555] text-[11px]">年</p>
             </div>
           </>
         )}
@@ -288,18 +288,18 @@ function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
                 style={{ background: color, animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
             ))}
           </span>
-          <span className="text-[10px] tracking-[0.2em] uppercase" style={{ color: `${color}99` }}>
+          <span className="text-xs tracking-[0.2em] uppercase font-semibold" style={{ color: `${color}cc` }}>
             분석 진행 중
           </span>
         </div>
       )}
 
       {/* Status text */}
-      <div className="text-center max-w-[240px]">
-        <p key={step.label} className="text-white text-sm font-medium mb-1.5 char-enter">
+      <div className="text-center max-w-[280px]">
+        <p key={step.label} className="text-white text-base font-semibold mb-2 char-enter">
           {isDone ? '분석 완료' : step.label}
         </p>
-        <p className="text-[#888] text-xs leading-relaxed">
+        <p className="text-[#aaa] text-sm leading-relaxed">
           {isDone ? '결과를 불러오는 중...' : step.sub}
         </p>
 
@@ -320,8 +320,8 @@ function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
 
       {/* Rotating saju quote */}
       {!isDone && (
-        <div className="w-72 text-center px-4 mt-4">
-          <p key={quoteIdx} className="char-enter" style={{ color: '#777', fontSize: '11px', lineHeight: '1.6' }}>
+        <div className="w-80 text-center px-4 mt-5">
+          <p key={quoteIdx} className="char-enter" style={{ color: '#999', fontSize: '13px', lineHeight: '1.65' }}>
             {SAJU_QUOTES[quoteIdx]}
           </p>
         </div>
