@@ -26,7 +26,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [triggerIdx, setTriggerIdx] = useState(0);
-  const [userCount, setUserCount] = useState(0);
+  const [userCount, setUserCount] = useState(102);
   useEffect(() => { startSession(); }, []);
 
   useEffect(() => {
@@ -48,8 +48,8 @@ export default function Landing() {
   useEffect(() => {
     fetch('/api/count')
       .then(r => r.json())
-      .then(d => { if (d.count > 0) setUserCount(d.count); })
-      .catch(() => setUserCount(1247));
+      .then(d => { if (d.count > 0) setUserCount(102 + d.count); })
+      .catch(() => setUserCount(102));
   }, []);
 
   const goToApp = () => {
