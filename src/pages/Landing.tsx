@@ -570,7 +570,7 @@ export default function Landing() {
           </h2>
           <h2 className="font-display leading-[1.08] mb-6"
             style={{ fontSize: 'clamp(2.4rem, 9.5vw, 4.5rem)' }}>
-            <span className="text-[#FF9500]">왜 이렇게 안맞을까</span>
+            <span className="text-[#FF9500]">왜 이렇게 불편할까</span>
           </h2>
           <p className="font-sans-kr text-[#666] text-sm leading-relaxed mb-10">
             억압이 아니에요. 오행의 흐름입니다.<br />
