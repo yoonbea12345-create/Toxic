@@ -82,7 +82,8 @@ export default function Landing() {
           style={{ background: 'radial-gradient(circle, rgba(255,45,85,0.13) 0%, transparent 65%)' }} />
 
         <div className="relative z-10">
-          <p className="font-sans-kr text-[#FF2D55] text-xs font-bold tracking-widest mb-5">
+          <p className="font-sans-kr text-[#FF2D55] text-xs font-bold tracking-widest mb-5"
+            style={{ marginLeft: '3px' }}>
             사주로 보는 관계의 본질
           </p>
 
