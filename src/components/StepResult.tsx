@@ -1,4 +1,4 @@
-﻿import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import html2canvas from 'html2canvas';
 import type { SajuResult, PersonData, RelationType } from '../utils/saju';
 import { fetchAIPhase1, fetchAIPhase2 } from '../utils/aiAnalysis';
@@ -433,9 +433,9 @@ function BlurredPreview({ children, unlocked, onUnlock, teaser }: {
 }) {
   if (unlocked) return <>{children}</>;
   return (
-    <div>
+    <>
       {teaser && (
-        <p className="text-[#555] text-[11px] pb-2 font-sans-kr border-l-2 border-[#FF2D55]/40 pl-3 ml-1 mb-2 italic">{teaser}</p>
+        <p className="text-[#555] text-[11px] pb-2 font-sans-kr border-l-2 border-[#FF2D55]/40 pl-3 ml-1 mb-1 italic">{teaser}</p>
       )}
       <div className="relative min-h-[140px]">
       <div className="select-none pointer-events-none"
@@ -849,7 +849,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         />
       )}
 
-      {/* 하단 고정 CTA — 미결제 상태에서 항상 노출 */}
+      {/* 하단 고정 CTA */}
       {!isAllUnlocked && !showPaywall && (
         <div className="fixed bottom-0 left-0 right-0 z-40"
           style={{ background: 'rgba(6,6,6,0.97)', borderTop: '1px solid rgba(255,45,85,0.25)' }}>
@@ -1126,7 +1126,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 )}
               </div>
             </BlurredPreview>
-          )}
 
           {/* ════ 02 어떤 상황에서 안맞는지 ════ */}
           <SectionHeader number="02" title="어떤 상황에서 안맞는지" subtitle="실제로 충돌이 터지는 구체적 시나리오" />
@@ -1202,7 +1201,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 )}
               </div>
             </BlurredPreview>
-          )}
 
           {/* ════ 03 앞으로 이렇게 해보세요 ════ */}
           <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="상황별 실전 가이드 · 선긋기 · 현실적 전망" />
@@ -1252,7 +1250,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 </div>
               </BlurredPreview>
             ) : phase2Loading ? <Phase2Skeleton /> : null
-          )}
 
           {/* ════ 04 이 관계가 나에게 주는 영향 ════ */}
           <SectionHeader number="04" title="이 관계가 나에게 주는 영향" subtitle="지금 이 관계가 나에게 하고 있는 것" />
@@ -1296,7 +1293,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 </div>
               </BlurredPreview>
             ) : phase2Loading ? <Phase2Skeleton /> : null
-          )}
 
           {/* ════ 05 상대는 나를 어떻게 생각하는지 ════ */}
           <SectionHeader number="05" title="상대는 나를 어떻게 생각하는지" subtitle="상대방 눈에 비친 나의 모습" />
@@ -1339,7 +1335,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 </div>
               </BlurredPreview>
             ) : phase2Loading ? <Phase2Skeleton /> : null
-          )}
 
           {/* ════ 06 이 관계, 계속 가야 할까? ════ */}
           <SectionHeader number="06" title="이 관계, 계속 가야 할까?" subtitle="사주 구조로 보는 냉철한 판단" />
@@ -1382,7 +1377,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 </div>
               </BlurredPreview>
             ) : phase2Loading ? <Phase2Skeleton /> : null
-          )}
         </div>
       )}
 
@@ -1443,7 +1437,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 )}
               </div>
             </BlurredPreview>
-          )}
 
           <SectionHeader number="02" title="어떤 상황에서 안맞는지" subtitle="내가 자주 반복하는 갈등 패턴" />
 
@@ -1500,7 +1493,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 )}
               </div>
             </BlurredPreview>
-          )}
 
           <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="내 패턴을 이해하고 충돌 줄이기" />
 
@@ -1519,7 +1511,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           )}
 
             ai.avoidanceGuide ? (
-              <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall} teaser="실전 팁과 선긋기 방법이 잠겨있습니다">
+              <BlurredPreview unlocked={isAllUnlocked} onUnlock={handleOpenPaywall}>
                 <div className="space-y-3">
                   <Card>
                     <SubLabel text="실전 팁" />
@@ -1541,7 +1533,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 </div>
               </BlurredPreview>
             ) : null
-          )}
         </div>
       )}
 
