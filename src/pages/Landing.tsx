@@ -264,6 +264,64 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
+          WHY TOXIC — 기존 앱 vs TOXIC
+      ══════════════════════════════════════ */}
+      <section className="relative px-5 py-20 border-t border-white/[0.06] fade-section">
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at 80% 50%, rgba(191,90,242,0.08) 0%, transparent 55%)' }} />
+        <div className="max-w-xl mx-auto relative z-10">
+          <p className="text-[#FF2D55] section-label font-sans-kr mb-1">WHY TOXIC?</p>
+          <p className="text-[#555] text-[10px] font-sans-kr mb-6">기존 사주앱과 다른 점</p>
+
+          <h2 className="font-display leading-[1.08] text-white mb-2"
+            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+            잘 맞는 사람 말고
+          </h2>
+          <h2 className="font-display leading-[1.08] mb-10"
+            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
+            <span className="text-[#FF2D55]">안 맞는 이유</span>를 봐요
+          </h2>
+
+          <div className="grid grid-cols-2 gap-3 mb-8">
+            <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D]">
+              <p className="text-[10px] uppercase tracking-widest text-[#666] font-sans-kr mb-6">기존 사주앱</p>
+              <div className="space-y-3 mb-6">
+                {['우리 잘 맞을까?', '더 잘 맞는 상대는?', '이상형 찾기'].map(t => (
+                  <div key={t} className="flex items-start gap-2">
+                    <span className="text-[#444] text-xs mt-0.5">✕</span>
+                    <p className="font-sans-kr text-[#555] text-xs line-through">{t}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="font-sans-kr text-[#777] text-[11px] leading-relaxed">미래의 좋은 관계를<br />찾아드립니다</p>
+            </div>
+
+            <div className="border border-[#FF2D55]/40 p-5 relative overflow-hidden"
+              style={{ background: '#0D0005', boxShadow: '0 0 40px rgba(255,45,85,0.1) inset' }}>
+              <div className="absolute top-0 right-0 w-24 h-24 pointer-events-none"
+                style={{ background: 'radial-gradient(circle at top right, rgba(255,45,85,0.25), transparent)' }} />
+              <p className="text-[10px] uppercase tracking-widest text-[#FF2D55] font-bold font-sans-kr mb-6">TOXIC</p>
+              <div className="space-y-3 mb-6">
+                {['왜 어긋났는지', '반복되는 패턴', '충돌 구조 해석'].map(t => (
+                  <div key={t} className="flex items-center gap-2">
+                    <span className="text-[#FF2D55] text-xs">✓</span>
+                    <p className="font-sans-kr text-white text-xs">{t}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="font-sans-kr text-[#888] text-[11px] leading-relaxed">
+                지금 힘든 관계의<br /><span className="text-white">이유를 파고듭니다</span>
+              </p>
+            </div>
+          </div>
+
+          <p className="font-sans-kr text-center text-[#777] text-xs">
+            힘든 관계의 <span className="text-[#999]">이유</span>와 <span className="text-[#FF2D55]">구조적 원인</span> 분석
+          </p>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
           03. 실제 결과 프리뷰
       ══════════════════════════════════════ */}
       <section className="relative py-20 border-t border-white/[0.06] overflow-hidden fade-section">
@@ -273,14 +331,14 @@ export default function Landing() {
         <div className="max-w-xl mx-auto px-5 relative z-10">
           <h2 className="font-display leading-[1.08] text-white text-center mb-1"
             style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-            쉽고 빠른
+            이게 실제로
           </h2>
           <h2 className="font-display leading-[1.08] text-[#FF2D55] text-center mb-3"
             style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-            정확한 분석
+            나오는 분석입니다
           </h2>
           <p className="font-sans-kr text-[#555] text-center text-sm mb-10">
-            다양한 상황에 맞는 분석결과를 직접 보세요
+            왜 안 맞는지, 어디서 터지는지 구조로 보여줍니다
           </p>
 
           {/* 폰 목업 1개씩 세로 나열 */}
@@ -303,13 +361,17 @@ export default function Landing() {
             ))}
           </div>
 
+          <button onClick={goToApp}
+            className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-95 transition-all tracking-wide cta-glow-red">
+            이름이랑 생일 넣어보기 →
+          </button>
         </div>
       </section>
 
       {/* ══════════════════════════════════════
           04. STORY — 연인
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
+      <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 15% 60%, rgba(255,45,85,0.09) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -381,7 +443,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           05. STORY — 친구·지인
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
+      <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 85% 40%, rgba(48,209,88,0.07) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -466,7 +528,7 @@ export default function Landing() {
       {/* ══════════════════════════════════════
           06. STORY — 직장인
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
+      <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 85% 40%, rgba(191,90,242,0.08) 0%, transparent 50%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -500,7 +562,7 @@ export default function Landing() {
               '퇴사하고 싶은데 그 사람 때문인지 내 탓인지 모르겠다면',
             ].map(text => (
               <div key={text} className="flex items-center gap-3 border border-[#1a1a1a] px-4 py-3 bg-[#0D0D0D]">
-                <CheckIcon color="#FF2D55" />
+                <CheckIcon color="#BF5AF2" />
                 <p className="font-sans-kr text-[#777] text-sm">{text}</p>
               </div>
             ))}
@@ -555,7 +617,7 @@ export default function Landing() {
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,149,0,0.06) 0%, transparent 60%)' }} />
 
-        <div className="max-w-xl mx-auto px-5 py-24 relative z-10">
+        <div className="max-w-xl mx-auto px-5 py-16 relative z-10">
           <div className="flex items-center gap-3 mb-4">
             <span className="step-badge bg-[#FF9500] text-white font-sans-kr tracking-widest">STORY 04</span>
           </div>
@@ -617,67 +679,9 @@ export default function Landing() {
       </section>
 
       {/* ══════════════════════════════════════
-          08. 기존 앱 vs TOXIC
-      ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 80% 50%, rgba(191,90,242,0.08) 0%, transparent 55%)' }} />
-        <div className="max-w-xl mx-auto relative z-10">
-          <p className="text-[#FF2D55] section-label font-sans-kr mb-1">WHY TOXIC?</p>
-          <p className="text-[#555] text-[10px] font-sans-kr mb-6">기존 사주앱과 다른 점</p>
-
-          <h2 className="font-display leading-[1.08] text-white mb-2"
-            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-            잘 맞는 사람 말고
-          </h2>
-          <h2 className="font-display leading-[1.08] mb-10"
-            style={{ fontSize: 'clamp(2.4rem, 10vw, 4rem)' }}>
-            <span className="text-[#FF2D55]">안 맞는 이유</span>를 봐요
-          </h2>
-
-          <div className="grid grid-cols-2 gap-3 mb-8">
-            <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D]">
-              <p className="text-[10px] uppercase tracking-widest text-[#666] font-sans-kr mb-6">기존 사주앱</p>
-              <div className="space-y-3 mb-6">
-                {['우리 잘 맞을까?', '더 잘 맞는 상대는?', '이상형 찾기'].map(t => (
-                  <div key={t} className="flex items-start gap-2">
-                    <span className="text-[#444] text-xs mt-0.5">✕</span>
-                    <p className="font-sans-kr text-[#555] text-xs line-through">{t}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="font-sans-kr text-[#777] text-[11px] leading-relaxed">미래의 좋은 관계를<br />찾아드립니다</p>
-            </div>
-
-            <div className="border border-[#FF2D55]/40 p-5 relative overflow-hidden"
-              style={{ background: '#0D0005', boxShadow: '0 0 40px rgba(255,45,85,0.1) inset' }}>
-              <div className="absolute top-0 right-0 w-24 h-24 pointer-events-none"
-                style={{ background: 'radial-gradient(circle at top right, rgba(255,45,85,0.25), transparent)' }} />
-              <p className="text-[10px] uppercase tracking-widest text-[#FF2D55] font-bold font-sans-kr mb-6">TOXIC</p>
-              <div className="space-y-3 mb-6">
-                {['왜 어긋났는지', '반복되는 패턴', '충돌 구조 해석'].map(t => (
-                  <div key={t} className="flex items-center gap-2">
-                    <span className="text-[#FF2D55] text-xs">✓</span>
-                    <p className="font-sans-kr text-white text-xs">{t}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="font-sans-kr text-[#888] text-[11px] leading-relaxed">
-                지금 힘든 관계의<br /><span className="text-white">이유를 파고듭니다</span>
-              </p>
-            </div>
-          </div>
-
-          <p className="font-sans-kr text-center text-[#777] text-xs">
-            힘든 관계의 <span className="text-[#999]">이유</span>와 <span className="text-[#FF2D55]">구조적 원인</span> 분석
-          </p>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════
           09. HOW IT WORKS — 3단계
       ══════════════════════════════════════ */}
-      <section className="relative px-5 py-24 border-t border-white/[0.06] fade-section">
+      <section className="relative px-5 py-16 border-t border-white/[0.06] fade-section">
         <div className="absolute inset-0 pointer-events-none"
           style={{ background: 'radial-gradient(ellipse at 50% 50%, rgba(255,45,85,0.05) 0%, transparent 60%)' }} />
         <div className="max-w-xl mx-auto relative z-10">
@@ -776,7 +780,7 @@ export default function Landing() {
           </h2>
 
           <p className="font-sans-kr text-[#666] leading-relaxed mb-10">
-            사주에 이미 답이 있었습니다.
+            사주에 모든 답이 있습니다.
           </p>
 
           <button onClick={goToApp}
