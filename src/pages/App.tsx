@@ -24,10 +24,10 @@ export default function AppPage() {
 
   useEffect(() => {
     if (import.meta.env.DEV) {
-      const rollbackTo6AM = () => {
+      const rollbackTo3AM = () => {
         try {
           const today = new Date();
-          today.setHours(6, 0, 0, 0);
+          today.setHours(3, 0, 0, 0);
           const cutoffTime = today.getTime();
 
           const events = JSON.parse(localStorage.getItem('toxic_events') || '[]');
@@ -38,13 +38,13 @@ export default function AppPage() {
           const filteredReviews = reviews.filter((r: any) => r.ts < cutoffTime);
           localStorage.setItem('toxic_user_reviews', JSON.stringify(filteredReviews));
 
-          console.log(`✓ 오전 6시 이후 데이터 삭제 완료`);
+          console.log(`✓ 오전 3시 이후 데이터 삭제 완료`);
         } catch (e) {
           console.error('롤백 실패:', e);
         }
       };
-      (window as any).rollbackTo6AM = rollbackTo6AM;
-      rollbackTo6AM();
+      (window as any).rollbackTo3AM = rollbackTo3AM;
+      rollbackTo3AM();
     }
   }, []);
 
