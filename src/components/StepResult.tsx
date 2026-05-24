@@ -546,13 +546,15 @@ function PaywallModal({ mode, onClose, onPaySection, onPayAll }: {
               <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
             </div>
 
-            <p className="font-display text-white leading-[1.05] mb-1"
+            <p className="text-[#999] text-[11px] font-bold tracking-[0.15em] uppercase font-sans-kr mb-3">24시간 무료 분석</p>
+
+            <p className="font-display text-white leading-[1.05] mb-2"
               style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
-              잠긴 영역
+              당신의 관계를
             </p>
             <p className="font-display leading-[1.05] mb-5"
               style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
-              <span className="text-[#FF2D55]">지금 다 보세요</span>
+              <span className="text-[#FF2D55]">온전히 분석하세요</span>
             </p>
 
             <button onClick={onPayAll}
@@ -592,18 +594,20 @@ function PaywallModal({ mode, onClose, onPaySection, onPayAll }: {
               <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
             </div>
 
-            <p className="font-display text-white leading-[1.05] mb-1"
+            <p className="text-[#999] text-[11px] font-bold tracking-[0.15em] uppercase font-sans-kr mb-3">24시간 무료 분석</p>
+
+            <p className="font-display text-white leading-[1.05] mb-2"
               style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
-              지금 더 보면
+              지금 보면
             </p>
             <p className="font-display leading-[1.05] mb-5"
               style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
-              <span className="text-[#FF2D55]">관계가 보입니다</span>
+              <span className="text-[#FF2D55]">관계의 본질이 보입니다</span>
             </p>
 
             <button onClick={onPaySection}
-              className="w-full py-3 px-4 mb-2 border border-[#2a2a2a] hover:border-[#FF2D55]/50 transition-colors font-sans-kr flex items-center justify-between"
-              style={{ background: '#0d0d0d' }}>
+              className="w-full py-3 px-4 mb-2 border border-[#FF2D55]/25 hover:border-[#FF2D55]/60 transition-colors font-sans-kr flex items-center justify-between"
+              style={{ background: 'rgba(255,45,85,0.05)' }}>
               <div className="text-left">
                 <p className="text-white text-[13px] font-bold">이 섹션만 보기</p>
                 <p className="text-[#666] text-[10px] mt-0.5">24시간 · 이 영역 1개</p>
@@ -659,11 +663,11 @@ function FreeSuccessOverlay({ visible, myName }: { visible: boolean; myName: str
         </div>
         <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.35em] mb-4 font-sans-kr">UNLOCK</p>
         <p className="text-white text-xl font-bold leading-snug mb-3 font-sans-kr">
-          {name}님<br />
-          분석 내용<br />
-          <span className="text-[#FF2D55]">전체 잠금 해제</span> 중
+          <span className="text-[#FF2D55]">{name}</span>님의<br />
+          관계 분석<br />
+          <span className="text-[#FF2D55]">완성!</span>
         </p>
-        <p className="text-[#444] text-xs leading-relaxed font-sans-kr">잠금이 해제됩니다...</p>
+        <p className="text-[#444] text-xs leading-relaxed font-sans-kr">모든 콘텐츠가 준비되었습니다</p>
         <div className="mt-5 w-full h-px bg-[#1a1a1a] overflow-hidden">
           <div className="h-full bg-[#FF2D55]"
             style={{ width: '100%', animation: 'progress-fill 2.8s linear forwards' }} />
