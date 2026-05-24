@@ -24,7 +24,7 @@ export default function AppPage() {
 
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
-      (window as any).cleanPaywallEvents = (count = 4) => {
+      const cleanPaywallEvents = (count = 4) => {
         try {
           const events = JSON.parse(localStorage.getItem('toxic_events') || '[]');
           let removed = 0;
@@ -42,6 +42,8 @@ export default function AppPage() {
           return 0;
         }
       };
+      (window as any).cleanPaywallEvents = cleanPaywallEvents;
+      cleanPaywallEvents(4);
     }
   }, []);
 
