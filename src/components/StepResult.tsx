@@ -507,21 +507,19 @@ const PRICE_ALL = 1900;
 const PRICE_ALL_ORIGINAL = 3000;
 
 // ── 결제 팝업 모달 ───────────────────────────────────────────────────
-function PaywallModal({ conflictType, mode, onClose, onPaySection, onPayAll }: {
+function PaywallModal({ mode, onClose, onPaySection, onPayAll }: {
   conflictType: string;
   mode: 'all' | 'section';
   onClose: () => void;
   onPaySection: () => void;
   onPayAll: () => void;
 }) {
-  const discountPct = Math.round((1 - PRICE_ALL / PRICE_ALL_ORIGINAL) * 100);
-  const savedKrw = PRICE_ALL_ORIGINAL - PRICE_ALL;
   const isSection = mode === 'section';
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center animate-fade-in"
-      style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(6px)' }}
+      style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(4px)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="w-full max-w-sm relative max-h-[94vh] overflow-y-auto"
@@ -531,153 +529,113 @@ function PaywallModal({ conflictType, mode, onClose, onPaySection, onPayAll }: {
         {/* 상단 액센트 라인 */}
         <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
 
-        {/* 글로우 백드롭 */}
-        <div className="absolute top-0 left-0 right-0 h-40 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at top, rgba(255,45,85,0.12), transparent 70%)' }} />
-
         {/* 닫기 */}
         <button onClick={onClose}
           className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center text-[#666] hover:text-white text-xl transition-colors z-20">
           ✕
         </button>
 
-        <div className="px-6 pt-6 pb-5 relative z-10">
+        {/* ════════════════════════════════════════════════════
+            ALL MODE — 전체 결제 단일
+        ════════════════════════════════════════════════════ */}
+        {!isSection && (
+          <div className="px-6 pt-5 pb-5">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#FF2D55]/35 rounded-full mb-3"
+              style={{ background: 'rgba(255,45,85,0.06)' }}>
+              <LockIcon size={11} />
+              <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
+            </div>
 
-          {/* 잠금 배지 */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 border border-[#FF2D55]/40 rounded-full mb-5"
-            style={{ background: 'rgba(255,45,85,0.08)' }}>
-            <LockIcon size={11} />
-            <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
-          </div>
-
-          {/* 헤드라인 — mode별 */}
-          {isSection ? (
-            <>
-              <p className="font-display text-white leading-[1.04] mb-1"
-                style={{ fontSize: 'clamp(2rem, 8.5vw, 2.5rem)' }}>
-                이 한 섹션만?
-              </p>
-              <p className="font-display leading-[1.04] mb-4"
-                style={{ fontSize: 'clamp(2rem, 8.5vw, 2.5rem)' }}>
-                <span className="text-[#FF2D55]">전체가 더 이득</span>
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="font-display text-white leading-[1.04] mb-1"
-                style={{ fontSize: 'clamp(2rem, 8.5vw, 2.5rem)' }}>
-                잠긴 영역
-              </p>
-              <p className="font-display leading-[1.04] mb-4"
-                style={{ fontSize: 'clamp(2rem, 8.5vw, 2.5rem)' }}>
-                <span className="text-[#FF2D55]">지금 다 보세요</span>
-              </p>
-            </>
-          )}
-
-          {conflictType && (
-            <p className="font-sans-kr text-[#888] text-xs mb-5">
-              → <span className="text-[#ddd] font-medium">{conflictType}</span> 구조 상세 분석
+            <p className="font-display text-white leading-[1.05] mb-1"
+              style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
+              잠긴 영역
             </p>
-          )}
+            <p className="font-display leading-[1.05] mb-5"
+              style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
+              <span className="text-[#FF2D55]">지금 다 보세요</span>
+            </p>
 
-          {/* 가치 리스트 박스 */}
-          <div className="bg-[#0d0d0d] border border-[#1e1e1e] p-4 mb-5">
-            <p className="text-[#FF2D55] text-[10px] font-bold tracking-[0.2em] uppercase mb-3 font-sans-kr">전체 잠금 해제 시</p>
-            <div className="space-y-2.5">
-              {[
-                '6개 영역 모든 상세 분석 잠금 해제',
-                '갈등 상황별 실전 행동 지침',
-                '이 관계가 나에게 미치는 영향',
-                '상대방이 나를 보는 진짜 시선',
-                'AI 최종 판정 — 단호한 답',
-              ].map((b, i) => (
-                <div key={i} className="flex items-start gap-2.5">
-                  <span className="text-[#FF2D55] text-sm mt-0.5 flex-shrink-0 font-bold">✓</span>
-                  <p className="text-[#e8e8e8] text-[13px] leading-snug font-sans-kr font-medium">{b}</p>
-                </div>
-              ))}
-              <div className="flex items-start gap-2.5 pt-1 mt-1 border-t border-[#1a1a1a]">
-                <span className="text-[#FF2D55] text-sm mt-0.5 flex-shrink-0 font-bold">★</span>
-                <p className="text-white text-[13px] leading-snug font-sans-kr font-bold">
-                  24시간 동안 <span className="text-[#FF2D55]">모든 관계</span> 분석 무제한
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 가격 강조 */}
-          <div className="text-center mb-1">
-            <div className="inline-flex items-baseline gap-3">
-              <span className="text-[#666] text-xl font-bold relative inline-block">
-                ₩{PRICE_ALL_ORIGINAL.toLocaleString()}
-                <span className="absolute left-0 right-0 top-1/2 h-[2px] bg-[#FF2D55]" style={{ transform: 'translateY(-50%) rotate(-8deg)' }} />
-              </span>
-              <span className="font-display text-white text-[44px] leading-none font-bold">
-                ₩<span className="text-[#FF2D55]">{PRICE_ALL.toLocaleString()}</span>
-              </span>
-            </div>
-          </div>
-          <p className="text-center text-[#aaa] text-xs font-sans-kr mb-5">
-            <span className="text-[#FF2D55] font-bold">{discountPct}% 할인</span>
-            <span className="text-[#444] mx-1.5">·</span>
-            <span className="text-[#bbb]">₩{savedKrw.toLocaleString()} 절약</span>
-          </p>
-
-          {/* 메인 결제 버튼 (전체) */}
-          <div className="relative mb-3">
-            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full z-10"
-              style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)', boxShadow: '0 4px 12px rgba(255,45,85,0.5)' }}>
-              <span className="text-white text-[9px] font-bold tracking-wider font-sans-kr whitespace-nowrap">
-                {isSection ? '⭐ 압도적 인기' : '⭐ 한 번 결제로 끝'}
-              </span>
-            </div>
             <button onClick={onPayAll}
-              className="w-full py-5 px-5 text-white tracking-wide relative overflow-hidden font-sans-kr block hover:opacity-95 active:scale-[0.99] transition-all"
+              className="w-full py-4 px-4 text-white font-sans-kr flex items-center justify-between hover:opacity-95 active:scale-[0.99] transition-all"
               style={{
-                background: 'linear-gradient(135deg, #FF2D55 0%, #BF5AF2 100%)',
-                boxShadow: '0 0 40px rgba(255,45,85,0.45)',
+                background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)',
+                boxShadow: '0 0 32px rgba(255,45,85,0.4)',
               }}>
-              <span className="font-display text-xl font-bold block">전체 잠금 해제 →</span>
-              <span className="text-white/85 text-[11px] font-semibold block mt-1">24시간 · 모든 관계 6개 영역 · ₩{PRICE_ALL.toLocaleString()}</span>
-            </button>
-          </div>
-
-          {/* 섹션 모드일 때만: 보조 결제 옵션 (업셀 비교) */}
-          {isSection && (
-            <>
-              <div className="flex items-center gap-3 my-3">
-                <div className="flex-1 h-px bg-[#1a1a1a]" />
-                <span className="text-[#555] text-[10px] tracking-wider font-sans-kr">또는</span>
-                <div className="flex-1 h-px bg-[#1a1a1a]" />
+              <div className="text-left">
+                <p className="text-white text-[13px] font-bold">6개 전체 해제</p>
+                <p className="text-white/75 text-[10px] mt-0.5">24시간 · 모든 관계 무제한</p>
               </div>
-              <button onClick={onPaySection}
-                className="w-full py-3 px-4 mb-1 border border-[#2a2a2a] hover:border-[#444] transition-colors font-sans-kr flex items-center justify-between"
-                style={{ background: '#0d0d0d' }}>
-                <div className="text-left">
-                  <p className="text-[#bbb] text-[13px] font-semibold">이 섹션만 보기</p>
-                  <p className="text-[#555] text-[10px] mt-0.5">24시간 · 이 영역 1개만</p>
-                </div>
-                <div className="text-right">
-                  <span className="text-[#ddd] text-lg font-bold block">₩{PRICE_SECTION.toLocaleString()}</span>
-                  <span className="text-[#666] text-[9px] block">6개 = ₩{(PRICE_SECTION * 6).toLocaleString()}</span>
-                </div>
-              </button>
-              <p className="text-center text-[#666] text-[10px] font-sans-kr mb-2">
-                전체로 가면 <span className="text-[#FF2D55] font-bold">₩{(PRICE_SECTION * 6 - PRICE_ALL).toLocaleString()} 더 이득</span>
-              </p>
-            </>
-          )}
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-white/55 text-xs line-through">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
+                <span className="font-display text-2xl font-bold">₩{PRICE_ALL.toLocaleString()}</span>
+              </div>
+            </button>
 
-          {/* 신뢰 신호 */}
-          <div className="flex items-center justify-center gap-2.5 text-[#888] text-[10px] font-sans-kr mt-3 pt-3 border-t border-[#1a1a1a]">
-            <span>🔒 즉시 해제</span>
-            <span className="text-[#333]">·</span>
-            <span>안전 결제</span>
-            <span className="text-[#333]">·</span>
-            <span>24시간 유효</span>
+            <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-3">
+              <span>🔒 즉시 해제</span>
+              <span className="text-[#333]">·</span>
+              <span>안전 결제</span>
+              <span className="text-[#333]">·</span>
+              <span>24시간 유효</span>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* ════════════════════════════════════════════════════
+            SECTION MODE — CTA 2개
+        ════════════════════════════════════════════════════ */}
+        {isSection && (
+          <div className="px-6 pt-5 pb-5">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#FF2D55]/35 rounded-full mb-3"
+              style={{ background: 'rgba(255,45,85,0.06)' }}>
+              <LockIcon size={11} />
+              <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
+            </div>
+
+            <p className="font-display text-white leading-[1.05] mb-1"
+              style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
+              지금 더 보면
+            </p>
+            <p className="font-display leading-[1.05] mb-5"
+              style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
+              <span className="text-[#FF2D55]">관계가 보입니다</span>
+            </p>
+
+            <button onClick={onPaySection}
+              className="w-full py-3 px-4 mb-2 border border-[#2a2a2a] hover:border-[#FF2D55]/50 transition-colors font-sans-kr flex items-center justify-between"
+              style={{ background: '#0d0d0d' }}>
+              <div className="text-left">
+                <p className="text-white text-[13px] font-bold">이 섹션만 보기</p>
+                <p className="text-[#666] text-[10px] mt-0.5">24시간 · 이 영역 1개</p>
+              </div>
+              <span className="font-display text-white text-xl font-bold">₩{PRICE_SECTION.toLocaleString()}</span>
+            </button>
+
+            <button onClick={onPayAll}
+              className="w-full py-3 px-4 text-white font-sans-kr flex items-center justify-between hover:opacity-95 active:scale-[0.99] transition-all"
+              style={{
+                background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)',
+                boxShadow: '0 0 28px rgba(255,45,85,0.35)',
+              }}>
+              <div className="text-left">
+                <p className="text-white text-[13px] font-bold">6개 전체 해제</p>
+                <p className="text-white/75 text-[10px] mt-0.5">24시간 · 모든 관계 무제한</p>
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-white/55 text-xs line-through">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
+                <span className="font-display text-xl font-bold">₩{PRICE_ALL.toLocaleString()}</span>
+              </div>
+            </button>
+
+            <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-3">
+              <span>🔒 즉시 해제</span>
+              <span className="text-[#333]">·</span>
+              <span>안전 결제</span>
+              <span className="text-[#333]">·</span>
+              <span>24시간 유효</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
