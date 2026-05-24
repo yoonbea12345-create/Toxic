@@ -24,26 +24,27 @@ export default function AppPage() {
 
   useEffect(() => {
     if (import.meta.env.DEV) {
-      const cleanPaywallEvents = (count = 4) => {
+      const rollbackTo6AM = () => {
         try {
+          const today = new Date();
+          today.setHours(6, 0, 0, 0);
+          const cutoffTime = today.getTime();
+
           const events = JSON.parse(localStorage.getItem('toxic_events') || '[]');
-          let removed = 0;
-          for (let i = events.length - 1; i >= 0 && removed < count; i--) {
-            if (events[i].event === 'paywall_click') {
-              events.splice(i, 1);
-              removed++;
-            }
-          }
-          localStorage.setItem('toxic_events', JSON.stringify(events));
-          console.log(`✓ paywall_click 삭제 완료: ${removed}개`);
-          return removed;
+          const filtered = events.filter((e: any) => e.ts < cutoffTime);
+          localStorage.setItem('toxic_events', JSON.stringify(filtered));
+
+          const reviews = JSON.parse(localStorage.getItem('toxic_user_reviews') || '[]');
+          const filteredReviews = reviews.filter((r: any) => r.ts < cutoffTime);
+          localStorage.setItem('toxic_user_reviews', JSON.stringify(filteredReviews));
+
+          console.log(`✓ 오전 6시 이후 데이터 삭제 완료`);
         } catch (e) {
-          console.error('정리 실패:', e);
-          return 0;
+          console.error('롤백 실패:', e);
         }
       };
-      (window as any).cleanPaywallEvents = cleanPaywallEvents;
-      cleanPaywallEvents(4);
+      (window as any).rollbackTo6AM = rollbackTo6AM;
+      rollbackTo6AM();
     }
   }, []);
 
