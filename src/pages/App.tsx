@@ -23,7 +23,7 @@ export default function AppPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       const cleanPaywallEvents = (count = 4) => {
         try {
           const events = JSON.parse(localStorage.getItem('toxic_events') || '[]');
