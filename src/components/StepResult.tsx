@@ -727,6 +727,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const isAllUnlocked = unlockedSections.size >= 6;
   const [activeSection, setActiveSection] = useState<string>('s01');
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [paywallMode, setPaywallMode] = useState<'all' | 'section'>('all');
   const [showFreeSuccess, setShowFreeSuccess] = useState(false);
 
@@ -881,10 +882,24 @@ export default function StepResult({ myData, targetData, result, relationType, o
     link.click();
   };
 
-  const handleCopyLink = () => {
-    trackEvent('share', { method: 'link' });
-    navigator.clipboard.writeText(window.location.href);
-    showToast('링크가 복사되었습니다');
+  const handleInstallApp = async () => {
+    trackEvent('share', { method: 'install' });
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    if (isIOS) {
+      setShowIOSGuide(true);
+      return;
+    }
+    const prompt = (window as any).__installPrompt;
+    if (prompt) {
+      prompt.prompt();
+      const { outcome } = await prompt.userChoice;
+      if (outcome === 'accepted') {
+        showToast('홈 화면에 추가되었습니다');
+        (window as any).__installPrompt = null;
+      }
+    } else {
+      showToast('브라우저 주소창 오른쪽 설치 버튼을 눌러주세요');
+    }
   };
 
   const handleKakaoShare = () => {
@@ -925,6 +940,33 @@ export default function StepResult({ myData, targetData, result, relationType, o
   };
 
   return (
+    <>
+    {showIOSGuide && (
+      <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={() => setShowIOSGuide(false)}>
+        <div className="bg-[#111] border border-[#222] px-6 pt-6 pb-10 w-full max-w-lg rounded-t-2xl" onClick={e => e.stopPropagation()}>
+          <p className="text-white font-bold text-base mb-1">홈 화면에 추가하기</p>
+          <p className="text-[#555] text-xs mb-5">앱처럼 바로 실행할 수 있습니다</p>
+          <ol className="space-y-4 text-sm text-[#aaa]">
+            <li className="flex gap-3 items-start">
+              <span className="text-[#FF2D55] font-bold shrink-0">1</span>
+              <span>하단 메뉴바의 <span className="text-white">공유 버튼 ↑</span> 을 탭하세요</span>
+            </li>
+            <li className="flex gap-3 items-start">
+              <span className="text-[#FF2D55] font-bold shrink-0">2</span>
+              <span>스크롤해서 <span className="text-white">홈 화면에 추가</span> 를 선택하세요</span>
+            </li>
+            <li className="flex gap-3 items-start">
+              <span className="text-[#FF2D55] font-bold shrink-0">3</span>
+              <span>오른쪽 위 <span className="text-white">추가</span> 를 탭하면 완료!</span>
+            </li>
+          </ol>
+          <button onClick={() => setShowIOSGuide(false)}
+            className="mt-6 w-full py-3 bg-[#FF2D55] text-white font-bold text-sm">
+            확인
+          </button>
+        </div>
+      </div>
+    )}
     <div className="animate-fade-in max-w-lg mx-auto px-4 pt-3 pb-24 space-y-4">
 
       {/* 결제 팝업 모달 */}
@@ -1076,9 +1118,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
               className="py-2 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
               이미지 저장
             </button>
-            <button onClick={handleCopyLink}
+            <button onClick={handleInstallApp}
               className="py-2 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
-              링크 복사
+              앱으로 저장
             </button>
           </div>
         </div>
@@ -1689,6 +1731,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         다른 관계도 분석해보기 →
       </button>
     </div>
+    </>
   );
 }
 
