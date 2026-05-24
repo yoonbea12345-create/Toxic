@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trackEvent } from '../utils/analytics';
 import { saveHistory } from '../utils/history';
@@ -21,6 +21,29 @@ function loadSession() {
 
 export default function AppPage() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      (window as any).cleanPaywallEvents = (count = 4) => {
+        try {
+          const events = JSON.parse(localStorage.getItem('toxic_events') || '[]');
+          let removed = 0;
+          for (let i = events.length - 1; i >= 0 && removed < count; i--) {
+            if (events[i].event === 'paywall_click') {
+              events.splice(i, 1);
+              removed++;
+            }
+          }
+          localStorage.setItem('toxic_events', JSON.stringify(events));
+          console.log(`✓ paywall_click 삭제 완료: ${removed}개`);
+          return removed;
+        } catch (e) {
+          console.error('정리 실패:', e);
+          return 0;
+        }
+      };
+    }
+  }, []);
 
   const saved = loadSession();
   const [step, setStep] = useState<Step>(saved?.step ?? 'my-info');
