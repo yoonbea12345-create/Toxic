@@ -381,7 +381,7 @@ export default function Landing() {
             <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 27세 남성</p>
           </div>
 
-          <button onClick={goToApp}
+          <button onClick={() => goToApp('연인')}
             className="w-full border border-[#FF2D55]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF2D55]/10 active:scale-95 transition-all tracking-wide">
             연인 분석하기 →
           </button>
@@ -466,7 +466,7 @@ export default function Landing() {
             <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 26세 여성</p>
           </div>
 
-          <button onClick={goToApp}
+          <button onClick={() => goToApp('친구')}
             className="w-full border border-[#30D158]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#30D158]/10 active:scale-95 transition-all tracking-wide">
             친구 관계 분석하기 →
           </button>
@@ -551,7 +551,7 @@ export default function Landing() {
             <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 31세 남성</p>
           </div>
 
-          <button onClick={goToApp}
+          <button onClick={() => goToApp('직장')}
             className="w-full border border-[#BF5AF2]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#BF5AF2]/10 active:scale-95 transition-all tracking-wide">
             직장 관계 분석하기 →
           </button>
@@ -619,7 +619,7 @@ export default function Landing() {
             <p className="font-sans-kr text-[#444] text-[10px] mt-1">— 32세 여성</p>
           </div>
 
-          <button onClick={goToApp}
+          <button onClick={() => goToApp('가족')}
             className="w-full border border-[#FF9500]/40 text-white font-sans-kr text-sm py-4 hover:bg-[#FF9500]/10 active:scale-95 transition-all tracking-wide">
             가족 관계 분석하기 →
           </button>

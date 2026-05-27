@@ -33,7 +33,7 @@ export default function AppPage() {
 
   const handleMyInfo = (data: PersonData) => {
     setMyData(data);
-    setStep('relation');
+    setStep(locationRelation ? 'target-info' : 'relation');
     trackEvent('step_complete_my-info');
   };
 
@@ -131,6 +131,7 @@ export default function AppPage() {
             onNext={handleTargetInfo}
             onSkip={handleSkipTarget}
             isTarget
+            relationType={relationType}
           />
         )}
         {step === 'result' && result && myData && targetData && (

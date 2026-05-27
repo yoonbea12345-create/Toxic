@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import type { PersonData } from '../utils/saju';
 
+const RELATION_COLORS: Record<string, string> = {
+  '연인': '#FF2D55',
+  '친구': '#30D158',
+  '직장': '#BF5AF2',
+  '가족': '#FF9500',
+};
+
 interface StepInputProps {
   title: string;
   subtitle?: string;
@@ -8,9 +15,10 @@ interface StepInputProps {
   onNext: (data: PersonData) => void;
   onSkip?: () => void;
   isTarget?: boolean;
+  relationType?: string;
 }
 
-export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip, isTarget = false }: StepInputProps) {
+export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip, isTarget = false, relationType }: StepInputProps) {
   const [data, setData] = useState<PersonData>({ name: '', birthdate: '', birthtime: '', gender: '여' });
   const [selectedYear, setSelectedYear] = useState('');
   const [selectedMonth, setSelectedMonth] = useState('');
@@ -60,7 +68,20 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
   return (
     <div className="animate-fade-in max-w-lg mx-auto px-4 py-8">
       <div className="mb-8">
-        <p className="text-text-secondary text-sm mb-2 font-sans">STEP {stepNumber ?? (isTarget ? 3 : 1)}</p>
+        <div className="flex items-center gap-2 mb-2">
+          <p className="text-text-secondary text-sm font-sans">STEP {stepNumber ?? (isTarget ? 3 : 1)}</p>
+          {isTarget && relationType && (() => {
+            const color = RELATION_COLORS[relationType] ?? '#888888';
+            return (
+              <span
+                className="text-[10px] px-2 py-0.5 rounded-full border font-sans-kr font-bold"
+                style={{ color, borderColor: color + '50', backgroundColor: color + '18' }}
+              >
+                {relationType}
+              </span>
+            );
+          })()}
+        </div>
         <h2 className="font-display text-2xl text-white leading-tight">{title}</h2>
         {subtitle && <p className="text-text-secondary mt-2 text-sm">{subtitle}</p>}
       </div>
