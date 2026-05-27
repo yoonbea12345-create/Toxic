@@ -1,5 +1,4 @@
 import { useRef, useEffect, useState } from 'react';
-import html2canvas from 'html2canvas';
 import type { SajuResult, PersonData, RelationType } from '../utils/saju';
 import { fetchAIPhase1, fetchAIPhase2 } from '../utils/aiAnalysis';
 import { generateLocalAnalysis } from '../utils/localAnalysis';
@@ -13,6 +12,7 @@ interface StepResultProps {
   relationType: RelationType;
   result: SajuResult;
   onReset: () => void;
+  onResetTarget?: () => void;
 }
 
 interface ConflictScenario {
@@ -145,9 +145,16 @@ function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
   progress: number;
 }) {
   const [quoteIdx, setQuoteIdx] = useState(() => Math.floor(Math.random() * SAJU_QUOTES.length));
+  const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
     const iv = setInterval(() => setQuoteIdx(i => (i + 1) % SAJU_QUOTES.length), 5000);
+    return () => clearInterval(iv);
+  }, []);
+
+  useEffect(() => {
+    const start = Date.now();
+    const iv = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
     return () => clearInterval(iv);
   }, []);
 
@@ -311,6 +318,16 @@ function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
         </div>
       </div>
 
+      {/* 오래 걸릴 때 안내 */}
+      {!isDone && elapsed >= 30 && (
+        <div className="mt-4 px-5 py-3 border border-[#2a2a2a] bg-[#0e0e0e] max-w-[280px] text-center animate-fade-in">
+          <p className="text-[#888] text-xs font-sans-kr leading-relaxed">
+            AI 분석이 조금 더 걸리고 있어요.<br />
+            <span className="text-[#555]">잠시만 기다려 주세요 ({elapsed}초)</span>
+          </p>
+        </div>
+      )}
+
       {/* Rotating saju quote */}
       {!isDone && (
         <div className="w-80 text-center px-4 mt-5">
@@ -426,7 +443,7 @@ function ScrollHint() {
   }, []);
   if (!visible) return null;
   return (
-    <div className="fixed bottom-24 right-3 z-30 flex flex-col items-center gap-1 pointer-events-none animate-fade-in">
+    <div className="fixed bottom-36 right-3 z-30 flex flex-col items-center gap-1 pointer-events-none animate-fade-in">
       <span className="text-[#555] text-[9px] uppercase tracking-[0.25em] [writing-mode:vertical-rl] rotate-180">scroll</span>
       <div className="w-px h-8" style={{ background: 'linear-gradient(to bottom, transparent, #FF2D55)' }} />
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -647,14 +664,20 @@ function PaywallModal({ mode, onClose, onPaySection, onPayAll }: {
 
 
 // ── 잠금 해제 오버레이 ──────────────────────────────────────────────
-function FreeSuccessOverlay({ visible, myName }: { visible: boolean; myName: string }) {
+function FreeSuccessOverlay({ visible, myName, onClose }: { visible: boolean; myName: string; onClose: () => void }) {
   if (!visible) return null;
   const name = myName || '고객';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-6"
-      style={{ background: 'rgba(0,0,0,0.97)' }}>
-      <div className="w-full max-w-xs text-center border border-[#FF2D55]/25 px-8 py-10 animate-fade-in"
-        style={{ background: 'linear-gradient(160deg, #0E0003 0%, #0A0A0A 100%)' }}>
+      style={{ background: 'rgba(0,0,0,0.97)' }}
+      onClick={onClose}>
+      <div className="w-full max-w-xs text-center border border-[#FF2D55]/25 px-8 py-10 animate-fade-in relative"
+        style={{ background: 'linear-gradient(160deg, #0E0003 0%, #0A0A0A 100%)' }}
+        onClick={e => e.stopPropagation()}>
+        <button onClick={onClose}
+          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-[#555] hover:text-white transition-colors text-lg">
+          ✕
+        </button>
         <div className="w-16 h-16 border border-[#FF2D55]/40 flex items-center justify-center mx-auto mb-5"
           style={{ background: 'rgba(255,45,85,0.08)' }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -686,7 +709,7 @@ function FreeSuccessOverlay({ visible, myName }: { visible: boolean; myName: str
 // ───────────────────────────────────────────
 // 메인 컴포넌트
 // ───────────────────────────────────────────
-export default function StepResult({ myData, targetData, result, relationType, onReset }: StepResultProps) {
+export default function StepResult({ myData, targetData, result, relationType, onReset, onResetTarget }: StepResultProps) {
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [aiPhase1, setAiPhase1] = useState<AIAnalysis | null>(null);
   const [aiPhase2, setAiPhase2] = useState<Partial<AIAnalysis> | null>(null);
@@ -755,7 +778,14 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   const UNLOCK_TTL_MS = 24 * 60 * 60 * 1000; // 24시간
 
+  const phase2Sections = new Set(['s04', 's05', 's06']);
+
   const handleUnlockSection = () => {
+    if (phase2Loading && phase2Sections.has(activeSection)) {
+      showToast('분석 데이터 로딩 중 — 잠시 후 다시 시도해 주세요');
+      setShowPaywall(false);
+      return;
+    }
     trackEvent('paywall_pay', { price: PRICE_SECTION, section: activeSection, type: 'section' });
     setShowPaywall(false);
     setShowFreeSuccess(true);
@@ -877,6 +907,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const handleSaveImage = async () => {
     if (!shareCardRef.current) return;
     trackEvent('share', { method: 'image' });
+    const { default: html2canvas } = await import('html2canvas');
     const canvas = await html2canvas(shareCardRef.current, { backgroundColor: '#0A0A0A', scale: 2 });
     const link = document.createElement('a');
     link.download = 'toxic-result.png';
@@ -926,19 +957,23 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const handleSubmitReview = async () => {
     if (reviewStars === 0) return;
     trackEvent('review_submit', { stars: reviewStars, relationType, score: result.toxicScore });
-    fetch('/api/review', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ stars: reviewStars, comment: reviewText, relationType, score: result.toxicScore }),
-    }).catch(() => {});
     try {
-      const raw = localStorage.getItem('toxic_user_reviews');
-      const list = raw ? JSON.parse(raw) : [];
-      list.push({ stars: reviewStars, comment: reviewText, ts: Date.now() });
-      localStorage.setItem('toxic_user_reviews', JSON.stringify(list.slice(-50)));
-    } catch {}
-    setReviewSubmitted(true);
-    showToast('후기 감사합니다!');
+      await fetch('/api/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stars: reviewStars, comment: reviewText, relationType, score: result.toxicScore }),
+      });
+      try {
+        const raw = localStorage.getItem('toxic_user_reviews');
+        const list = raw ? JSON.parse(raw) : [];
+        list.push({ stars: reviewStars, comment: reviewText, ts: Date.now() });
+        localStorage.setItem('toxic_user_reviews', JSON.stringify(list.slice(-50)));
+      } catch {}
+      setReviewSubmitted(true);
+      showToast('후기 감사합니다!');
+    } catch {
+      showToast('전송 실패 — 다시 시도해 주세요');
+    }
   };
 
   return (
@@ -1005,7 +1040,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
       )}
 
       {/* 결제 성공 오버레이 */}
-      <FreeSuccessOverlay visible={showFreeSuccess} myName={myData.name || ''} />
+      <FreeSuccessOverlay visible={showFreeSuccess} myName={myData.name || ''} onClose={() => setShowFreeSuccess(false)} />
 
       {/* 6개 영역 분석 완료 리빌 */}
       {!showLoading && <CompletionReveal />}
@@ -1728,9 +1763,15 @@ export default function StepResult({ myData, targetData, result, relationType, o
         </div>
       )}
 
+      {onResetTarget && (
+        <button onClick={onResetTarget}
+          className="w-full py-4 border border-[#FF2D55]/20 text-[#FF2D55]/70 hover:border-[#FF2D55]/50 hover:text-[#FF2D55] transition-all text-sm font-sans-kr mb-2">
+          내 사주 유지 · 상대방만 다시 입력하기 →
+        </button>
+      )}
       <button onClick={onReset}
         className="w-full py-4 border border-[#1e1e1e] text-[#555] hover:border-[#FF2D55]/40 hover:text-white transition-all text-sm">
-        다른 관계도 분석해보기 →
+        처음부터 다시 분석하기 →
       </button>
     </div>
     </>

@@ -16,16 +16,24 @@ interface StepInputProps {
   onSkip?: () => void;
   isTarget?: boolean;
   relationType?: string;
+  initialData?: PersonData;
 }
 
-export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip, isTarget = false, relationType }: StepInputProps) {
-  const [data, setData] = useState<PersonData>({ name: '', birthdate: '', birthtime: '', gender: '여' });
-  const [selectedYear, setSelectedYear] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState('');
-  const [selectedDay, setSelectedDay] = useState('');
-  const [unknownTime, setUnknownTime] = useState(false);
-  const [hour, setHour] = useState(0);
-  const [minute, setMinute] = useState(0);
+export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip, isTarget = false, relationType, initialData }: StepInputProps) {
+  const parseYear = (bd: string) => bd?.split('-')[0] ?? '';
+  const parseMonth = (bd: string) => bd?.split('-')[1]?.replace(/^0/, '') ?? '';
+  const parseDay = (bd: string) => bd?.split('-')[2]?.replace(/^0/, '') ?? '';
+  const parseHour = (bt: string) => bt ? Number(bt.split(':')[0]) : 0;
+  const parseMinute = (bt: string) => bt ? Number(bt.split(':')[1]) : 0;
+
+  const [data, setData] = useState<PersonData>(initialData ?? { name: '', birthdate: '', birthtime: '', gender: '여' });
+  const [selectedYear, setSelectedYear] = useState(initialData ? parseYear(initialData.birthdate) : '');
+  const [selectedMonth, setSelectedMonth] = useState(initialData ? parseMonth(initialData.birthdate) : '');
+  const [selectedDay, setSelectedDay] = useState(initialData ? parseDay(initialData.birthdate) : '');
+  const [unknownTime, setUnknownTime] = useState(initialData ? !initialData.birthtime : false);
+  const [hour, setHour] = useState(initialData ? parseHour(initialData.birthtime) : 0);
+  const [minute, setMinute] = useState(initialData ? parseMinute(initialData.birthtime) : 0);
+  const [yearError, setYearError] = useState('');
 
   const currentYear = new Date().getFullYear();
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -36,7 +44,7 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
   };
 
   // 상대방은 이름 또는 연도 중 하나만 있어도 진행 가능 (둘 다 없어도 OK)
-  const isReady = isTarget ? true : (!!selectedYear && !!selectedMonth && !!selectedDay);
+  const isReady = !yearError && (isTarget ? true : (!!selectedYear && !!selectedMonth && !!selectedDay));
 
   // 정확도 레벨 계산
   const accuracyLevel = !selectedYear ? null
@@ -123,11 +131,21 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
             <input
               type="number"
               placeholder="출생 연도"
+              inputMode="numeric"
               min={1924}
               max={currentYear}
               value={selectedYear}
-              onChange={e => { setSelectedYear(e.target.value); setSelectedDay(''); }}
-              className="bg-card-bg border border-border rounded-sm px-3 py-3 text-white placeholder-text-secondary focus:outline-none focus:border-accent-red transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              onChange={e => {
+                const val = e.target.value;
+                setSelectedYear(val);
+                setSelectedDay('');
+                if (val && (Number(val) < 1924 || Number(val) > currentYear)) {
+                  setYearError(`1924 ~ ${currentYear} 사이로 입력해주세요`);
+                } else {
+                  setYearError('');
+                }
+              }}
+              className={`bg-card-bg border rounded-sm px-3 py-3 text-white placeholder-text-secondary focus:outline-none transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${yearError ? 'border-[#FF9500]' : 'border-border focus:border-accent-red'}`}
             />
             <select
               value={selectedMonth}
@@ -142,14 +160,19 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
               onChange={e => setSelectedDay(e.target.value)}
               disabled={!selectedMonth}
               className="bg-card-bg border border-border rounded-sm px-3 py-3 text-white focus:outline-none focus:border-accent-red transition-colors appearance-none cursor-pointer disabled:opacity-40"
+              title={!selectedMonth ? '월을 먼저 선택해주세요' : undefined}
             >
-              <option value="">{isTarget ? '일 (선택)' : '일'}</option>
+              <option value="">{!selectedMonth ? '월 선택 후' : isTarget ? '일 (선택)' : '일'}</option>
               {getDays(selectedYear, selectedMonth).map(d => <option key={d} value={d}>{d}일</option>)}
             </select>
           </div>
 
+          {yearError && (
+            <p className="text-[#FF9500] text-[11px] mt-1.5 font-sans-kr">{yearError}</p>
+          )}
+
           {/* 정확도 안내 (상대방만) */}
-          {isTarget && (
+          {isTarget && !yearError && (
             <p className="text-[#555] text-[11px] mt-2 font-sans-kr">
               {!selectedYear
                 ? '이름만 알아도 분석 가능해요'
@@ -158,6 +181,13 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
                   : !selectedDay
                     ? '일까지 입력하면 일주(日柱) 분석이 추가돼요'
                     : '생년월일 기반 정밀 분석이 가능해요'}
+            </p>
+          )}
+
+          {/* 음력 안내 */}
+          {!isTarget && (
+            <p className="text-[#444] text-[11px] mt-2 font-sans-kr">
+              * 양력(신정) 기준으로 입력해주세요. 음력이면 양력으로 변환 후 입력.
             </p>
           )}
         </div>

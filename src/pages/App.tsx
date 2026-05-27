@@ -80,9 +80,10 @@ export default function AppPage() {
 
   const handleBack = () => {
     if (step === 'relation') setStep('my-info');
-    else if (step === 'target-info') setStep('relation');
+    else if (step === 'target-info') setStep(locationRelation ? 'my-info' : 'relation');
   };
 
+  // 전체 초기화
   const handleReset = () => {
     setMyData(null);
     setTargetData(null);
@@ -92,11 +93,25 @@ export default function AppPage() {
     trackEvent('reset');
   };
 
+  // 내 사주 유지하고 상대만 다시 입력
+  const handleResetTarget = () => {
+    setTargetData(null);
+    setResult(null);
+    setStep('target-info');
+    trackEvent('reset_target_only');
+  };
+
+  const handleLogoClick = () => {
+    if (step !== 'my-info' && step !== 'result') {
+      if (!window.confirm('입력한 정보가 사라집니다. 메인으로 이동할까요?')) return;
+    }
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-bg">
       <header className="border-b border-border pl-0 pr-4 flex items-center justify-between max-w-lg mx-auto overflow-hidden" style={{ height: '100px' }}>
-        <button onClick={() => navigate('/')} className="hover:opacity-80 transition-opacity flex-shrink-0">
+        <button onClick={handleLogoClick} className="hover:opacity-80 transition-opacity flex-shrink-0">
           <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block flex-shrink-0" style={{ marginLeft: '-12px' }} />
         </button>
         <div className="flex flex-col items-end gap-1.5">
@@ -118,6 +133,7 @@ export default function AppPage() {
             title="먼저 내 사주를 분석할게요"
             stepNumber={1}
             onNext={handleMyInfo}
+            initialData={myData ?? undefined}
           />
         )}
         {step === 'relation' && (
@@ -132,6 +148,7 @@ export default function AppPage() {
             onSkip={handleSkipTarget}
             isTarget
             relationType={relationType}
+            initialData={targetData ?? undefined}
           />
         )}
         {step === 'result' && result && myData && targetData && (
@@ -141,6 +158,7 @@ export default function AppPage() {
             relationType={relationType}
             result={result}
             onReset={handleReset}
+            onResetTarget={handleResetTarget}
           />
         )}
       </main>
