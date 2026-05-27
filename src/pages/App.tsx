@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trackEvent } from '../utils/analytics';
 import { saveHistory } from '../utils/history';
@@ -21,32 +21,6 @@ function loadSession() {
 
 export default function AppPage() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      const rollbackTo3AM = () => {
-        try {
-          const today = new Date();
-          today.setHours(3, 0, 0, 0);
-          const cutoffTime = today.getTime();
-
-          const events = JSON.parse(localStorage.getItem('toxic_events') || '[]');
-          const filtered = events.filter((e: any) => e.ts < cutoffTime);
-          localStorage.setItem('toxic_events', JSON.stringify(filtered));
-
-          const reviews = JSON.parse(localStorage.getItem('toxic_user_reviews') || '[]');
-          const filteredReviews = reviews.filter((r: any) => r.ts < cutoffTime);
-          localStorage.setItem('toxic_user_reviews', JSON.stringify(filteredReviews));
-
-          console.log(`✓ 오전 3시 이후 데이터 삭제 완료`);
-        } catch (e) {
-          console.error('롤백 실패:', e);
-        }
-      };
-      (window as any).rollbackTo3AM = rollbackTo3AM;
-      rollbackTo3AM();
-    }
-  }, []);
 
   const saved = loadSession();
   const [step, setStep] = useState<Step>(saved?.step ?? 'my-info');
