@@ -151,6 +151,28 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authed) return;
 
+    const SUPA_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+    const SUPA_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+    async function loadFromSupabaseDirect() {
+      if (!SUPA_URL || !SUPA_ANON) throw new Error('no vite env');
+      const [evRes, tmRes] = await Promise.all([
+        fetch(`${SUPA_URL}/rest/v1/toxic_events?select=event,props,ts&order=ts.asc`, {
+          headers: { apikey: SUPA_ANON, Authorization: `Bearer ${SUPA_ANON}` },
+        }),
+        fetch(`${SUPA_URL}/rest/v1/toxic_session_times?select=duration&order=id.desc`, {
+          headers: { apikey: SUPA_ANON, Authorization: `Bearer ${SUPA_ANON}` },
+        }),
+      ]);
+      if (!evRes.ok) throw new Error('supabase direct failed');
+      const evData = await evRes.json();
+      const tmData = await tmRes.json();
+      return {
+        events: Array.isArray(evData) ? evData : [],
+        times: Array.isArray(tmData) ? tmData.map((r: { duration: number }) => r.duration) : [],
+      };
+    }
+
     setFetchState('loading');
     fetch('/api/events', { headers: { 'x-admin-key': ADMIN_KEY } })
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
@@ -159,16 +181,22 @@ export default function AdminPage() {
         setSessionTimes(data.times || []);
         setFetchState('idle');
       })
-      .catch(() => {
-        // 서버 실패 시 localStorage 폴백
-        try {
-          const raw = localStorage.getItem(EVENTS_KEY);
-          if (raw) setEvents(JSON.parse(raw));
-          const timesRaw = localStorage.getItem('toxic_session_times');
-          if (timesRaw) setSessionTimes(JSON.parse(timesRaw));
-        } catch {}
-        setFetchState('error');
-      });
+      .catch(() => loadFromSupabaseDirect()
+        .then(data => {
+          setEvents(data.events);
+          setSessionTimes(data.times);
+          setFetchState('idle');
+        })
+        .catch(() => {
+          try {
+            const raw = localStorage.getItem(EVENTS_KEY);
+            if (raw) setEvents(JSON.parse(raw));
+            const timesRaw = localStorage.getItem('toxic_session_times');
+            if (timesRaw) setSessionTimes(JSON.parse(timesRaw));
+          } catch {}
+          setFetchState('error');
+        })
+      );
   }, [authed]);
 
   const handleLogin = () => {
@@ -227,7 +255,7 @@ export default function AdminPage() {
           <p className="text-[#FF2D55] text-[10px] uppercase tracking-widest mb-1">TOXIC ADMIN</p>
           <h1 className="text-white text-2xl font-bold">시장검증 대시보드</h1>
           {fetchState === 'loading' && <p className="text-[#444] text-xs mt-1">데이터 불러오는 중...</p>}
-          {fetchState === 'error' && <p className="text-[#F59E0B] text-xs mt-1">서버 연결 실패 — 로컬 데이터 표시 중 (Vercel에 ADMIN_SECRET=1229 env 설정 필요)</p>}
+          {fetchState === 'error' && <p className="text-[#F59E0B] text-xs mt-1">⚠ Supabase 연결 실패 — 로컬 데이터 표시 중 (.env.local에 VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY 추가 필요)</p>}
         </div>
         <div className="flex gap-2">
           <button onClick={handleClear}

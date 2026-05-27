@@ -23,8 +23,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const [eventsRes, timesRes] = await Promise.all([
-      sbSelect('toxic_events', 'select=event,props,ts&order=ts.desc&limit=500'),
-      sbSelect('toxic_session_times', 'select=duration&order=id.desc&limit=200'),
+      sbSelect('toxic_events', 'select=event,props,ts&order=ts.asc'),
+      sbSelect('toxic_session_times', 'select=duration&order=id.desc'),
     ]);
 
     const events = await eventsRes.json();
