@@ -663,6 +663,86 @@ function PaywallModal({ mode, onClose, onPaySection, onPayAll }: {
 }
 
 
+// ── 리뷰 팝업 ────────────────────────────────────────────────────────
+function ReviewPopup({ onClose, onSubmit, submitted }: {
+  onClose: () => void;
+  onSubmit: (stars: number, text: string) => void;
+  submitted: boolean;
+}) {
+  const [stars, setStars] = useState(0);
+  const [hovered, setHovered] = useState(0);
+  const [text, setText] = useState('');
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center animate-fade-in"
+      style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(4px)' }}
+      onClick={onClose}>
+      <div className="w-full max-w-sm relative bg-[#0a0a0a]"
+        style={{ boxShadow: '0 -20px 60px rgba(255,45,85,0.18)' }}
+        onClick={e => e.stopPropagation()}>
+
+        <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
+
+        <button onClick={onClose}
+          className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center text-[#555] hover:text-white transition-colors text-xl z-10">
+          ✕
+        </button>
+
+        {submitted ? (
+          <div className="px-6 pt-8 pb-10 text-center">
+            <p className="text-[#FF2D55] text-4xl mb-4">★</p>
+            <p className="text-white font-bold text-lg mb-2 font-sans-kr">감사합니다!</p>
+            <p className="text-[#555] text-sm font-sans-kr">소중한 후기가 서비스 개선에 큰 도움이 됩니다</p>
+          </div>
+        ) : (
+          <div className="px-6 pt-5 pb-7">
+            <p className="text-[#666] text-[10px] uppercase tracking-[0.2em] mb-1 font-sans-kr">분석 후기</p>
+            <p className="font-display text-white text-xl leading-tight mb-1">이 분석이 도움됐나요?</p>
+            <p className="text-[#444] text-xs mb-7 font-sans-kr">별점을 선택해주세요</p>
+
+            <div className="flex justify-center gap-4 mb-6">
+              {[1,2,3,4,5].map(n => (
+                <button key={n}
+                  onMouseEnter={() => setHovered(n)}
+                  onMouseLeave={() => setHovered(0)}
+                  onClick={() => setStars(n)}
+                  className="transition-all duration-100 active:scale-90 select-none"
+                  style={{
+                    fontSize: '2.4rem',
+                    color: n <= (hovered || stars) ? '#FF2D55' : '#1e1e1e',
+                    filter: n <= (hovered || stars) ? 'drop-shadow(0 0 10px rgba(255,45,85,0.6))' : 'none',
+                    transform: n <= (hovered || stars) ? 'scale(1.12)' : 'scale(1)',
+                    lineHeight: 1,
+                  }}>
+                  ★
+                </button>
+              ))}
+            </div>
+
+            {stars > 0 && (
+              <div className="animate-fade-in">
+                <textarea
+                  value={text}
+                  onChange={e => setText(e.target.value)}
+                  placeholder="어떤 점이 도움됐나요? (선택)"
+                  className="w-full bg-[#111] border border-[#1e1e1e] text-white text-sm px-4 py-3 resize-none focus:outline-none focus:border-[#FF2D55]/40 mb-3 font-sans-kr"
+                  rows={2}
+                  maxLength={200}
+                />
+                <button onClick={() => onSubmit(stars, text)}
+                  className="w-full py-3.5 text-white font-bold font-sans-kr tracking-wide"
+                  style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)', boxShadow: '0 0 24px rgba(255,45,85,0.35)' }}>
+                  후기 남기기
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── 잠금 해제 오버레이 ──────────────────────────────────────────────
 function FreeSuccessOverlay({ visible, myName, onClose }: { visible: boolean; myName: string; onClose: () => void }) {
   if (!visible) return null;
@@ -727,6 +807,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [reviewStars, setReviewStars] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [showReviewPopup, setShowReviewPopup] = useState(false);
   const [recentHistory] = useState(() => loadHistory().slice(1, 4));
 
   // 유료 전환 — 섹션별 결제
@@ -900,6 +981,18 @@ export default function StepResult({ myData, targetData, result, relationType, o
     }
   }, [showLoading]);
 
+  // 20초 체류 후 리뷰 팝업
+  useEffect(() => {
+    if (showLoading || reviewSubmitted) return;
+    try { if (sessionStorage.getItem('toxic_review_shown')) return; } catch {}
+    const timer = setTimeout(() => {
+      try { sessionStorage.setItem('toxic_review_shown', '1'); } catch {}
+      setShowReviewPopup(true);
+      trackEvent('review_popup_shown');
+    }, 20000);
+    return () => clearTimeout(timer);
+  }, [showLoading, reviewSubmitted]);
+
   if (showLoading) {
     return <AILoadingScreen hasTarget={hasTarget} hasDateData={hasDateData} score={result.toxicScore} result={result} progress={displayProgress} />;
   }
@@ -972,22 +1065,24 @@ export default function StepResult({ myData, targetData, result, relationType, o
     }
   };
 
-  const handleSubmitReview = async () => {
-    if (reviewStars === 0) return;
-    trackEvent('review_submit', { stars: reviewStars, relationType, score: result.toxicScore });
+  const handleSubmitReview = async (stars = reviewStars, text = reviewText) => {
+    if (stars === 0) return;
+    trackEvent('review_submit', { stars, relationType, score: result.toxicScore });
     try {
       await fetch('/api/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stars: reviewStars, comment: reviewText, relationType, score: result.toxicScore }),
+        body: JSON.stringify({ stars, comment: text, relationType, score: result.toxicScore }),
       });
       try {
         const raw = localStorage.getItem('toxic_user_reviews');
         const list = raw ? JSON.parse(raw) : [];
-        list.push({ stars: reviewStars, comment: reviewText, ts: Date.now() });
+        list.push({ stars, comment: text, ts: Date.now() });
         localStorage.setItem('toxic_user_reviews', JSON.stringify(list.slice(-50)));
       } catch {}
       setReviewSubmitted(true);
+      setReviewStars(stars);
+      setReviewText(text);
       showToast('후기 감사합니다!');
     } catch {
       showToast('전송 실패 — 다시 시도해 주세요');
@@ -1059,6 +1154,18 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
       {/* 결제 성공 오버레이 */}
       <FreeSuccessOverlay visible={showFreeSuccess} myName={myData.name || ''} onClose={() => setShowFreeSuccess(false)} />
+
+      {/* 리뷰 팝업 (20초 체류 후) */}
+      {showReviewPopup && (
+        <ReviewPopup
+          submitted={reviewSubmitted}
+          onClose={() => setShowReviewPopup(false)}
+          onSubmit={async (stars, text) => {
+            await handleSubmitReview(stars, text);
+            setTimeout(() => setShowReviewPopup(false), 2000);
+          }}
+        />
+      )}
 
       {/* 6개 영역 분석 완료 리빌 */}
       {!showLoading && <CompletionReveal />}
@@ -1745,7 +1852,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
                 rows={2}
                 maxLength={200}
               />
-              <button onClick={handleSubmitReview}
+              <button onClick={() => handleSubmitReview()}
                 className="w-full py-3 gradient-red text-white text-sm font-medium">
                 후기 남기기
               </button>

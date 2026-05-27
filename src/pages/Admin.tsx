@@ -11,6 +11,14 @@ interface EventRecord {
   ts: number;
 }
 
+interface ReviewRecord {
+  stars: number;
+  comment: string;
+  relation_type: string | null;
+  toxic_score: number | null;
+  ts: number;
+}
+
 interface Stats {
   totalSessions: number;
   landingViews: number;
@@ -142,6 +150,7 @@ export default function AdminPage() {
   const [pw, setPw] = useState('');
   const [events, setEvents] = useState<EventRecord[]>([]);
   const [sessionTimes, setSessionTimes] = useState<number[]>([]);
+  const [reviews, setReviews] = useState<ReviewRecord[]>([]);
   const [fetchState, setFetchState] = useState<keyof typeof LOADING_STATES>('idle');
 
   useEffect(() => {
@@ -174,6 +183,12 @@ export default function AdminPage() {
     }
 
     setFetchState('loading');
+
+    fetch('/api/reviews-list', { headers: { 'x-admin-key': ADMIN_KEY } })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => setReviews(data.reviews || []))
+      .catch(() => {});
+
     fetch('/api/events', { headers: { 'x-admin-key': ADMIN_KEY } })
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(data => {
@@ -345,10 +360,53 @@ export default function AdminPage() {
           {/* 후기 */}
           <div>
             <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유저 후기</p>
-            <div className="grid grid-cols-2 gap-3">
-              <StatCard label="후기 제출" value={stats.reviewSubmits} sub="결과 페이지 제출 수" color="#BF5AF2" />
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <StatCard label="후기 제출" value={stats.reviewSubmits} sub="이벤트 기준" color="#BF5AF2" />
               <StatCard label="평균 별점" value={stats.avgReviewStars} sub="/ 5.0" color="#F59E0B" />
             </div>
+            {reviews.length > 0 && (() => {
+              const dist = [5,4,3,2,1].map(s => ({
+                star: s,
+                count: reviews.filter(r => r.stars === s).length,
+              }));
+              const max = Math.max(...dist.map(d => d.count), 1);
+              return (
+                <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-5 space-y-4">
+                  {/* 별점 분포 */}
+                  <div>
+                    <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">별점 분포 ({reviews.length}개)</p>
+                    {dist.map(({ star, count }) => (
+                      <div key={star} className="flex items-center gap-2 mb-1.5">
+                        <span className="text-[#FF2D55] text-xs w-5 text-right">{star}★</span>
+                        <div className="flex-1 h-2 bg-[#111]">
+                          <div className="h-full bg-[#FF2D55]"
+                            style={{ width: `${Math.round((count / max) * 100)}%`, transition: 'width 0.6s ease' }} />
+                        </div>
+                        <span className="text-[#444] text-xs w-4">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* 최근 리뷰 목록 */}
+                  <div>
+                    <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">최근 리뷰</p>
+                    <div className="space-y-3 max-h-72 overflow-y-auto">
+                      {reviews.map((r, i) => (
+                        <div key={i} className="border-b border-[#111] pb-3 last:border-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[#FF2D55] text-sm">{'★'.repeat(r.stars)}{'☆'.repeat(5 - r.stars)}</span>
+                            <span className="text-[#333] text-[10px]">
+                              {r.relation_type && <span className="mr-2 text-[#555]">{r.relation_type}</span>}
+                              {new Date(r.ts).toLocaleDateString('ko-KR')}
+                            </span>
+                          </div>
+                          {r.comment && <p className="text-[#666] text-xs leading-relaxed font-sans-kr">{r.comment}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* 최근 이벤트 로그 */}
