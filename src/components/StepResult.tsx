@@ -935,22 +935,40 @@ export default function StepResult({ myData, targetData, result, relationType, o
     }
   };
 
+  const generateShareUrl = () => {
+    try {
+      const payload = JSON.stringify({
+        m: { n: myData.name, b: myData.birthdate, bt: myData.birthtime, g: myData.gender },
+        t: { n: targetData.name, b: targetData.birthdate, bt: targetData.birthtime, g: targetData.gender },
+        r: relationType,
+      });
+      const encoded = btoa(unescape(encodeURIComponent(payload)));
+      return `https://toxic.kr/app?share=${encoded}`;
+    } catch {
+      return 'https://toxic.kr';
+    }
+  };
+
   const handleKakaoShare = () => {
     trackEvent('share', { method: 'kakao' });
+    const shareUrl = generateShareUrl();
+    const myName = myData.name || '나';
+    const targetName = targetData.name || '상대방';
+    const desc = ai.toxicSummary || result.conflictSummary || `${myName}과 ${targetName}의 사주 충돌 분석`;
     if (window.Kakao?.isInitialized()) {
       window.Kakao.Share.sendDefault({
         objectType: 'feed',
         content: {
-          title: `TOXIC 분석: ${result.conflictType}`,
-          description: ai.toxicSummary || result.conflictSummary,
+          title: `${myName} × ${targetName} — TOXIC 분석`,
+          description: desc,
           imageUrl: 'https://toxic.kr/og.png',
-          link: { mobileWebUrl: 'https://toxic.kr', webUrl: 'https://toxic.kr' },
+          link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },
-        buttons: [{ title: '나도 분석하기', link: { mobileWebUrl: 'https://toxic.kr', webUrl: 'https://toxic.kr' } }],
+        buttons: [{ title: '내 결과 보기', link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
       });
     } else {
-      navigator.clipboard.writeText('https://toxic.kr').catch(() => {});
-      showToast('카카오 미연결 — 링크를 복사했어요');
+      navigator.clipboard.writeText(shareUrl).catch(() => {});
+      showToast('결과 링크를 복사했어요');
     }
   };
 

@@ -215,9 +215,18 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
                   >
                     ▲
                   </button>
-                  <div className="w-16 h-14 flex items-center justify-center bg-card-bg border border-border text-white text-2xl font-bold rounded-sm">
-                    {String(hour).padStart(2, '0')}
-                  </div>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={23}
+                    value={String(hour).padStart(2, '0')}
+                    onChange={e => {
+                      const v = parseInt(e.target.value, 10);
+                      if (!isNaN(v)) setHour(Math.max(0, Math.min(23, v)));
+                    }}
+                    className="w-16 h-14 text-center bg-card-bg border border-border text-white text-2xl font-bold rounded-sm focus:outline-none focus:border-accent-red transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
                   <button
                     onClick={() => setHour(h => (h + 1) % 24)}
                     className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
@@ -237,16 +246,25 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
                   >
                     ▲
                   </button>
-                  <div className="w-16 h-14 flex items-center justify-center bg-card-bg border border-border text-white text-2xl font-bold rounded-sm">
-                    {String(minute).padStart(2, '0')}
-                  </div>
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    max={59}
+                    value={String(minute).padStart(2, '0')}
+                    onChange={e => {
+                      const v = parseInt(e.target.value, 10);
+                      if (!isNaN(v)) setMinute(Math.max(0, Math.min(59, v)));
+                    }}
+                    className="w-16 h-14 text-center bg-card-bg border border-border text-white text-2xl font-bold rounded-sm focus:outline-none focus:border-accent-red transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  />
                   <button
                     onClick={() => setMinute(m => (m + 5) % 60)}
                     className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
                   >
                     ▼
                   </button>
-                  <span className="text-text-secondary text-xs mt-0.5">분 (5분 단위)</span>
+                  <span className="text-text-secondary text-xs mt-0.5">분</span>
                 </div>
               </div>
               <p className="text-center text-[#2a2a2a] text-[11px] mt-3">

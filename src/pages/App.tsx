@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { trackEvent } from '../utils/analytics';
 import { saveHistory } from '../utils/history';
@@ -30,6 +30,27 @@ export default function AppPage() {
   const [relationType, setRelationType] = useState<RelationType>(saved?.relationType ?? locationRelation ?? '연인');
   const [targetData, setTargetData] = useState<PersonData | null>(saved?.targetData ?? null);
   const [result, setResult] = useState<SajuResult | null>(saved?.result ?? null);
+
+  // ?share= 파라미터로 진입 시 결과 바로 복원
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shareParam = params.get('share');
+    if (!shareParam || saved) return;
+    try {
+      const decoded = JSON.parse(decodeURIComponent(escape(atob(shareParam))));
+      const my: PersonData = { name: decoded.m.n ?? '', birthdate: decoded.m.b ?? '', birthtime: decoded.m.bt ?? '', gender: decoded.m.g ?? '여' };
+      const target: PersonData = { name: decoded.t.n ?? '', birthdate: decoded.t.b ?? '', birthtime: decoded.t.bt ?? '', gender: decoded.t.g ?? '여' };
+      const rel = (decoded.r ?? '연인') as RelationType;
+      const res = analyzeSaju(my, target, rel);
+      setMyData(my);
+      setTargetData(target);
+      setRelationType(rel);
+      setResult(res);
+      setStep('result');
+      // URL에서 share 파라미터 제거
+      window.history.replaceState({}, '', window.location.pathname);
+    } catch {}
+  }, []);
 
   const handleMyInfo = (data: PersonData) => {
     setMyData(data);
