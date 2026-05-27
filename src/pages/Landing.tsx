@@ -114,7 +114,7 @@ export default function Landing() {
             사주에 <span className="text-[#FF2D55] font-bold">모든 답이 있습니다.</span>
           </p>
 
-          <button onClick={() => goToApp(trigger.type)}
+          <button onClick={() => goToApp()}
             className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 active:scale-95 transition-all cta-glow-red">
             이름이랑 생일 넣어보기 →
           </button>
