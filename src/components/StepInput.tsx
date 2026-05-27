@@ -8,6 +8,26 @@ const RELATION_COLORS: Record<string, string> = {
   '가족': '#FF9500',
 };
 
+const TWELVE_SI = [
+  { label: '자시', hanja: '子', hour: 0,  range: '밤 11~새벽 1시' },
+  { label: '축시', hanja: '丑', hour: 2,  range: '새벽 1~3시' },
+  { label: '인시', hanja: '寅', hour: 4,  range: '새벽 3~5시' },
+  { label: '묘시', hanja: '卯', hour: 6,  range: '새벽 5~7시' },
+  { label: '진시', hanja: '辰', hour: 8,  range: '아침 7~9시' },
+  { label: '사시', hanja: '巳', hour: 10, range: '아침 9~11시' },
+  { label: '오시', hanja: '午', hour: 12, range: '낮 11~오후 1시' },
+  { label: '미시', hanja: '未', hour: 14, range: '오후 1~3시' },
+  { label: '신시', hanja: '申', hour: 16, range: '오후 3~5시' },
+  { label: '유시', hanja: '酉', hour: 18, range: '오후 5~7시' },
+  { label: '술시', hanja: '戌', hour: 20, range: '저녁 7~9시' },
+  { label: '해시', hanja: '亥', hour: 22, range: '밤 9~11시' },
+];
+
+function hourToSiIndex(h: number): number {
+  if (h === 0 || h === 23) return 0;
+  return Math.ceil(h / 2);
+}
+
 interface StepInputProps {
   title: string;
   subtitle?: string;
@@ -20,19 +40,20 @@ interface StepInputProps {
 }
 
 export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip, isTarget = false, relationType, initialData }: StepInputProps) {
-  const parseYear = (bd: string) => bd?.split('-')[0] ?? '';
+  const parseYear  = (bd: string) => bd?.split('-')[0] ?? '';
   const parseMonth = (bd: string) => bd?.split('-')[1]?.replace(/^0/, '') ?? '';
-  const parseDay = (bd: string) => bd?.split('-')[2]?.replace(/^0/, '') ?? '';
-  const parseHour = (bt: string) => bt ? Number(bt.split(':')[0]) : 0;
-  const parseMinute = (bt: string) => bt ? Number(bt.split(':')[1]) : 0;
+  const parseDay   = (bd: string) => bd?.split('-')[2]?.replace(/^0/, '') ?? '';
+  const parseHour  = (bt: string) => bt ? Number(bt.split(':')[0]) : 0;
 
   const [data, setData] = useState<PersonData>(initialData ?? { name: '', birthdate: '', birthtime: '', gender: '여' });
-  const [selectedYear, setSelectedYear] = useState(initialData ? parseYear(initialData.birthdate) : '');
+  const [selectedYear,  setSelectedYear]  = useState(initialData ? parseYear(initialData.birthdate) : '');
   const [selectedMonth, setSelectedMonth] = useState(initialData ? parseMonth(initialData.birthdate) : '');
-  const [selectedDay, setSelectedDay] = useState(initialData ? parseDay(initialData.birthdate) : '');
-  const [unknownTime, setUnknownTime] = useState(initialData ? !initialData.birthtime : true);
-  const [hour, setHour] = useState(initialData ? parseHour(initialData.birthtime) : 0);
-  const [minute, setMinute] = useState(initialData ? parseMinute(initialData.birthtime) : 0);
+  const [selectedDay,   setSelectedDay]   = useState(initialData ? parseDay(initialData.birthdate) : '');
+  const [unknownTime,   setUnknownTime]   = useState(initialData ? !initialData.birthtime : true);
+  const [selectedSiIndex, setSelectedSiIndex] = useState<number | null>(
+    initialData?.birthtime ? hourToSiIndex(parseHour(initialData.birthtime)) : null
+  );
+  const [isLunar, setIsLunar] = useState(false);
   const [yearError, setYearError] = useState('');
 
   const currentYear = new Date().getFullYear();
@@ -43,19 +64,17 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
     return Array.from({ length: new Date(+year, +month, 0).getDate() }, (_, i) => i + 1);
   };
 
-  // 상대방은 이름 또는 연도 중 하나만 있어도 진행 가능 (둘 다 없어도 OK)
   const isReady = !yearError && (isTarget ? true : (!!selectedYear && !!selectedMonth && !!selectedDay));
 
-  // 정확도 레벨 계산
   const accuracyLevel = !selectedYear ? null
     : !selectedMonth ? 'year'
-    : !selectedDay ? 'month'
+    : !selectedDay   ? 'month'
     : 'day';
 
-  const accuracyInfo: Record<string, { label: string; color: string; desc: string }> = {
-    year: { label: '기본 분석', color: '#9E9E9E', desc: '년주 기반 · 연도만 입력됨' },
-    month: { label: '심화 분석', color: '#FF9800', desc: '년·월주 기반' },
-    day: { label: '정밀 분석', color: '#2196F3', desc: '년·월·일주 기반' },
+  const accuracyInfo: Record<string, { label: string; color: string }> = {
+    year:  { label: '기본 분석', color: '#9E9E9E' },
+    month: { label: '심화 분석', color: '#FF9800' },
+    day:   { label: '정밀 분석', color: '#2196F3' },
   };
 
   const handleSubmit = () => {
@@ -69,7 +88,9 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
         fullDate = selectedYear;
       }
     }
-    const birthtimeStr = unknownTime ? '' : `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    const birthtimeStr = (!unknownTime && selectedSiIndex !== null)
+      ? `${String(TWELVE_SI[selectedSiIndex].hour).padStart(2, '0')}:00`
+      : '';
     onNext({ ...data, birthdate: fullDate, birthtime: birthtimeStr });
   };
 
@@ -100,7 +121,7 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
           <label className="block text-text-secondary text-xs mb-2 uppercase tracking-wider">이름 (선택)</label>
           <input
             type="text"
-            placeholder={isTarget ? "상대방 이름을 입력하세요" : "이름을 입력하세요"}
+            placeholder={isTarget ? '상대방 이름을 입력하세요' : '이름을 입력하세요'}
             value={data.name}
             onChange={e => setData({ ...data, name: e.target.value })}
             className="w-full bg-card-bg border border-border rounded-sm px-4 py-3 text-white placeholder-text-secondary focus:outline-none focus:border-accent-red transition-colors"
@@ -110,12 +131,29 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
         {/* 생년월일 */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-text-secondary text-xs uppercase tracking-wider">
-              생년월일{isTarget && <span className="text-[#FF2D55] ml-1">— 아는 만큼만 입력</span>}
-            </label>
+            <div className="flex items-center gap-2 flex-wrap">
+              <label className="text-text-secondary text-xs uppercase tracking-wider">
+                생년월일{isTarget && <span className="text-[#FF2D55] ml-1">— 아는 만큼만 입력</span>}
+              </label>
+              {/* 양력 / 음력 토글 */}
+              <div className="flex border border-border rounded-sm overflow-hidden text-[10px]">
+                <button
+                  onClick={() => setIsLunar(false)}
+                  className={`px-2 py-1 transition-colors ${!isLunar ? 'bg-[#1e1e1e] text-white' : 'text-[#555] hover:text-[#888]'}`}
+                >
+                  양력
+                </button>
+                <button
+                  onClick={() => setIsLunar(true)}
+                  className={`px-2 py-1 border-l border-border transition-colors ${isLunar ? 'bg-[#1e1e1e] text-white' : 'text-[#555] hover:text-[#888]'}`}
+                >
+                  음력
+                </button>
+              </div>
+            </div>
             {isTarget && accuracyLevel && (
               <span
-                className="text-[10px] px-2 py-0.5 rounded-full border font-medium"
+                className="text-[10px] px-2 py-0.5 rounded-full border font-medium flex-shrink-0"
                 style={{
                   color: accuracyInfo[accuracyLevel].color,
                   borderColor: accuracyInfo[accuracyLevel].color + '40',
@@ -171,8 +209,25 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
             <p className="text-[#FF9500] text-[11px] mt-1.5 font-sans-kr">{yearError}</p>
           )}
 
+          {/* 음력 안내 */}
+          {isLunar && (
+            <div className="mt-2 px-3 py-2 border border-[#FF9500]/30 bg-[#FF9500]/5 animate-fade-in">
+              <p className="text-[#FF9500] text-[11px] font-sans-kr leading-relaxed">
+                음력 날짜는 양력으로 변환 후 입력해주세요.{' '}
+                <a
+                  href="https://www.sltool.net/lunar_solar.php"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  양력 변환기 →
+                </a>
+              </p>
+            </div>
+          )}
+
           {/* 정확도 안내 (상대방만) */}
-          {isTarget && !yearError && (
+          {isTarget && !isLunar && !yearError && (
             <p className="text-[#555] text-[11px] mt-2 font-sans-kr">
               {!selectedYear
                 ? '이름만 알아도 분석 가능해요'
@@ -183,13 +238,6 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
                     : '생년월일 기반 정밀 분석이 가능해요'}
             </p>
           )}
-
-          {/* 음력 안내 */}
-          {!isTarget && (
-            <p className="text-[#444] text-[11px] mt-2 font-sans-kr">
-              * 양력(신정) 기준으로 입력해주세요. 음력이면 양력으로 변환 후 입력.
-            </p>
-          )}
         </div>
 
         {/* 태어난 시간 (내 정보만) */}
@@ -197,80 +245,53 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-text-secondary text-xs uppercase tracking-wider">태어난 시간</label>
-              <button
-                onClick={() => setUnknownTime(!unknownTime)}
-                className={`px-3 py-1.5 text-xs border transition-all rounded-sm ${unknownTime ? 'border-accent-red text-accent-red bg-accent-red/10' : 'border-border text-text-secondary hover:border-accent-red/50'}`}
-              >
-                {unknownTime ? '시간 입력하기' : '몰라요'}
-              </button>
-            </div>
-
-            <div className={`transition-opacity duration-200 ${unknownTime ? 'opacity-30 pointer-events-none' : ''}`}>
-              <div className="flex items-end justify-center gap-3">
-                {/* Hour picker */}
-                <div className="flex flex-col items-center gap-1">
-                  <button
-                    onClick={() => setHour(h => (h + 23) % 24)}
-                    className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
-                  >
-                    ▲
-                  </button>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    max={23}
-                    value={String(hour).padStart(2, '0')}
-                    onChange={e => {
-                      const v = parseInt(e.target.value, 10);
-                      if (!isNaN(v)) setHour(Math.max(0, Math.min(23, v)));
-                    }}
-                    className="w-16 h-14 text-center bg-card-bg border border-border text-white text-2xl font-bold rounded-sm focus:outline-none focus:border-accent-red transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  />
-                  <button
-                    onClick={() => setHour(h => (h + 1) % 24)}
-                    className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
-                  >
-                    ▼
-                  </button>
-                  <span className="text-text-secondary text-xs mt-0.5">시</span>
-                </div>
-
-                <span className="text-[#333] text-3xl font-bold mb-8">:</span>
-
-                {/* Minute picker */}
-                <div className="flex flex-col items-center gap-1">
-                  <button
-                    onClick={() => setMinute(m => (m + 55) % 60)}
-                    className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
-                  >
-                    ▲
-                  </button>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={0}
-                    max={59}
-                    value={String(minute).padStart(2, '0')}
-                    onChange={e => {
-                      const v = parseInt(e.target.value, 10);
-                      if (!isNaN(v)) setMinute(Math.max(0, Math.min(59, v)));
-                    }}
-                    className="w-16 h-14 text-center bg-card-bg border border-border text-white text-2xl font-bold rounded-sm focus:outline-none focus:border-accent-red transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                  />
-                  <button
-                    onClick={() => setMinute(m => (m + 5) % 60)}
-                    className="w-16 h-9 flex items-center justify-center border border-border text-[#444] hover:border-accent-red/50 hover:text-accent-red transition-colors text-sm rounded-sm"
-                  >
-                    ▼
-                  </button>
-                  <span className="text-text-secondary text-xs mt-0.5">분</span>
-                </div>
+              <div className="flex border border-border rounded-sm overflow-hidden text-xs">
+                <button
+                  onClick={() => setUnknownTime(true)}
+                  className={`px-3 py-1.5 transition-colors ${unknownTime ? 'bg-[#1e1e1e] text-white' : 'text-text-secondary hover:text-[#aaa]'}`}
+                >
+                  모름
+                </button>
+                <button
+                  onClick={() => setUnknownTime(false)}
+                  className={`px-3 py-1.5 border-l border-border transition-colors ${!unknownTime ? 'bg-accent-red text-white' : 'text-text-secondary hover:text-[#aaa]'}`}
+                >
+                  직접 입력
+                </button>
               </div>
-              <p className="text-center text-[#2a2a2a] text-[11px] mt-3">
-                {hour < 12 ? `오전 ${hour === 0 ? 12 : hour}시` : `오후 ${hour === 12 ? 12 : hour - 12}시`} {String(minute).padStart(2, '0')}분
-              </p>
             </div>
+
+            {!unknownTime && (
+              <div className="animate-fade-in">
+                <div className="grid grid-cols-4 gap-1.5 mb-2">
+                  {TWELVE_SI.map((si, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedSiIndex(idx)}
+                      className={`py-2.5 px-1 border text-center transition-all ${
+                        selectedSiIndex === idx
+                          ? 'border-accent-red bg-accent-red/10 text-white'
+                          : 'border-border text-text-secondary hover:border-accent-red/40 hover:text-white'
+                      }`}
+                    >
+                      <p className="font-sans-kr text-xs font-medium">{si.label}</p>
+                      <p className="text-[#555] text-[9px] mt-0.5 leading-tight">{si.range}</p>
+                    </button>
+                  ))}
+                </div>
+                {selectedSiIndex !== null ? (
+                  <p className="text-center text-[#555] text-[11px] font-sans-kr">
+                    {TWELVE_SI[selectedSiIndex].label} — {TWELVE_SI[selectedSiIndex].range}
+                  </p>
+                ) : (
+                  <p className="text-center text-[#333] text-[11px] font-sans-kr">위에서 출생 시간대를 선택해주세요</p>
+                )}
+              </div>
+            )}
+
+            {unknownTime && (
+              <p className="text-[#333] text-[11px] font-sans-kr">시간 모르면 년·월·일주 기반으로 분석합니다</p>
+            )}
           </div>
         )}
 

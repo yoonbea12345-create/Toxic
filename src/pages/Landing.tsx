@@ -46,9 +46,18 @@ export default function Landing() {
   }, []);
 
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem('toxic_user_count');
+      if (cached) setUserCount(Number(cached));
+    } catch {}
     fetch('/api/count')
       .then(r => r.json())
-      .then(d => { if (d.count > 0) setUserCount(d.count); })
+      .then(d => {
+        if (d.count > 0) {
+          setUserCount(d.count);
+          try { localStorage.setItem('toxic_user_count', String(d.count)); } catch {}
+        }
+      })
       .catch(() => {});
   }, []);
 

@@ -5,11 +5,11 @@ interface StepRelationProps {
 }
 
 const relations: { type: RelationType; hanja: string; label: string; desc: string }[] = [
-  { type: '연인', hanja: '縁', label: '연인 / 전 연인', desc: '왜 그렇게 터졌는지' },
-  { type: '친구', hanja: '友', label: '친구', desc: '왜 멀어졌는지 모르겠는' },
-  { type: '직장', hanja: '業', label: '직장 상사 / 동료', desc: '왜 저 사람이랑만 안맞는지' },
-  { type: '가족', hanja: '家', label: '가족', desc: '사랑하는데 왜 항상 상처받는지' },
-  { type: '기타', hanja: '怨', label: '그냥 싫은 사람', desc: '이유도 모르게 불편한 그 사람' },
+  { type: '연인', hanja: '縁', label: '연인 / 전 연인', desc: '왜 매번 같은 자리에서 부딪히는지' },
+  { type: '친구', hanja: '友', label: '친구', desc: '왜 조금씩 멀어지고 있는지' },
+  { type: '직장', hanja: '業', label: '직장 상사 / 동료', desc: '왜 저 사람하고만 계속 마찰이 생기는지' },
+  { type: '가족', hanja: '家', label: '가족', desc: '사랑하는데 왜 항상 상처로 끝나는지' },
+  { type: '기타', hanja: '縁', label: '기타 관계', desc: '카테고리에 안 들어가는 그 관계' },
 ];
 
 export default function StepRelation({ onNext }: StepRelationProps) {

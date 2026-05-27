@@ -322,11 +322,15 @@ function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
       </div>
 
       {/* 오래 걸릴 때 안내 */}
-      {!isDone && elapsed >= 30 && (
+      {!isDone && elapsed >= 10 && (
         <div className="mt-4 px-5 py-3 border border-[#2a2a2a] bg-[#0e0e0e] max-w-[280px] text-center animate-fade-in">
           <p className="text-[#888] text-xs font-sans-kr leading-relaxed">
-            AI 분석이 조금 더 걸리고 있어요.<br />
-            <span className="text-[#555]">잠시만 기다려 주세요 ({elapsed}초)</span>
+            {elapsed < 25
+              ? '사주 데이터를 AI가 해석하고 있어요'
+              : elapsed < 45
+                ? '거의 다 됐어요. 조금만 더 기다려 주세요'
+                : <>AI 분석이 조금 더 걸리고 있어요.<br /><span className="text-[#555]">({elapsed}초)</span></>
+            }
           </p>
         </div>
       )}
@@ -420,19 +424,31 @@ function Card({ children, accent, className = '' }: { children: React.ReactNode;
 }
 
 function CompletionReveal() {
-  const areas = ['나와 안맞는 이유', '충돌 상황 분석', '실전 가이드', '관계 영향', '상대방 시선', '최종 판정'];
+  const areas = [
+    { label: '나와 안맞는 이유',    locked: false },
+    { label: '충돌 상황 분석',      locked: false },
+    { label: '실전 가이드',         locked: true },
+    { label: '관계 영향',           locked: true },
+    { label: '상대방 시선',         locked: true },
+    { label: '최종 판정',           locked: true },
+  ];
   return (
     <div className="border border-[#FF2D55]/25 bg-[#0D0D0D] px-4 py-4">
-      <p className="text-[#FF2D55] text-xs font-bold tracking-wider mb-3 font-sans-kr">✓ 6개 영역 분석 완료</p>
+      <p className="text-[#FF2D55] text-xs font-bold tracking-wider mb-3 font-sans-kr">6개 영역 분석 준비 — 아래로 확인하세요</p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
         {areas.map((area, i) => (
           <div key={i} className="flex items-center gap-2 animate-fade-in"
             style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both', opacity: 0 }}>
-            <span className="text-[#FF2D55] text-xs font-bold flex-shrink-0">✓</span>
-            <span className="text-[#e8e8e8] text-[13px] font-medium font-sans-kr">{area}</span>
+            <span className={`text-xs font-bold flex-shrink-0 ${area.locked ? 'text-[#333]' : 'text-[#FF2D55]'}`}>
+              {area.locked ? '🔒' : '✓'}
+            </span>
+            <span className={`text-[13px] font-medium font-sans-kr ${area.locked ? 'text-[#444]' : 'text-[#e8e8e8]'}`}>
+              {area.label}
+            </span>
           </div>
         ))}
       </div>
+      <p className="text-[#2a2a2a] text-[10px] mt-3 font-sans-kr">잠금 영역은 아래에서 해제 가능해요</p>
     </div>
   );
 }
@@ -472,7 +488,7 @@ function BlurredPreview({ children, unlocked, onUnlock, teaser }: {
       )}
       <div className="relative min-h-[140px]">
       <div className="select-none pointer-events-none"
-        style={{ filter: 'blur(3px)', opacity: 0.82 }}>
+        style={{ filter: 'blur(7px)', opacity: 0.75 }}>
         {children}
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 px-4">
@@ -524,7 +540,7 @@ function LockIcon({ size = 20, color = '#FF2D55' }: { size?: number; color?: str
 // ── 가격 상수 ─────────────────────────────────────────────────────────
 const PRICE_SECTION = 500;
 const PRICE_ALL = 1900;
-const PRICE_ALL_ORIGINAL = 3000;
+const PRICE_ALL_ORIGINAL = 4900;
 
 // ── 결제 팝업 모달 ───────────────────────────────────────────────────
 function PaywallModal({ mode, onClose, onPaySection, onPayAll }: {
@@ -989,16 +1005,39 @@ export default function StepResult({ myData, targetData, result, relationType, o
     }
   }, [showLoading]);
 
-  // 20초 체류 후 리뷰 팝업
+  // 45초 체류 + 스크롤 30% 이상 시 리뷰 팝업
   useEffect(() => {
     if (showLoading || reviewSubmitted || shareMode) return;
     try { if (sessionStorage.getItem('toxic_review_shown')) return; } catch {}
-    const timer = setTimeout(() => {
+
+    let timerFired = false;
+    let scrollFired = false;
+
+    const doShow = () => {
+      if (!timerFired || !scrollFired) return;
       try { sessionStorage.setItem('toxic_review_shown', '1'); } catch {}
       setShowReviewPopup(true);
       trackEvent('review_popup_shown');
-    }, 20000);
-    return () => clearTimeout(timer);
+    };
+
+    const timer = setTimeout(() => { timerFired = true; doShow(); }, 45000);
+
+    const onScroll = () => {
+      if (scrollFired) return;
+      const el = document.documentElement;
+      const pct = (el.scrollTop + el.clientHeight) / el.scrollHeight;
+      if (pct >= 0.3) {
+        scrollFired = true;
+        window.removeEventListener('scroll', onScroll);
+        doShow();
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, [showLoading, reviewSubmitted]);
 
   if (showLoading) {
@@ -1303,21 +1342,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
             );
           })()}
 
-          {/* 푸터: 공유 3버튼 */}
-          <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-[#161616]">
-            <button onClick={handleKakaoShare}
-              className="py-2 bg-[#FEE500] text-[#3C1E1E] text-[11px] font-bold hover:opacity-90 transition-opacity">
-              카카오톡 공유
-            </button>
-            <button onClick={handleSaveImage}
-              className="py-2 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
-              이미지 저장
-            </button>
-            <button onClick={handleInstallApp}
-              className="py-2 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
-              앱으로 저장
-            </button>
-          </div>
         </div>
         );
       })()}
@@ -1853,6 +1877,25 @@ export default function StepResult({ myData, targetData, result, relationType, o
             {tag}
           </span>
         ))}
+      </div>
+
+      {/* 공유 */}
+      <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-4">
+        <p className="text-[#555] text-[10px] uppercase tracking-[0.25em] mb-3">결과 공유하기</p>
+        <div className="grid grid-cols-3 gap-2">
+          <button onClick={handleKakaoShare}
+            className="py-2.5 bg-[#FEE500] text-[#3C1E1E] text-[11px] font-bold hover:opacity-90 transition-opacity">
+            카카오톡
+          </button>
+          <button onClick={handleSaveImage}
+            className="py-2.5 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
+            이미지 저장
+          </button>
+          <button onClick={handleInstallApp}
+            className="py-2.5 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
+            앱으로 저장
+          </button>
+        </div>
       </div>
 
       {/* 공유 이미지 카드 */}
