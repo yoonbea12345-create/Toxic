@@ -424,31 +424,19 @@ function Card({ children, accent, className = '' }: { children: React.ReactNode;
 }
 
 function CompletionReveal() {
-  const areas = [
-    { label: '나와 안맞는 이유',    locked: false },
-    { label: '충돌 상황 분석',      locked: false },
-    { label: '실전 가이드',         locked: true },
-    { label: '관계 영향',           locked: true },
-    { label: '상대방 시선',         locked: true },
-    { label: '최종 판정',           locked: true },
-  ];
+  const areas = ['나와 안맞는 이유', '충돌 상황 분석', '실전 가이드', '관계 영향', '상대방 시선', '최종 판정'];
   return (
     <div className="border border-[#FF2D55]/25 bg-[#0D0D0D] px-4 py-4">
-      <p className="text-[#FF2D55] text-xs font-bold tracking-wider mb-3 font-sans-kr">6개 영역 분석 준비 — 아래로 확인하세요</p>
+      <p className="text-[#FF2D55] text-xs font-bold tracking-wider mb-3 font-sans-kr">✓ 6개 영역 분석 완료</p>
       <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
         {areas.map((area, i) => (
           <div key={i} className="flex items-center gap-2 animate-fade-in"
             style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both', opacity: 0 }}>
-            <span className={`text-xs font-bold flex-shrink-0 ${area.locked ? 'text-[#333]' : 'text-[#FF2D55]'}`}>
-              {area.locked ? '🔒' : '✓'}
-            </span>
-            <span className={`text-[13px] font-medium font-sans-kr ${area.locked ? 'text-[#444]' : 'text-[#e8e8e8]'}`}>
-              {area.label}
-            </span>
+            <span className="text-[#FF2D55] text-xs font-bold flex-shrink-0">✓</span>
+            <span className="text-[#e8e8e8] text-[13px] font-medium font-sans-kr">{area}</span>
           </div>
         ))}
       </div>
-      <p className="text-[#2a2a2a] text-[10px] mt-3 font-sans-kr">잠금 영역은 아래에서 해제 가능해요</p>
     </div>
   );
 }
@@ -488,7 +476,7 @@ function BlurredPreview({ children, unlocked, onUnlock, teaser }: {
       )}
       <div className="relative min-h-[140px]">
       <div className="select-none pointer-events-none"
-        style={{ filter: 'blur(7px)', opacity: 0.75 }}>
+        style={{ filter: 'blur(3px)', opacity: 0.82 }}>
         {children}
       </div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10 px-4">
