@@ -36,7 +36,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         saju_result: saju_result || null,
         ai_phase1: ai_phase1 || null,
         ai_phase2: ai_phase2 || null,
-        created_at: Date.now(),
       }),
     });
 

@@ -842,6 +842,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [paywallMode, setPaywallMode] = useState<'all' | 'section'>('all');
   const [showFreeSuccess, setShowFreeSuccess] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
   const ai: AIAnalysis = { ...aiPhase1, ...aiPhase2 };
 
@@ -1079,13 +1080,14 @@ export default function StepResult({ myData, targetData, result, relationType, o
   };
 
   const handleKakaoShare = async () => {
+    if (isSharing) return;
     trackEvent('share', { method: 'kakao' });
     let shareUrl: string;
     if (shareMode) {
       shareUrl = window.location.href;
     } else {
-      showToast('링크 생성 중...');
-      shareUrl = generateShareUrl();
+      setIsSharing(true);
+      shareUrl = `https://toxic.kr`;
       try {
         const saveRes = await fetch('/api/share-save', {
           method: 'POST',
@@ -1103,6 +1105,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           shareUrl = `https://toxic.kr/share/${id}`;
         }
       } catch {}
+      setIsSharing(false);
     }
     const myName = myData.name || '나';
     const targetName = targetData.name || '상대방';
@@ -1872,8 +1875,14 @@ export default function StepResult({ myData, targetData, result, relationType, o
         <p className="text-[#555] text-[10px] uppercase tracking-[0.25em] mb-3">결과 공유하기</p>
         <div className="grid grid-cols-3 gap-2">
           <button onClick={handleKakaoShare}
-            className="py-2.5 bg-[#FEE500] text-[#3C1E1E] text-[11px] font-bold hover:opacity-90 transition-opacity">
-            카카오톡
+            disabled={isSharing}
+            className="py-2.5 bg-[#FEE500] text-[#3C1E1E] text-[11px] font-bold hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-1">
+            {isSharing ? (
+              <>
+                <span className="inline-block w-3 h-3 border-2 border-[#3C1E1E]/30 border-t-[#3C1E1E] rounded-full animate-spin" />
+                <span>준비 중</span>
+              </>
+            ) : '카카오톡'}
           </button>
           <button onClick={handleSaveImage}
             className="py-2.5 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
