@@ -794,6 +794,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [aiPhase1, setAiPhase1] = useState<AIAnalysis | null>(null);
   const [aiPhase2, setAiPhase2] = useState<Partial<AIAnalysis> | null>(null);
   const [phase2Loading, setPhase2Loading] = useState(true);
+  const [phase2Error, setPhase2Error] = useState(false);
   const [, setApiDone] = useState(false);
   // apiProgress: 실제 API 스트림 진행 (0-100)
   // displayProgress: 사용자에게 보이는 진행 (0→80 빠르게, 80→100 천천히)
@@ -862,8 +863,8 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const phase2Sections = new Set(['s04', 's05', 's06']);
 
   const handleUnlockSection = () => {
-    if (phase2Loading && phase2Sections.has(activeSection)) {
-      showToast('분석 데이터 로딩 중 — 잠시 후 다시 시도해 주세요');
+    if ((phase2Loading || phase2Error) && phase2Sections.has(activeSection)) {
+      showToast(phase2Error ? 'AI 분석 실패 — 기본 분석으로 대체됩니다' : '분석 데이터 로딩 중 — 잠시 후 다시 시도해 주세요');
       setShowPaywall(false);
       return;
     }
@@ -965,6 +966,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           howTheySeeMe: localData.howTheySeeMe,
           continuationAssessment: localData.continuationAssessment,
         });
+        setPhase2Error(true);
       } finally {
         setPhase2Loading(false);
       }
@@ -1030,9 +1032,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   const generateShareUrl = () => {
     try {
+      // 상대방 생년월일/시간 제외 — 개인정보 보호
       const payload = JSON.stringify({
         m: { n: myData.name, b: myData.birthdate, bt: myData.birthtime, g: myData.gender },
-        t: { n: targetData.name, b: targetData.birthdate, bt: targetData.birthtime, g: targetData.gender },
+        t: { n: targetData.name, g: targetData.gender },
         r: relationType,
       });
       const encoded = btoa(unescape(encodeURIComponent(payload)));
@@ -1069,11 +1072,12 @@ export default function StepResult({ myData, targetData, result, relationType, o
     if (stars === 0) return;
     trackEvent('review_submit', { stars, relationType, score: result.toxicScore });
     try {
-      await fetch('/api/review', {
+      const reviewRes = await fetch('/api/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stars, comment: text, relationType, score: result.toxicScore }),
       });
+      if (!reviewRes.ok) throw new Error(`HTTP ${reviewRes.status}`);
       try {
         const raw = localStorage.getItem('toxic_user_reviews');
         const list = raw ? JSON.parse(raw) : [];
@@ -1172,7 +1176,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
       {/* 토스트 알림 */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1a1a1a] border border-[#FF2D55]/40 text-white text-sm px-5 py-3 animate-fade-in whitespace-nowrap">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-[#1a1a1a] border border-[#FF2D55]/40 text-white text-sm px-5 py-3 animate-fade-in whitespace-nowrap">
           {toast}
         </div>
       )}

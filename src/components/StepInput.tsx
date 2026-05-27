@@ -30,7 +30,7 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
   const [selectedYear, setSelectedYear] = useState(initialData ? parseYear(initialData.birthdate) : '');
   const [selectedMonth, setSelectedMonth] = useState(initialData ? parseMonth(initialData.birthdate) : '');
   const [selectedDay, setSelectedDay] = useState(initialData ? parseDay(initialData.birthdate) : '');
-  const [unknownTime, setUnknownTime] = useState(initialData ? !initialData.birthtime : false);
+  const [unknownTime, setUnknownTime] = useState(initialData ? !initialData.birthtime : true);
   const [hour, setHour] = useState(initialData ? parseHour(initialData.birthtime) : 0);
   const [minute, setMinute] = useState(initialData ? parseMinute(initialData.birthtime) : 0);
   const [yearError, setYearError] = useState('');
@@ -61,13 +61,13 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
   const handleSubmit = () => {
     let fullDate = '';
     if (selectedYear) {
-      let dateStr = selectedYear;
-      if (selectedMonth) dateStr += `-${String(selectedMonth).padStart(2, '0')}`;
-      fullDate = selectedDay
-        ? dateStr + `-${String(selectedDay).padStart(2, '0')}`
-        : selectedMonth
-          ? `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`
-          : `${selectedYear}-06-01`;
+      if (selectedDay && selectedMonth) {
+        fullDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+      } else if (selectedMonth) {
+        fullDate = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}`;
+      } else {
+        fullDate = selectedYear;
+      }
     }
     const birthtimeStr = unknownTime ? '' : `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
     onNext({ ...data, birthdate: fullDate, birthtime: birthtimeStr });
@@ -129,23 +129,23 @@ export default function StepInput({ title, subtitle, stepNumber, onNext, onSkip,
 
           <div className="grid grid-cols-3 gap-2">
             <input
-              type="number"
-              placeholder="출생 연도"
+              type="tel"
               inputMode="numeric"
-              min={1924}
-              max={currentYear}
+              pattern="\d{4}"
+              maxLength={4}
+              placeholder="출생 연도"
               value={selectedYear}
               onChange={e => {
-                const val = e.target.value;
+                const val = e.target.value.replace(/\D/g, '').slice(0, 4);
                 setSelectedYear(val);
                 setSelectedDay('');
-                if (val && (Number(val) < 1924 || Number(val) > currentYear)) {
+                if (val.length === 4 && (Number(val) < 1924 || Number(val) > currentYear)) {
                   setYearError(`1924 ~ ${currentYear} 사이로 입력해주세요`);
                 } else {
                   setYearError('');
                 }
               }}
-              className={`bg-card-bg border rounded-sm px-3 py-3 text-white placeholder-text-secondary focus:outline-none transition-colors [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${yearError ? 'border-[#FF9500]' : 'border-border focus:border-accent-red'}`}
+              className={`bg-card-bg border rounded-sm px-3 py-3 text-white placeholder-text-secondary focus:outline-none transition-colors ${yearError ? 'border-[#FF9500]' : 'border-border focus:border-accent-red'}`}
             />
             <select
               value={selectedMonth}

@@ -47,9 +47,11 @@ export default function AppPage() {
       setRelationType(rel);
       setResult(res);
       setStep('result');
-      // URL에서 share 파라미터 제거
       window.history.replaceState({}, '', window.location.pathname);
-    } catch {}
+    } catch {
+      // 파싱 실패 시 URL 정리
+      window.history.replaceState({}, '', window.location.pathname);
+    }
   }, []);
 
   const handleMyInfo = (data: PersonData) => {
