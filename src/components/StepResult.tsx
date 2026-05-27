@@ -698,7 +698,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [displayProgress, setDisplayProgress] = useState(0);
   const apiProgressRef = useRef(0);
   const [showLoading, setShowLoading] = useState(true);
-  const [aiError] = useState(false);
+  const [aiError, setAiError] = useState(false);
   const [toast, setToast] = useState('');
   const [conflictTooltip, setConflictTooltip] = useState<string | null>(null);
   const [reviewStars, setReviewStars] = useState(0);
@@ -829,6 +829,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
       } catch {
         const localData = generateLocalAnalysis(result, relationType, hasTarget);
         setAiPhase1(localData as AIAnalysis);
+        setAiError(true);
       } finally {
         apiProgressRef.current = 100;
         setApiProgress(100);
@@ -859,9 +860,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
     })();
   }, []);
 
-  // 결과 화면 진입 시 세션 타임 기록 — 반드시 조건부 return 전에 위치해야 함
+  const paywallImpressionFired = useRef(false);
   useEffect(() => {
-    if (!showLoading) {
+    if (!showLoading && !paywallImpressionFired.current) {
+      paywallImpressionFired.current = true;
       endSession();
       trackEvent('result_view', { toxicScore: result.toxicScore, relationType });
       trackEvent('paywall_impression');

@@ -36,6 +36,7 @@ export function trackEvent(event: string, props?: Record<string, unknown>) {
 }
 
 export function startSession() {
+  if (sessionStorage.getItem(SESSION_START_KEY)) return;
   sessionStorage.setItem(SESSION_START_KEY, String(Date.now()));
   trackEvent('page_view_landing');
 }
@@ -45,7 +46,7 @@ export function endSession() {
   if (!start) return;
   const duration = Date.now() - Number(start);
 
-  postToBackend({ duration });
+  postToBackend({ duration }, true);
 
   try {
     const raw = localStorage.getItem(TIMES_KEY);

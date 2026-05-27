@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { trackEvent } from '../utils/analytics';
 import { saveHistory } from '../utils/history';
 import type { PersonData, RelationType, SajuResult } from '../utils/saju';
@@ -21,11 +21,13 @@ function loadSession() {
 
 export default function AppPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const saved = loadSession();
+  const locationRelation = (location.state as any)?.relationType as RelationType | undefined;
   const [step, setStep] = useState<Step>(saved?.step ?? 'my-info');
   const [myData, setMyData] = useState<PersonData | null>(saved?.myData ?? null);
-  const [relationType, setRelationType] = useState<RelationType>(saved?.relationType ?? '연인');
+  const [relationType, setRelationType] = useState<RelationType>(saved?.relationType ?? locationRelation ?? '연인');
   const [targetData, setTargetData] = useState<PersonData | null>(saved?.targetData ?? null);
   const [result, setResult] = useState<SajuResult | null>(saved?.result ?? null);
 

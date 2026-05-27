@@ -41,7 +41,7 @@ export default function Landing() {
   }, []);
 
   useEffect(() => {
-    const t = setInterval(() => setTriggerIdx(i => (i + 1) % TRIGGERS.length), 3000);
+    const t = setInterval(() => setTriggerIdx(i => (i + 1) % TRIGGERS.length), 5000);
     return () => clearInterval(t);
   }, []);
 
@@ -52,9 +52,9 @@ export default function Landing() {
       .catch(() => setUserCount(102));
   }, []);
 
-  const goToApp = () => {
+  const goToApp = (relation?: string) => {
     try { sessionStorage.removeItem('toxic_session'); } catch {}
-    navigate('/app');
+    navigate('/app', relation ? { state: { relationType: relation } } : undefined);
   };
 
   const trigger = TRIGGERS[triggerIdx];
@@ -105,7 +105,7 @@ export default function Landing() {
             사주에 <span className="text-[#FF2D55] font-bold">모든 답이 있습니다.</span>
           </p>
 
-          <button onClick={goToApp}
+          <button onClick={() => goToApp(trigger.type)}
             className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 tracking-wide hover:opacity-90 active:scale-95 transition-all cta-glow-red">
             이름이랑 생일 넣어보기 →
           </button>
@@ -130,7 +130,7 @@ export default function Landing() {
           <div className="max-w-[300px] mx-auto">
             <div className="rounded-[2.4rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 32px 80px rgba(0,0,0,0.9)' }}>
               <div className="flex justify-center pt-3 pb-1.5 bg-[#111]"><div className="w-20 h-[3px] bg-[#222] rounded-full" /></div>
-              <img src="/chat-lover.png" alt="연인 대화" className="w-full block" />
+              <img src="/chat-lover.png" alt="연인 대화" className="w-full block" loading="lazy" />
               <div className="flex justify-center py-2.5 bg-[#111]"><div className="w-14 h-[3px] bg-[#222] rounded-full" /></div>
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function Landing() {
           <div className="max-w-[300px] mx-auto">
             <div className="rounded-[2.4rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 32px 80px rgba(0,0,0,0.9)' }}>
               <div className="flex justify-center pt-3 pb-1.5 bg-[#111]"><div className="w-20 h-[3px] bg-[#222] rounded-full" /></div>
-              <img src="/chat-friend.png" alt="친구 대화" className="w-full block" />
+              <img src="/chat-friend.png" alt="친구 대화" className="w-full block" loading="lazy" />
               <div className="flex justify-center py-2.5 bg-[#111]"><div className="w-14 h-[3px] bg-[#222] rounded-full" /></div>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function Landing() {
           <div className="max-w-[300px] mx-auto">
             <div className="rounded-[2.4rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 32px 80px rgba(0,0,0,0.9)' }}>
               <div className="flex justify-center pt-3 pb-1.5 bg-[#111]"><div className="w-20 h-[3px] bg-[#222] rounded-full" /></div>
-              <img src="/chat-work.png" alt="직장 대화" className="w-full block" />
+              <img src="/chat-work.png" alt="직장 대화" className="w-full block" loading="lazy" />
               <div className="flex justify-center py-2.5 bg-[#111]"><div className="w-14 h-[3px] bg-[#222] rounded-full" /></div>
             </div>
           </div>
@@ -191,7 +191,7 @@ export default function Landing() {
           </h2>
 
           <div className="space-y-3">
-            <button onClick={goToApp}
+            <button onClick={() => goToApp('연인')}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF2D55]/40 card-hover group">
               <div className="flex items-start justify-between">
                 <div>
@@ -207,7 +207,7 @@ export default function Landing() {
               </div>
             </button>
 
-            <button onClick={goToApp}
+            <button onClick={() => goToApp('친구')}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#30D158]/40 card-hover group">
               <div className="flex items-start justify-between">
                 <div>
@@ -223,7 +223,7 @@ export default function Landing() {
               </div>
             </button>
 
-            <button onClick={goToApp}
+            <button onClick={() => goToApp('직장')}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#BF5AF2]/40 card-hover group">
               <div className="flex items-start justify-between">
                 <div>
@@ -239,7 +239,7 @@ export default function Landing() {
               </div>
             </button>
 
-            <button onClick={goToApp}
+            <button onClick={() => goToApp('가족')}
               className="w-full text-left border border-[#1e1e1e] p-5 bg-[#0D0D0D] hover:border-[#FF9500]/40 card-hover group">
               <div className="flex items-start justify-between">
                 <div>
@@ -658,7 +658,7 @@ export default function Landing() {
                 <div className="max-w-[280px] w-full mx-auto rounded-[2rem] overflow-hidden"
                   style={{ background: '#111', border: '1.5px solid #2A2A2A', boxShadow: '0 32px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04)' }}>
                   <div className="flex justify-center pt-3 pb-1"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
-                  <img src={src} alt={label} className="w-full block" />
+                  <img src={src} alt={label} className="w-full block" loading="lazy" />
                   <div className="flex justify-center pt-1 pb-2.5"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
                 </div>
               </div>
@@ -691,7 +691,7 @@ export default function Landing() {
             <div className="max-w-[260px] mx-auto">
               <div className="rounded-[2.2rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 24px 70px rgba(0,0,0,0.85)' }}>
                 <div className="flex justify-center pt-2.5 pb-1 bg-[#111]"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
-                <img src="/step-1.png" alt="STEP 1 내 정보 입력" className="w-full block" />
+                <img src="/step-1.png" alt="STEP 1 내 정보 입력" className="w-full block" loading="lazy" />
                 <div className="flex justify-center py-2 bg-[#111]"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
               </div>
             </div>
@@ -708,7 +708,7 @@ export default function Landing() {
             <div className="max-w-[260px] mx-auto">
               <div className="rounded-[2.2rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 24px 70px rgba(0,0,0,0.85)' }}>
                 <div className="flex justify-center pt-2.5 pb-1 bg-[#111]"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
-                <img src="/step-2.png" alt="STEP 2 관계 유형 선택" className="w-full block" />
+                <img src="/step-2.png" alt="STEP 2 관계 유형 선택" className="w-full block" loading="lazy" />
                 <div className="flex justify-center py-2 bg-[#111]"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
               </div>
             </div>
@@ -725,7 +725,7 @@ export default function Landing() {
             <div className="max-w-[260px] mx-auto">
               <div className="rounded-[2.2rem] overflow-hidden" style={{ border: '1.5px solid #2A2A2A', background: '#111', boxShadow: '0 24px 70px rgba(0,0,0,0.85)' }}>
                 <div className="flex justify-center pt-2.5 pb-1 bg-[#111]"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
-                <img src="/step-3.png" alt="STEP 3 상대방 정보 입력" className="w-full block" />
+                <img src="/step-3.png" alt="STEP 3 상대방 정보 입력" className="w-full block" loading="lazy" />
                 <div className="flex justify-center py-2 bg-[#111]"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
               </div>
             </div>
@@ -742,7 +742,7 @@ export default function Landing() {
             <div className="max-w-[260px] mx-auto">
               <div className="rounded-[2.2rem] overflow-hidden" style={{ border: '1.5px solid #FF2D55', background: '#111', boxShadow: '0 24px 70px rgba(0,0,0,0.85), 0 0 40px rgba(255,45,85,0.15)' }}>
                 <div className="flex justify-center pt-2.5 pb-1 bg-[#111]"><div className="w-16 h-[3px] bg-[#222] rounded-full" /></div>
-                <img src="/step-result.png" alt="분석 결과" className="w-full block" />
+                <img src="/step-result.png" alt="분석 결과" className="w-full block" loading="lazy" />
                 <div className="flex justify-center py-2 bg-[#111]"><div className="w-12 h-[3px] bg-[#222] rounded-full" /></div>
               </div>
             </div>

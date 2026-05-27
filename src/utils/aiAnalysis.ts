@@ -1,5 +1,12 @@
 import type { SajuResult, PersonData, RelationType } from './saju';
 
+function timeoutSignal(ms: number): AbortSignal {
+  if (typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms);
+  const ctrl = new AbortController();
+  setTimeout(() => ctrl.abort(), ms);
+  return ctrl.signal;
+}
+
 export async function fetchAIPhase1(
   myData: PersonData,
   targetData: PersonData,
@@ -11,7 +18,7 @@ export async function fetchAIPhase1(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phase: 1, myData, targetData, relationType, result }),
-    signal: AbortSignal.timeout(90000),
+    signal: timeoutSignal(90000),
   });
 
   if (!res.ok) throw new Error(`API ${res.status}`);
@@ -57,7 +64,7 @@ export async function fetchAIPhase2(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ phase: 2, myData, targetData, relationType, result }),
-    signal: AbortSignal.timeout(90000),
+    signal: timeoutSignal(90000),
   });
   if (!res.ok) throw new Error(`API ${res.status}`);
   const { data } = await res.json();
