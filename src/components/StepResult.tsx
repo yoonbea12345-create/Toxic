@@ -13,6 +13,9 @@ interface StepResultProps {
   result: SajuResult;
   onReset: () => void;
   onResetTarget?: () => void;
+  shareMode?: boolean;
+  preloadedPhase1?: AIAnalysis | null;
+  preloadedPhase2?: Partial<AIAnalysis> | null;
 }
 
 interface ConflictScenario {
@@ -789,11 +792,11 @@ function FreeSuccessOverlay({ visible, myName, onClose }: { visible: boolean; my
 // ───────────────────────────────────────────
 // 메인 컴포넌트
 // ───────────────────────────────────────────
-export default function StepResult({ myData, targetData, result, relationType, onReset, onResetTarget }: StepResultProps) {
+export default function StepResult({ myData, targetData, result, relationType, onReset, onResetTarget, shareMode, preloadedPhase1, preloadedPhase2 }: StepResultProps) {
   const shareCardRef = useRef<HTMLDivElement>(null);
-  const [aiPhase1, setAiPhase1] = useState<AIAnalysis | null>(null);
-  const [aiPhase2, setAiPhase2] = useState<Partial<AIAnalysis> | null>(null);
-  const [phase2Loading, setPhase2Loading] = useState(true);
+  const [aiPhase1, setAiPhase1] = useState<AIAnalysis | null>(shareMode ? (preloadedPhase1 ?? null) : null);
+  const [aiPhase2, setAiPhase2] = useState<Partial<AIAnalysis> | null>(shareMode ? (preloadedPhase2 ?? null) : null);
+  const [phase2Loading, setPhase2Loading] = useState(!shareMode);
   const [phase2Error, setPhase2Error] = useState(false);
   const [, setApiDone] = useState(false);
   // apiProgress: 실제 API 스트림 진행 (0-100)
@@ -801,7 +804,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [apiProgress, setApiProgress] = useState(0);
   const [displayProgress, setDisplayProgress] = useState(0);
   const apiProgressRef = useRef(0);
-  const [showLoading, setShowLoading] = useState(true);
+  const [showLoading, setShowLoading] = useState(!shareMode);
   const [aiError, setAiError] = useState(false);
   const [toast, setToast] = useState('');
   const [conflictTooltip, setConflictTooltip] = useState<string | null>(null);
@@ -894,6 +897,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   // MINT 방식 로딩: gap*coeff + 최소 floor → 수학적으로 절대 멈추지 않음
   useEffect(() => {
+    if (shareMode) return;
     const startTime = Date.now();
     setDisplayProgress(4);
 
@@ -930,6 +934,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   // Phase 1: 로딩 화면 중 실행 (최소 3초 보장)
   useEffect(() => {
+    if (shareMode) return;
     const startedAt = Date.now();
     (async () => {
       try {
@@ -955,6 +960,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   // Phase 2: 로딩 화면 중 Phase 1과 병렬 실행
   useEffect(() => {
+    if (shareMode) return;
     (async () => {
       try {
         const data = await fetchAIPhase2(myData, targetData, relationType, result);
@@ -985,7 +991,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   // 20초 체류 후 리뷰 팝업
   useEffect(() => {
-    if (showLoading || reviewSubmitted) return;
+    if (showLoading || reviewSubmitted || shareMode) return;
     try { if (sessionStorage.getItem('toxic_review_shown')) return; } catch {}
     const timer = setTimeout(() => {
       try { sessionStorage.setItem('toxic_review_shown', '1'); } catch {}
@@ -1045,9 +1051,32 @@ export default function StepResult({ myData, targetData, result, relationType, o
     }
   };
 
-  const handleKakaoShare = () => {
+  const handleKakaoShare = async () => {
     trackEvent('share', { method: 'kakao' });
-    const shareUrl = generateShareUrl();
+    let shareUrl: string;
+    if (shareMode) {
+      shareUrl = window.location.href;
+    } else {
+      showToast('링크 생성 중...');
+      shareUrl = generateShareUrl();
+      try {
+        const saveRes = await fetch('/api/share-save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            my_name: myData.name, my_gender: myData.gender,
+            target_name: targetData.name, target_gender: targetData.gender,
+            has_target: hasTarget, has_date_data: hasDateData,
+            relation_type: relationType,
+            saju_result: result, ai_phase1: aiPhase1, ai_phase2: aiPhase2,
+          }),
+        });
+        if (saveRes.ok) {
+          const { id } = await saveRes.json();
+          shareUrl = `https://toxic.kr/share/${id}`;
+        }
+      } catch {}
+    }
     const myName = myData.name || '나';
     const targetName = targetData.name || '상대방';
     const desc = ai.toxicSummary || result.conflictSummary || `${myName}과 ${targetName}의 사주 충돌 분석`;
@@ -1060,7 +1089,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
           imageUrl: 'https://toxic.kr/og.png',
           link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },
-        buttons: [{ title: '내 결과 보기', link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
+        buttons: [{ title: '결과 바로 보기', link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
       });
     } else {
       navigator.clipboard.writeText(shareUrl).catch(() => {});
