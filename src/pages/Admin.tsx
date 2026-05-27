@@ -56,8 +56,8 @@ function computeStats(events: EventRecord[]): Stats {
   const shares = count('share');
   const paywallImpressions = count('paywall_impression');
   const paywallClicks = count('paywall_click');
-  const sectionPays = events.filter(e => e.event === 'paywall_pay' && e.props?.type === 'section').length;
-  const allPays = events.filter(e => e.event === 'paywall_pay' && e.props?.type === 'all').length;
+  const sectionPays = events.filter(e => e.event === 'paywall_pay' && (e.props?.type === 'section' || (!e.props?.type && e.props?.price === 500))).length;
+  const allPays = events.filter(e => e.event === 'paywall_pay' && (e.props?.type === 'all' || (!e.props?.type && e.props?.price === 1900))).length;
   const sectionRevenue = sectionPays * 500;
   const allRevenue = allPays * 1900;
   const totalRevenue = sectionRevenue + allRevenue;
@@ -157,10 +157,10 @@ export default function AdminPage() {
     async function loadFromSupabaseDirect() {
       if (!SUPA_URL || !SUPA_ANON) throw new Error('no vite env');
       const [evRes, tmRes] = await Promise.all([
-        fetch(`${SUPA_URL}/rest/v1/toxic_events?select=event,props,ts&order=ts.asc`, {
+        fetch(`${SUPA_URL}/rest/v1/toxic_events?select=event,props,ts&order=ts.desc&limit=10000`, {
           headers: { apikey: SUPA_ANON, Authorization: `Bearer ${SUPA_ANON}` },
         }),
-        fetch(`${SUPA_URL}/rest/v1/toxic_session_times?select=duration&order=id.desc`, {
+        fetch(`${SUPA_URL}/rest/v1/toxic_session_times?select=duration&order=id.desc&limit=10000`, {
           headers: { apikey: SUPA_ANON, Authorization: `Bearer ${SUPA_ANON}` },
         }),
       ]);

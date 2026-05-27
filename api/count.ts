@@ -22,8 +22,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
     const contentRange = response.headers.get('content-range');
     const total = contentRange ? parseInt(contentRange.split('/')[1]) : 0;
-    return res.status(200).json({ count: isNaN(total) ? 1247 : total });
+    return res.status(200).json({ count: isNaN(total) ? 0 : total });
   } catch {
-    return res.status(200).json({ count: 1247 });
+    return res.status(200).json({ count: 0 });
   }
 }

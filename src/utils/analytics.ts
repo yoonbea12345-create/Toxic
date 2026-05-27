@@ -5,18 +5,25 @@ const SESSION_START_KEY = 'toxic_session_start';
 const TIMES_KEY = 'toxic_session_times';
 const MAX_EVENTS = 500;
 
-function postToBackend(body: object) {
+function postToBackend(body: object, keepalive = false) {
   fetch('/api/track', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    keepalive,
   }).catch(() => {});
+}
+
+function postPaywallToBackend(body: object) {
+  postToBackend(body, true);
 }
 
 export function trackEvent(event: string, props?: Record<string, unknown>) {
   try { vercelTrack(event, props as Record<string, string>); } catch {}
 
-  postToBackend({ event, props, ts: Date.now() });
+  const isPaywall = event === 'paywall_pay';
+  if (isPaywall) postPaywallToBackend({ event, props, ts: Date.now() });
+  else postToBackend({ event, props, ts: Date.now() });
 
   // localStorage 백업 (로컬 개발용)
   try {
