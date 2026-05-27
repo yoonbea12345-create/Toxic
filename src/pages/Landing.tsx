@@ -67,7 +67,7 @@ export default function Landing() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/90 backdrop-blur-md border-b border-white/[0.06]">
         <div className="max-w-xl mx-auto pl-0 pr-4 h-[100px] flex items-center justify-between overflow-hidden">
           <img src="/hero-title.svg" alt="TOXIC" className="h-[92px] w-auto block flex-shrink-0" style={{ marginLeft: '-12px' }} />
-          <button onClick={goToApp}
+          <button onClick={() => goToApp()}
             className="text-[11px] text-white bg-[#FF2D55] px-5 py-2.5 rounded-full hover:opacity-90 active:scale-95 transition-all font-sans-kr tracking-wider font-bold">
             분석 시작 →
           </button>
@@ -665,7 +665,7 @@ export default function Landing() {
             ))}
           </div>
 
-          <button onClick={goToApp}
+          <button onClick={() => goToApp()}
             className="w-full bg-[#FF2D55] text-white font-display text-xl py-5 hover:opacity-90 active:scale-95 transition-all tracking-wide cta-glow-red">
             이름이랑 생일 넣어보기 →
           </button>
@@ -808,7 +808,7 @@ export default function Landing() {
             사주에 모든 답이 있습니다.
           </p>
 
-          <button onClick={goToApp}
+          <button onClick={() => goToApp()}
             className="w-full bg-[#FF2D55] text-white font-display text-2xl py-6 hover:opacity-90 active:scale-95 transition-all tracking-wide mb-5 cta-glow-red">
             지금 분석하기 →
           </button>
