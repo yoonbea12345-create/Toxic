@@ -1144,27 +1144,35 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const handleKakaoImageShare = async () => {
     if (!resultContainerRef.current) return;
     trackEvent('share', { method: 'kakao_image' });
+
+    // 클릭 즉시 동기 피드백 (timeout 없이 직접 set)
+    setToast('캡쳐 중...');
+
     try {
       const { default: html2canvas } = await import('html2canvas');
       const el = resultContainerRef.current;
 
-      // 페이지 최상단으로 이동 후 전체 캡쳐, 복원
       const savedScrollY = window.scrollY;
       window.scrollTo(0, 0);
       await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 
-      const elTop = el.getBoundingClientRect().top;
+      // 동적 scale — iOS Safari canvas 한계 (~16MB ≈ 4M px) 초과 방지
+      const MAX_CANVAS_AREA = 4_000_000;
+      const rawArea = el.offsetWidth * el.scrollHeight;
+      const scale = rawArea * 1.5 * 1.5 > MAX_CANVAS_AREA
+        ? Math.max(Math.sqrt(MAX_CANVAS_AREA / rawArea), 0.8)
+        : 1.5;
 
       const canvas = await html2canvas(el, {
         backgroundColor: '#0A0A0A',
-        scale: 1.5,
+        scale,
         useCORS: true,
         allowTaint: true,
         logging: false,
         width: el.offsetWidth,
         height: el.scrollHeight,
         windowWidth: window.innerWidth,
-        windowHeight: elTop + el.scrollHeight,
+        windowHeight: el.scrollHeight,
         scrollX: 0,
         scrollY: 0,
         onclone: (doc, clonedEl) => {
@@ -1186,19 +1194,21 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
       window.scrollTo(0, savedScrollY);
 
-      // toBlob을 Promise로 래핑 — user activation 컨텍스트 유지
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
       if (!blob) { showToast('이미지 변환 실패'); return; }
+
       showToast('캡쳐완료!');
       const file = new File([blob], 'toxic-result.png', { type: 'image/png' });
       try {
         if (navigator.canShare?.({ files: [file] })) {
           await navigator.share({ files: [file], title: 'TOXIC 분석 결과' });
         } else {
+          const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
           link.download = 'toxic-result.png';
-          link.href = URL.createObjectURL(blob);
+          link.href = url;
           link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
       } catch (shareErr: any) {
         if (shareErr?.name !== 'AbortError') showToast('공유에 실패했습니다');
