@@ -46,6 +46,7 @@ async function callOpus(
     clearTimeout(timer);
     const c = msg.content[0];
     if (c.type !== 'text') throw new Error('Not text');
+    console.log(`[USAGE] Phase2 Opus: input=${msg.usage.input_tokens} output=${msg.usage.output_tokens} cache_read=${(msg.usage as any).cache_read_input_tokens ?? 0}`);
     return c.text;
   } catch {
     clearTimeout(timer);
@@ -548,6 +549,8 @@ export default async function handler(req: any, res: any) {
         if (cA.type === 'text') {
           try { dataA = extractJson(cA.text); } catch {}
         }
+        const uA = settledA.value.usage;
+        console.log(`[USAGE] Phase1A: input=${uA.input_tokens} output=${uA.output_tokens} cache_read=${(uA as any).cache_read_input_tokens ?? 0}`);
       } else {
         console.error('[TOXIC API] Phase 1A 실패, 폴백 적용:', settledA.reason);
         dataA = {
@@ -561,6 +564,8 @@ export default async function handler(req: any, res: any) {
         if (cB.type === 'text') {
           try { dataB = extractJson(cB.text); } catch {}
         }
+        const uB = settledB.value.usage;
+        console.log(`[USAGE] Phase1B: input=${uB.input_tokens} output=${uB.output_tokens} cache_read=${(uB as any).cache_read_input_tokens ?? 0}`);
       } else {
         console.error('[TOXIC API] Phase 1B 실패, 빈 데이터로 진행:', settledB.reason);
       }
