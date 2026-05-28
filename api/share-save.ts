@@ -39,7 +39,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }),
     });
 
-    if (!r.ok) throw new Error(`Supabase ${r.status}`);
+    if (!r.ok) {
+      const body = await r.text().catch(() => '');
+      throw new Error(`Supabase ${r.status}: ${body}`);
+    }
     return res.status(200).json({ id });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

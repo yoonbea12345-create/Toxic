@@ -1087,7 +1087,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
       shareUrl = window.location.href;
     } else {
       setIsSharing(true);
-      shareUrl = `https://toxic.kr`;
+      shareUrl = generateShareUrl(); // fallback: 최소한 결과 페이지로 이동
       try {
         const saveRes = await fetch('/api/share-save', {
           method: 'POST',

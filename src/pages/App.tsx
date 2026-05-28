@@ -23,7 +23,8 @@ export default function AppPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const saved = loadSession();
+  const hasShareParam = Boolean(new URLSearchParams(window.location.search).get('share'));
+  const saved = hasShareParam ? null : loadSession();
   const locationRelation = (location.state as any)?.relationType as RelationType | undefined;
   const [step, setStep] = useState<Step>(saved?.step ?? 'my-info');
   const [myData, setMyData] = useState<PersonData | null>(saved?.myData ?? null);
@@ -35,7 +36,7 @@ export default function AppPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const shareParam = params.get('share');
-    if (!shareParam || saved) return;
+    if (!shareParam) return;
     try {
       const decoded = JSON.parse(decodeURIComponent(escape(atob(shareParam))));
       const my: PersonData = { name: decoded.m.n ?? '', birthdate: decoded.m.b ?? '', birthtime: decoded.m.bt ?? '', gender: decoded.m.g ?? '여' };
