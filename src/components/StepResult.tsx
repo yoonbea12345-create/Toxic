@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import type { SajuResult, PersonData, RelationType } from '../utils/saju';
-import { fetchAIPhase1, fetchAIPhase2 } from '../utils/aiAnalysis';
+import { fetchAIPhase1, fetchAIPhase2, fetchAIPhase3 } from '../utils/aiAnalysis';
 import { generateLocalAnalysis } from '../utils/localAnalysis';
 import { trackEvent, endSession } from '../utils/analytics';
 import { loadHistory } from '../utils/history';
@@ -514,6 +514,51 @@ function Phase2Skeleton() {
   );
 }
 
+function DetailLoadingBanner({ name }: { name: string }) {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const start = Date.now();
+    const iv = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
+    return () => clearInterval(iv);
+  }, []);
+  const TOTAL_SEC = 38;
+  const pct = Math.min(Math.round((elapsed / TOTAL_SEC) * 100), 99);
+  const remaining = Math.max(TOTAL_SEC - elapsed, 1);
+  return (
+    <div className="border border-[#FF2D55]/30 bg-[#0a0003] p-4 animate-fade-in">
+      <p className="text-white text-sm font-bold mb-1 font-sans-kr">
+        {name || '고객'}님 거의 다 왔어요!
+      </p>
+      <p className="text-[#888] text-xs mb-3 font-sans-kr leading-relaxed">
+        상세 분석 생성 중이에요. 그 사이 위 섹션 먼저 읽어보세요 😅
+      </p>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
+          <div className="h-full rounded-full transition-all duration-1000"
+            style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
+        </div>
+        <span className="text-[#555] text-[10px] whitespace-nowrap font-sans-kr">{pct}% · ~{remaining}초</span>
+      </div>
+    </div>
+  );
+}
+
+function SectionDetailPlaceholder() {
+  return (
+    <div className="space-y-3">
+      <Card>
+        <p className="text-[#888] text-sm leading-relaxed">사주 구조에서 비롯된 심층 갈등 패턴이 여기에 표시됩니다. AI가 두 사람의 일주 에너지를 분석하여 충돌이 발생하는 구체적인 상황과 감정 반응을 제공합니다.</p>
+      </Card>
+      <Card>
+        <p className="text-[#888] text-sm leading-relaxed">오행 에너지가 실제 관계에서 어떻게 나타나는지 구체적인 대화체와 감정 묘사로 분석합니다. 어떤 말에 폭발하는지, 속으로 무슨 생각을 하는지까지.</p>
+      </Card>
+      <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
+        <p className="text-[#aaa] text-sm leading-relaxed">사주 기반 관계 분석의 핵심 통찰이 이 영역에 포함됩니다. 결제 후 즉시 확인할 수 있습니다.</p>
+      </div>
+    </div>
+  );
+}
+
 // ── 잠금 아이콘 SVG ─────────────────────────────────────────────────
 function LockIcon({ size = 20, color = '#FF2D55' }: { size?: number; color?: string }) {
   return (
@@ -799,9 +844,19 @@ function FreeSuccessOverlay({ visible, myName, onClose }: { visible: boolean; my
 export default function StepResult({ myData, targetData, result, relationType, onReset, onResetTarget, shareMode, preloadedPhase1, preloadedPhase2 }: StepResultProps) {
   const shareCardRef = useRef<HTMLDivElement>(null);
   const [aiPhase1, setAiPhase1] = useState<AIAnalysis | null>(shareMode ? (preloadedPhase1 ?? null) : null);
-  const [aiPhase2, setAiPhase2] = useState<Partial<AIAnalysis> | null>(shareMode ? (preloadedPhase2 ?? null) : null);
-  const [phase2Loading, setPhase2Loading] = useState(!shareMode);
-  const [phase2Error, setPhase2Error] = useState(false);
+  // On-demand detail states — loaded only after payment
+  const [aiDetail23, setAiDetail23] = useState<Partial<AIAnalysis> | null>(
+    shareMode ? (preloadedPhase2 as Partial<AIAnalysis> ?? null) : null
+  );
+  const [aiDetail456, setAiDetail456] = useState<Partial<AIAnalysis> | null>(
+    shareMode ? (preloadedPhase2 as Partial<AIAnalysis> ?? null) : null
+  );
+  const [detail23Loading, setDetail23Loading] = useState(false);
+  const [detail456Loading, setDetail456Loading] = useState(false);
+  const [detail23Error, setDetail23Error] = useState(false);
+  const [detail456Error, setDetail456Error] = useState(false);
+  const detail23LoadingRef = useRef(false);
+  const detail456LoadingRef = useRef(false);
   const [, setApiDone] = useState(false);
   // apiProgress: 실제 API 스트림 진행 (0-100)
   // displayProgress: 사용자에게 보이는 진행 (0→80 빠르게, 80→100 천천히)
@@ -844,7 +899,31 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [showFreeSuccess, setShowFreeSuccess] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
 
-  const ai: AIAnalysis = { ...aiPhase1, ...aiPhase2 };
+  const ai: AIAnalysis = {
+    ...aiPhase1,
+    ...aiDetail23,
+    ...aiDetail456,
+    avoidanceGuide: {
+      ...(aiPhase1?.avoidanceGuide),
+      ...(aiDetail23?.avoidanceGuide),
+    } as any,
+    conflictScenarios: [
+      ...(aiPhase1?.conflictScenarios ?? []),
+      ...(aiDetail23?.conflictScenarios ?? []),
+    ],
+    personalImpact: {
+      ...(aiPhase1?.personalImpact),
+      ...(aiDetail456?.personalImpact),
+    } as any,
+    howTheySeeMe: {
+      ...(aiPhase1?.howTheySeeMe),
+      ...(aiDetail456?.howTheySeeMe),
+    } as any,
+    continuationAssessment: {
+      ...(aiPhase1?.continuationAssessment),
+      ...(aiDetail456?.continuationAssessment),
+    } as any,
+  };
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -868,18 +947,45 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   const UNLOCK_TTL_MS = 24 * 60 * 60 * 1000; // 24시간
 
-  const phase2Sections = new Set(['s04', 's05', 's06']);
+  const triggerDetail23 = async () => {
+    if (detail23LoadingRef.current || aiDetail23) return;
+    detail23LoadingRef.current = true;
+    setDetail23Loading(true);
+    setDetail23Error(false);
+    try {
+      const data = await fetchAIPhase2(myData, targetData, relationType, result);
+      setAiDetail23(data);
+    } catch {
+      setDetail23Error(true);
+    } finally {
+      detail23LoadingRef.current = false;
+      setDetail23Loading(false);
+    }
+  };
+
+  const triggerDetail456 = async () => {
+    if (detail456LoadingRef.current || aiDetail456 || !hasTarget) return;
+    detail456LoadingRef.current = true;
+    setDetail456Loading(true);
+    setDetail456Error(false);
+    try {
+      const data = await fetchAIPhase3(myData, targetData, relationType, result);
+      setAiDetail456(data);
+    } catch {
+      setDetail456Error(true);
+    } finally {
+      detail456LoadingRef.current = false;
+      setDetail456Loading(false);
+    }
+  };
 
   const handleUnlockSection = () => {
-    if ((phase2Loading || phase2Error) && phase2Sections.has(activeSection)) {
-      showToast(phase2Error ? 'AI 분석 실패 — 기본 분석으로 대체됩니다' : '분석 데이터 로딩 중 — 잠시 후 다시 시도해 주세요');
-      setShowPaywall(false);
-      return;
-    }
     trackEvent('paywall_pay', { price: PRICE_SECTION, section: activeSection, type: 'section' });
     setShowPaywall(false);
     setShowFreeSuccess(true);
     try { localStorage.setItem(`toxic_unlocked_${activeSection}`, String(Date.now() + UNLOCK_TTL_MS)); } catch {}
+    if (activeSection === 's02' || activeSection === 's03') triggerDetail23();
+    else if (activeSection === 's04' || activeSection === 's05' || activeSection === 's06') triggerDetail456();
     setTimeout(() => {
       setUnlockedSections(prev => new Set([...prev, activeSection]));
       setShowFreeSuccess(false);
@@ -891,6 +997,8 @@ export default function StepResult({ myData, targetData, result, relationType, o
     setShowPaywall(false);
     setShowFreeSuccess(true);
     try { localStorage.setItem('toxic_unlocked_all', String(Date.now() + UNLOCK_TTL_MS)); } catch {}
+    triggerDetail23();
+    if (hasTarget) triggerDetail456();
     setTimeout(() => {
       setUnlockedSections(new Set(['s01', 's02', 's03', 's04', 's05', 's06']));
       setShowFreeSuccess(false);
@@ -963,26 +1071,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
     })();
   }, []);
 
-  // Phase 2: 로딩 화면 중 Phase 1과 병렬 실행
-  useEffect(() => {
-    if (shareMode) return;
-    (async () => {
-      try {
-        const data = await fetchAIPhase2(myData, targetData, relationType, result);
-        setAiPhase2(data);
-      } catch {
-        const localData = generateLocalAnalysis(result, relationType, hasTarget);
-        setAiPhase2({
-          personalImpact: localData.personalImpact,
-          howTheySeeMe: localData.howTheySeeMe,
-          continuationAssessment: localData.continuationAssessment,
-        });
-        setPhase2Error(true);
-      } finally {
-        setPhase2Loading(false);
-      }
-    })();
-  }, []);
+  // Phase 2+3 are on-demand (triggered on payment) — no auto-call
 
   const paywallImpressionFired = useRef(false);
   useEffect(() => {
@@ -1089,6 +1178,15 @@ export default function StepResult({ myData, targetData, result, relationType, o
       setIsSharing(true);
       shareUrl = generateShareUrl(); // fallback: 최소한 결과 페이지로 이동
       try {
+        const combinedDetail = {
+          ...(aiDetail23 ?? {}),
+          ...(aiDetail456 ?? {}),
+          conflictScenarios: [...(aiDetail23?.conflictScenarios ?? [])],
+          avoidanceGuide: aiDetail23?.avoidanceGuide ? { ...aiDetail23.avoidanceGuide } : undefined,
+          personalImpact: aiDetail456?.personalImpact ? { ...aiDetail456.personalImpact } : undefined,
+          howTheySeeMe: aiDetail456?.howTheySeeMe ? { ...aiDetail456.howTheySeeMe } : undefined,
+          continuationAssessment: aiDetail456?.continuationAssessment ? { ...aiDetail456.continuationAssessment } : undefined,
+        };
         const saveRes = await fetch('/api/share-save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1097,7 +1195,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
             target_name: targetData.name, target_gender: targetData.gender,
             has_target: hasTarget, has_date_data: hasDateData,
             relation_type: relationType,
-            saju_result: result, ai_phase1: aiPhase1, ai_phase2: aiPhase2,
+            saju_result: result, ai_phase1: aiPhase1, ai_phase2: combinedDetail,
           }),
         });
         if (saveRes.ok) {
@@ -1475,68 +1573,60 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            <BlurredPreview unlocked={unlockedSections.has('s02')} onUnlock={() => handleOpenPaywall('s02')} teaser="나머지 갈등 상황 · 갈등 트리거 · 관계별 특성이 잠겨있습니다">
-              <div className="space-y-3">
-                {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
-                  <Card key={i}>
-                    <div className="flex items-start gap-3">
-                      <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">{i + 2}</span>
-                      <div>
-                        <p className="text-white text-sm font-bold mb-2">{s.situation}</p>
-                        <p className="text-[#777] text-xs leading-relaxed mb-3">{s.whatHappens}</p>
-                        <div className="border-t border-[#1a1a1a] pt-2">
-                          <p className="text-[#FF2D55]/60 text-[11px]">사주 구조 → {s.whySaju}</p>
+            {unlockedSections.has('s02') && detail23Loading ? (
+              <DetailLoadingBanner name={myData.name} />
+            ) : (
+              <BlurredPreview unlocked={unlockedSections.has('s02')} onUnlock={() => handleOpenPaywall('s02')} teaser="나머지 갈등 상황 · 갈등 트리거 · 관계별 특성이 잠겨있습니다">
+                {aiDetail23 ? (
+                  <div className="space-y-3">
+                    {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
+                      <Card key={i}>
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">{i + 2}</span>
+                          <div>
+                            <p className="text-white text-sm font-bold mb-2">{s.situation}</p>
+                            <p className="text-[#777] text-xs leading-relaxed mb-3">{s.whatHappens}</p>
+                            <div className="border-t border-[#1a1a1a] pt-2">
+                              <p className="text-[#FF2D55]/60 text-[11px]">사주 구조 → {s.whySaju}</p>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-
-                {ai.triggerPoints && ai.triggerPoints.length > 0 ? (
-                  <Card>
-                    <SubLabel text="갈등 트리거" />
-                    <div className="space-y-2">
-                      {ai.triggerPoints.map((t, i) => (
-                        <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
-                          <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
-                          <p className="text-[#888] text-sm">{t}</p>
+                      </Card>
+                    ))}
+                    {ai.triggerPoints && ai.triggerPoints.length > 0 && (
+                      <Card>
+                        <SubLabel text="갈등 트리거" />
+                        <div className="space-y-2">
+                          {ai.triggerPoints.map((t, i) => (
+                            <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
+                              <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
+                              <p className="text-[#888] text-sm">{t}</p>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </Card>
+                      </Card>
+                    )}
+                    {ai.relationSpecific && (
+                      <Card>
+                        <SubLabel text={`${relationType} 관계에서 특히`} />
+                        <p className="text-[#888] text-sm leading-relaxed">{ai.relationSpecific}</p>
+                      </Card>
+                    )}
+                  </div>
                 ) : (
-                  <Card>
-                    <SubLabel text="갈등 트리거" />
-                    <div className="space-y-2">
-                      {result.tags.map((t, i) => (
-                        <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
-                          <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
-                          <p className="text-[#888] text-sm">{t}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
+                  <SectionDetailPlaceholder />
                 )}
-
-                {ai.relationSpecific && (
-                  <Card>
-                    <SubLabel text={`${relationType} 관계에서 특히`} />
-                    <p className="text-[#888] text-sm leading-relaxed">{ai.relationSpecific}</p>
-                  </Card>
-                )}
-              </div>
-            </BlurredPreview>
+              </BlurredPreview>
+            )}
 
           {/* ════ 03 앞으로 이렇게 해보세요 ════ */}
           <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="상황별 실전 가이드 · 선긋기 · 현실적 전망" />
 
-          {ai.avoidanceGuide ? (
+          {ai.avoidanceGuide?.mindset ? (
             <Card accent="#FF2D55">
               <SubLabel text="마음가짐" />
               <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.mindset}</p>
             </Card>
-          ) : phase2Loading ? (
-            <Phase2Skeleton />
           ) : (
             <Card accent="#FF2D55">
               <SubLabel text="현실적 가이드" />
@@ -1546,42 +1636,46 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            {ai.avoidanceGuide ? (
+            {unlockedSections.has('s03') && detail23Loading ? (
+              <DetailLoadingBanner name={myData.name} />
+            ) : (
               <BlurredPreview unlocked={unlockedSections.has('s03')} onUnlock={() => handleOpenPaywall('s03')} teaser="실전 팁 · 선긋기 · 현실적 전망이 잠겨있습니다">
-                <div className="space-y-3">
-                  <Card>
-                    <SubLabel text="실전 팁" />
-                    <div className="space-y-3">
-                      {ai.avoidanceGuide.practicalTips.map((tip, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <span className="w-5 h-5 rounded-full border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
-                            {i + 1}
-                          </span>
-                          <p className="text-[#888] text-sm leading-relaxed">{tip}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                  <Card>
-                    <SubLabel text="선긋기" />
-                    <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.boundaries}</p>
-                  </Card>
-                  {ai.realisticOutlook && (
-                    <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
-                      <SubLabel text="현실적 전망" />
-                      <p className="text-[#aaa] text-sm leading-relaxed">{ai.realisticOutlook}</p>
-                    </div>
-                  )}
-                </div>
+                {aiDetail23?.avoidanceGuide?.practicalTips ? (
+                  <div className="space-y-3">
+                    <Card>
+                      <SubLabel text="실전 팁" />
+                      <div className="space-y-3">
+                        {ai.avoidanceGuide!.practicalTips!.map((tip, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <span className="w-5 h-5 rounded-full border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                              {i + 1}
+                            </span>
+                            <p className="text-[#888] text-sm leading-relaxed">{tip}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                    <Card>
+                      <SubLabel text="선긋기" />
+                      <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide!.boundaries}</p>
+                    </Card>
+                    {ai.realisticOutlook && (
+                      <div className="border border-[#FF2D55]/20 p-5 bg-[#FF2D55]/5">
+                        <SubLabel text="현실적 전망" />
+                        <p className="text-[#aaa] text-sm leading-relaxed">{ai.realisticOutlook}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <SectionDetailPlaceholder />
+                )}
               </BlurredPreview>
-            ) : phase2Loading ? <Phase2Skeleton /> : null}
+            )}
 
           {/* ════ 04 이 관계가 나에게 주는 영향 ════ */}
           <SectionHeader number="04" title="이 관계가 나에게 주는 영향" subtitle="지금 이 관계가 나에게 하고 있는 것" />
 
-          {phase2Loading ? (
-            <Phase2Skeleton />
-          ) : ai.personalImpact ? (
+          {ai.personalImpact?.onMe ? (
             <Card accent="#BF5AF2">
               <SubLabel text="지금 나에게 미치는 영향" />
               <p className="text-[#888] text-sm leading-relaxed">{ai.personalImpact.onMe}</p>
@@ -1595,36 +1689,40 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            {ai.personalImpact ? (
+            {unlockedSections.has('s04') && detail456Loading ? (
+              <DetailLoadingBanner name={myData.name} />
+            ) : (
               <BlurredPreview unlocked={unlockedSections.has('s04')} onUnlock={() => handleOpenPaywall('s04')} teaser="이 관계가 나를 갉아먹는 신호 · 잃어가고 있는 것이 잠겨있습니다">
-                <div className="space-y-3">
-                  {ai.personalImpact.warningSignals?.length > 0 && (
-                    <Card>
-                      <SubLabel text="이 관계가 나를 갉아먹는 신호" />
-                      <div className="space-y-2">
-                        {ai.personalImpact.warningSignals.map((signal, i) => (
-                          <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
-                            <span className="text-[#BF5AF2] text-xs mt-0.5 flex-shrink-0">⚠</span>
-                            <p className="text-[#888] text-sm">{signal}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </Card>
-                  )}
-                  <div className="border border-[#BF5AF2]/20 p-5 bg-[#BF5AF2]/5">
-                    <SubLabel text="잃어가고 있는 것" />
-                    <p className="text-[#aaa] text-sm leading-relaxed">{ai.personalImpact.whatYouLose}</p>
+                {aiDetail456?.personalImpact?.warningSignals ? (
+                  <div className="space-y-3">
+                    {ai.personalImpact!.warningSignals!.length > 0 && (
+                      <Card>
+                        <SubLabel text="이 관계가 나를 갉아먹는 신호" />
+                        <div className="space-y-2">
+                          {ai.personalImpact!.warningSignals!.map((signal, i) => (
+                            <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
+                              <span className="text-[#BF5AF2] text-xs mt-0.5 flex-shrink-0">⚠</span>
+                              <p className="text-[#888] text-sm">{signal}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
+                    )}
+                    <div className="border border-[#BF5AF2]/20 p-5 bg-[#BF5AF2]/5">
+                      <SubLabel text="잃어가고 있는 것" />
+                      <p className="text-[#aaa] text-sm leading-relaxed">{ai.personalImpact!.whatYouLose}</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <SectionDetailPlaceholder />
+                )}
               </BlurredPreview>
-            ) : phase2Loading ? <Phase2Skeleton /> : null}
+            )}
 
           {/* ════ 05 상대는 나를 어떻게 생각하는지 ════ */}
           <SectionHeader number="05" title="상대는 나를 어떻게 생각하는지" subtitle="상대방 눈에 비친 나의 모습" />
 
-          {phase2Loading ? (
-            <Phase2Skeleton />
-          ) : ai.howTheySeeMe ? (
+          {ai.howTheySeeMe?.energyReading ? (
             <Card accent="#F59E0B">
               <SubLabel text="상대방 사주로 읽히는 나의 에너지" />
               <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.energyReading}</p>
@@ -1638,35 +1736,39 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            {ai.howTheySeeMe ? (
+            {unlockedSections.has('s05') && detail456Loading ? (
+              <DetailLoadingBanner name={myData.name} />
+            ) : (
               <BlurredPreview unlocked={unlockedSections.has('s05')} onUnlock={() => handleOpenPaywall('s05')} teaser={hasDateData ? `${result.targetStem}일(日) 기준 — 상대가 혼자 나를 평가하는 방식이 잠겨있습니다` : `${targetData.name || '상대방'}이 혼자 나를 평가하는 방식이 잠겨있습니다`}>
-                <div className="space-y-3">
-                  <Card>
-                    <SubLabel text="상대방이 나 때문에 자극받는 것" />
-                    <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.whatIrritates}</p>
-                  </Card>
-                  <Card>
-                    <SubLabel text="그래도 나를 놓지 못하는 이유" />
-                    <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.whatDrawsThem}</p>
-                  </Card>
-                  <Card>
-                    <SubLabel text="상대방이 혼자 나를 평가하는 방식" />
-                    <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe.theirPrivateVerdict}</p>
-                  </Card>
-                  <div className="border border-[#F59E0B]/20 p-5 bg-[#F59E0B]/5">
-                    <SubLabel text="상대방이 나에게 진짜로 원하는 것" />
-                    <p className="text-[#aaa] text-sm leading-relaxed">{ai.howTheySeeMe.howTheyNeedMe}</p>
+                {aiDetail456?.howTheySeeMe?.whatIrritates ? (
+                  <div className="space-y-3">
+                    <Card>
+                      <SubLabel text="상대방이 나 때문에 자극받는 것" />
+                      <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe!.whatIrritates}</p>
+                    </Card>
+                    <Card>
+                      <SubLabel text="그래도 나를 놓지 못하는 이유" />
+                      <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe!.whatDrawsThem}</p>
+                    </Card>
+                    <Card>
+                      <SubLabel text="상대방이 혼자 나를 평가하는 방식" />
+                      <p className="text-[#888] text-sm leading-relaxed">{ai.howTheySeeMe!.theirPrivateVerdict}</p>
+                    </Card>
+                    <div className="border border-[#F59E0B]/20 p-5 bg-[#F59E0B]/5">
+                      <SubLabel text="상대방이 나에게 진짜로 원하는 것" />
+                      <p className="text-[#aaa] text-sm leading-relaxed">{ai.howTheySeeMe!.howTheyNeedMe}</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <SectionDetailPlaceholder />
+                )}
               </BlurredPreview>
-            ) : phase2Loading ? <Phase2Skeleton /> : null}
+            )}
 
           {/* ════ 06 이 관계, 계속 가야 할까? ════ */}
           <SectionHeader number="06" title="이 관계, 계속 가야 할까?" subtitle="사주 구조로 보는 냉철한 판단" />
 
-          {phase2Loading ? (
-            <Phase2Skeleton />
-          ) : ai.continuationAssessment ? (
+          {ai.continuationAssessment?.verdict ? (
             <div className="border border-[#FF2D55] p-5"
               style={{ background: 'linear-gradient(135deg, #0D0005 0%, #0A0A0A 100%)' }}>
               <p className="text-[#FF2D55] text-[10px] uppercase tracking-[0.25em] font-sans-kr mb-3">최종 판정</p>
@@ -1684,24 +1786,30 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </div>
           )}
 
-            {ai.continuationAssessment ? (
+            {unlockedSections.has('s06') && detail456Loading ? (
+              <DetailLoadingBanner name={myData.name} />
+            ) : (
               <BlurredPreview unlocked={unlockedSections.has('s06')} onUnlock={() => handleOpenPaywall('s06')} teaser="구조적 분석 · 레드라인 · 관계 지속 가능성이 잠겨있습니다">
-                <div className="space-y-3">
-                  <Card>
-                    <SubLabel text="구조적 분석" />
-                    <p className="text-[#888] text-sm leading-relaxed">{ai.continuationAssessment.structuralAnalysis}</p>
-                  </Card>
-                  <Card>
-                    <SubLabel text="계속하려면 필요한 것" />
-                    <p className="text-[#888] text-sm leading-relaxed">{ai.continuationAssessment.whatItTakes}</p>
-                  </Card>
-                  <Card accent="#FF2D55">
-                    <SubLabel text="이 신호가 보이면 재고하세요" />
-                    <p className="text-[#888] text-sm leading-relaxed">{ai.continuationAssessment.redLine}</p>
-                  </Card>
-                </div>
+                {aiDetail456?.continuationAssessment?.structuralAnalysis ? (
+                  <div className="space-y-3">
+                    <Card>
+                      <SubLabel text="구조적 분석" />
+                      <p className="text-[#888] text-sm leading-relaxed">{ai.continuationAssessment!.structuralAnalysis}</p>
+                    </Card>
+                    <Card>
+                      <SubLabel text="계속하려면 필요한 것" />
+                      <p className="text-[#888] text-sm leading-relaxed">{ai.continuationAssessment!.whatItTakes}</p>
+                    </Card>
+                    <Card accent="#FF2D55">
+                      <SubLabel text="이 신호가 보이면 재고하세요" />
+                      <p className="text-[#888] text-sm leading-relaxed">{ai.continuationAssessment!.redLine}</p>
+                    </Card>
+                  </div>
+                ) : (
+                  <SectionDetailPlaceholder />
+                )}
               </BlurredPreview>
-            ) : phase2Loading ? <Phase2Skeleton /> : null}
+            )}
         </div>
       )}
 
@@ -1783,45 +1891,53 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            <BlurredPreview unlocked={unlockedSections.has('s02')} onUnlock={() => handleOpenPaywall('s02')} teaser="추가 갈등 상황 · 갈등 트리거 · 반복 패턴이 잠겨있습니다">
-              <div className="space-y-3">
-                {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
-                  <Card key={i}>
-                    <div className="flex items-start gap-3">
-                      <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">{i + 2}</span>
-                      <div>
-                        <p className="text-white text-sm font-bold mb-2">{s.situation}</p>
-                        <p className="text-[#777] text-xs leading-relaxed mb-2">{s.whatHappens}</p>
-                        <p className="text-[#FF2D55]/60 text-[11px] border-t border-[#1a1a1a] pt-2">사주 구조 → {s.whySaju}</p>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-                {ai.triggerPoints && (
-                  <Card>
-                    <SubLabel text="나의 갈등 트리거" />
-                    <div className="space-y-2">
-                      {ai.triggerPoints.map((t, i) => (
-                        <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
-                          <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
-                          <p className="text-[#888] text-sm">{t}</p>
+            {unlockedSections.has('s02') && detail23Loading ? (
+              <DetailLoadingBanner name={myData.name} />
+            ) : (
+              <BlurredPreview unlocked={unlockedSections.has('s02')} onUnlock={() => handleOpenPaywall('s02')} teaser="추가 갈등 상황 · 갈등 트리거 · 반복 패턴이 잠겨있습니다">
+                {aiDetail23 ? (
+                  <div className="space-y-3">
+                    {ai.conflictScenarios && ai.conflictScenarios.slice(1).map((s, i) => (
+                      <Card key={i}>
+                        <div className="flex items-start gap-3">
+                          <span className="text-[#FF2D55] font-display text-2xl leading-none mt-0.5 flex-shrink-0">{i + 2}</span>
+                          <div>
+                            <p className="text-white text-sm font-bold mb-2">{s.situation}</p>
+                            <p className="text-[#777] text-xs leading-relaxed mb-2">{s.whatHappens}</p>
+                            <p className="text-[#FF2D55]/60 text-[11px] border-t border-[#1a1a1a] pt-2">사주 구조 → {s.whySaju}</p>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  </Card>
+                      </Card>
+                    ))}
+                    {ai.triggerPoints && (
+                      <Card>
+                        <SubLabel text="나의 갈등 트리거" />
+                        <div className="space-y-2">
+                          {ai.triggerPoints.map((t, i) => (
+                            <div key={i} className="flex items-start gap-3 py-2 border-b border-[#1a1a1a] last:border-0">
+                              <span className="text-[#FF2D55] text-xs mt-0.5 flex-shrink-0">▸</span>
+                              <p className="text-[#888] text-sm">{t}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
+                    )}
+                    {ai.warningPattern && (
+                      <Card accent="#FF2D55">
+                        <SubLabel text="반복되는 갈등 패턴" />
+                        <p className="text-[#aaa] text-sm leading-relaxed">{ai.warningPattern}</p>
+                      </Card>
+                    )}
+                  </div>
+                ) : (
+                  <SectionDetailPlaceholder />
                 )}
-                {ai.warningPattern && (
-                  <Card accent="#FF2D55">
-                    <SubLabel text="반복되는 갈등 패턴" />
-                    <p className="text-[#aaa] text-sm leading-relaxed">{ai.warningPattern}</p>
-                  </Card>
-                )}
-              </div>
-            </BlurredPreview>
+              </BlurredPreview>
+            )}
 
           <SectionHeader number="03" title="앞으로 이렇게 해보세요" subtitle="내 패턴을 이해하고 충돌 줄이기" />
 
-          {ai.avoidanceGuide ? (
+          {ai.avoidanceGuide?.mindset ? (
             <Card accent="#FF2D55">
               <SubLabel text="마음가짐" />
               <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.mindset}</p>
@@ -1835,29 +1951,35 @@ export default function StepResult({ myData, targetData, result, relationType, o
             </Card>
           )}
 
-            {ai.avoidanceGuide ? (
+            {unlockedSections.has('s03') && detail23Loading ? (
+              <DetailLoadingBanner name={myData.name} />
+            ) : (
               <BlurredPreview unlocked={unlockedSections.has('s03')} onUnlock={() => handleOpenPaywall('s03')} teaser="실전 팁 · 선긋기 · 내 갈등 패턴 해소법이 잠겨있습니다">
-                <div className="space-y-3">
-                  <Card>
-                    <SubLabel text="실전 팁" />
-                    <div className="space-y-3">
-                      {ai.avoidanceGuide.practicalTips.map((tip, i) => (
-                        <div key={i} className="flex items-start gap-3">
-                          <span className="w-5 h-5 rounded-full border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
-                            {i + 1}
-                          </span>
-                          <p className="text-[#888] text-sm leading-relaxed">{tip}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                  <Card>
-                    <SubLabel text="선긋기" />
-                    <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide.boundaries}</p>
-                  </Card>
-                </div>
+                {aiDetail23?.avoidanceGuide?.practicalTips ? (
+                  <div className="space-y-3">
+                    <Card>
+                      <SubLabel text="실전 팁" />
+                      <div className="space-y-3">
+                        {ai.avoidanceGuide!.practicalTips!.map((tip, i) => (
+                          <div key={i} className="flex items-start gap-3">
+                            <span className="w-5 h-5 rounded-full border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] flex items-center justify-center flex-shrink-0 mt-0.5">
+                              {i + 1}
+                            </span>
+                            <p className="text-[#888] text-sm leading-relaxed">{tip}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                    <Card>
+                      <SubLabel text="선긋기" />
+                      <p className="text-[#888] text-sm leading-relaxed">{ai.avoidanceGuide!.boundaries}</p>
+                    </Card>
+                  </div>
+                ) : (
+                  <SectionDetailPlaceholder />
+                )}
               </BlurredPreview>
-            ) : null}
+            )}
         </div>
       )}
 

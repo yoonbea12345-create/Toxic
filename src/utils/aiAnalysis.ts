@@ -53,7 +53,26 @@ export async function fetchAIPhase1(
   throw new Error('Stream ended without done event');
 }
 
+// On-demand: 디테일파트<2,3> — sections 02-03 detail
 export async function fetchAIPhase2(
+  myData: PersonData,
+  targetData: PersonData,
+  relationType: RelationType,
+  result: SajuResult,
+): Promise<any> {
+  const res = await fetch('/api/analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phase: 2, myData, targetData, relationType, result }),
+    signal: timeoutSignal(90000),
+  });
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  const { data } = await res.json();
+  return data;
+}
+
+// On-demand: 디테일파트<4,5,6> — sections 04-06 detail
+export async function fetchAIPhase3(
   myData: PersonData,
   targetData: PersonData,
   relationType: RelationType,
@@ -63,7 +82,7 @@ export async function fetchAIPhase2(
   const res = await fetch('/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phase: 2, myData, targetData, relationType, result }),
+    body: JSON.stringify({ phase: 3, myData, targetData, relationType, result }),
     signal: timeoutSignal(90000),
   });
   if (!res.ok) throw new Error(`API ${res.status}`);
