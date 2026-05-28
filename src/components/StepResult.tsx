@@ -882,7 +882,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [displayProgress, setDisplayProgress] = useState(0);
   const apiProgressRef = useRef(0);
   const [showLoading, setShowLoading] = useState(!shareMode);
-  const [aiError, setAiError] = useState(false);
   const [toast, setToast] = useState('');
   const [reviewStars, setReviewStars] = useState(0);
   const [reviewText, setReviewText] = useState('');
@@ -1074,7 +1073,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
       } catch {
         const localData = generateLocalAnalysis(result, relationType, hasTarget);
         setAiPhase1(localData as AIAnalysis);
-        setAiError(true);
       } finally {
         apiProgressRef.current = 100;
         setApiProgress(100);
@@ -1345,12 +1343,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
         </div>
       )}
 
-      {/* AI 실패 알림 */}
-      {aiError && (
-        <div className="border border-[#1e1e1e] bg-[#0D0D0D] px-4 py-3 text-xs text-[#555] font-sans-kr">
-          지금 서버가 바빠 사주 기본 구조 기반으로 분석을 표시합니다
-        </div>
-      )}
 
       {/* ══════════════════════════════════════
           결과 (상대 있을 때)

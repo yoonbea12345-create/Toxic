@@ -181,10 +181,10 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
   "toxicSummary": "20자 이내. 이 관계를 정의하는 날카로운 한마디.",
   "coreConflict": {
     "title": "12자 이내. 이 충돌의 이름.",
-    "description": "5문장. ①이 두 사람이 왜 구조적으로 안 맞는지 — 사주 에너지를 일상 행동으로. ②어떤 순간에 갈등이 시작되는지 — 구체적 생활 장면. ③그 순간 나와 상대방 각각의 내면 독백까지. ④상대방 눈에 나는 어떤 사람인지, 나 눈에 상대는 어떤 사람인지. ⑤이 갈등이 노력해도 반복될 수밖에 없는 구조적 이유."
+    "description": "3문장. ①이 두 사람이 왜 구조적으로 안 맞는지 — 사주 에너지를 일상 행동으로. ②갈등이 시작되는 구체적 생활 장면 + 양쪽 내면 독백. ③노력해도 반복될 수밖에 없는 구조적 이유."
   },
   "conflictAnalysis": {
-    "chung": ${chung !== '없음' ? `"충(沖·정면충돌) 작동 방식 4문장. ①에너지 충돌을 일상 성향으로 번역. ②실제 대화 예시('...라고 하면 상대는 ...라고 한다' 형식). ③그 순간 양쪽 감정·속마음. ④왜 이게 반복되는지."` : 'null'},
+    "chung": ${chung !== '없음' ? `"충(沖·정면충돌) 작동 방식 2문장. 일상 성향으로 번역 + 실제 대화 예시('...라고 하면 상대는 ...라고 한다' 형식)."` : 'null'},
     "hyung": ${hyung !== '없음' ? `"형(刑·압박) 작동 방식 2문장. 말 못 할 긴장이 쌓이고 터지는 방식."` : 'null'},
     "hae": ${hae !== '없음' ? `"해(害·소모) 작동 방식 2문장. 어떤 대화·상황 후 특히 지치는지."` : 'null'},
     "geuk": ${geuk !== '없음' ? `"극(剋·억압) 작동 방식 3문장. 누가 누구를 억누르는지(${geuk} 방향) — 행동·체감·장기 결과."` : 'null'}
@@ -203,7 +203,7 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
   "conflictScenarios": [
     {
       "situation": "25자 이내. 실제 일어날 법한 구체적 생활 장면.",
-      "whatHappens": "5문장. ①상대방이 어떻게 말·행동하는지(대화체). ②그게 나에게 어떻게 들리고 느껴지는지. ③나 안에서 올라오는 감정·속마음 독백. ④내가 어떻게 반응하고 상대방에게 어떻게 보이는지. ⑤그날 이후 어떻게 남는지.",
+      "whatHappens": "3문장. ①상대방 말·행동(대화체). ②그게 나에게 들리는 방식 + 속마음 독백. ③여운.",
       "whySaju": "2문장. 사주 구조상 이 패턴이 생기는 이유."
     }
   ],
@@ -211,13 +211,13 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
     "mindset": "3문장. 이 관계에서 덜 소모되기 위한 핵심 마인드셋 — 상대를 바꾸려는 것 포기하고 무엇에 집중해야 하는지, 왜 그게 현실적인지."
   },
   "personalImpact": {
-    "onMe": "4문장. 이 관계가 지금 나에게 주는 실제 영향. ①에너지·체력 — 이 사람 만난 날 vs 안 만난 날. ②감정·자존감 — 이 관계 안에서 나는 어떤 버전의 나인지. ③일상 영향 — 다른 것들에 어떤 영향이 가는지. ④내가 의식하지 못했던 것."
+    "onMe": "2문장. 이 관계가 에너지·감정에 주는 실제 영향 — 만난 날과 안 만난 날의 차이, 내가 의식 못했던 것."
   },
   "howTheySeeMe": {
-    "energyReading": "4문장. 상대방 사주 기운이 나를 어떻게 읽는지. ①처음 느꼈을 때 — 끌렸는지 경계했는지 구체적으로. ②충·극 구조(${conflictRef})가 상대 감각에 어떻게 체감되는지. ③상대방이 나를 어떤 '유형'으로 분류했는지. ④시간이 지나면서 그 인식이 굳어진 방식."
+    "energyReading": "2문장. 상대방이 나를 어떻게 읽는지 — 처음 인상과 충·극 구조(${conflictRef})가 굳어진 방식."
   },
   "continuationAssessment": {
-    "verdict": "3문장. 사주 구조 기반 최종 판정 — 솔직하고 단호하되 잔인하지 않게. 이 관계가 나에게 어떤 의미인지, 계속 가야 한다면 어떤 전제가 필요한지, 읽는 사람에게 전하는 마지막 한마디."
+    "verdict": "2문장. 사주 구조 기반 최종 판정 — 솔직하고 단호하게. 이 관계에 대한 마지막 한마디."
   }
 }`;
 }
@@ -241,7 +241,7 @@ function buildPhase1NameOnlyPrompt(myData: any, targetData: any, relationType: s
   "toxicSummary": "20자 이내. ${targetData.name}과의 ${relationType} 관계를 꿰뚫는 한마디.",
   "coreConflict": {
     "title": "12자 이내. 이 충돌의 이름.",
-    "description": "5문장. ①내 사주 기질이 ${targetData.name}과의 ${relationType} 관계에서 왜 구조적으로 안 맞는지. ②어떤 순간에 갈등이 시작되는지 구체적 장면. ③그 순간 내 속마음 + ${targetData.name}의 반응. ④${targetData.name} 눈에 나는 어떤 사람, 나 눈에 ${targetData.name}은 어떤 사람. ⑤왜 반복될 수밖에 없는지."
+    "description": "3문장. ①내 사주 기질이 ${targetData.name}과 왜 구조적으로 안 맞는지. ②갈등 시작 장면 + 속마음. ③왜 반복될 수밖에 없는지."
   },
   "conflictAnalysis": {
     "chung": "내 위험 지지(${result.myDangerBranches?.join(',') || '없음'})가 ${targetData.name}과의 관계에서 만드는 충돌 에너지 3문장. 대화체로('${targetData.name}이 이렇게 말하면 나는 속으로 이런 생각이 든다' 형식).",
@@ -263,7 +263,7 @@ function buildPhase1NameOnlyPrompt(myData: any, targetData: any, relationType: s
   "conflictScenarios": [
     {
       "situation": "25자 이내. ${targetData.name}과의 ${relationType} 관계에서 실제 일어날 법한 장면.",
-      "whatHappens": "5문장. ①${targetData.name}이 어떻게 말·행동하는지(대화체). ②그게 나에게 어떻게 들리는지. ③나 속마음 독백. ④내 반응 + ${targetData.name}에게 어떻게 보이는지. ⑤여운.",
+      "whatHappens": "3문장. ①${targetData.name}의 말·행동(대화체). ②나에게 들리는 방식 + 속마음. ③여운.",
       "whySaju": "2문장. 사주 구조적 이유."
     }
   ],
@@ -271,13 +271,13 @@ function buildPhase1NameOnlyPrompt(myData: any, targetData: any, relationType: s
     "mindset": "3문장. ${targetData.name}과의 관계에서 덜 소모되기 위한 핵심 마인드셋."
   },
   "personalImpact": {
-    "onMe": "4문장. ${targetData.name}과의 관계가 나에게 주는 실제 영향 — 에너지·감정·일상·무의식."
+    "onMe": "2문장. ${targetData.name}과의 관계가 에너지·감정에 주는 실제 영향."
   },
   "howTheySeeMe": {
-    "energyReading": "4문장. 내 사주 기질이 ${targetData.name} 눈에 어떻게 읽히는지 — 처음 인상·자극하는 것·유형 분류·굳어진 인식."
+    "energyReading": "2문장. 내 기질이 ${targetData.name} 눈에 읽히는 방식 — 처음 인상과 굳어진 인식."
   },
   "continuationAssessment": {
-    "verdict": "3문장. ${targetData.name}과의 ${relationType} 관계 최종 판정 — 솔직하고 단호하게."
+    "verdict": "2문장. ${targetData.name}과의 ${relationType} 관계 최종 판정 — 솔직하고 단호하게."
   }
 }`;
 }
@@ -591,12 +591,12 @@ export default async function handler(req: any, res: any) {
     const send = (obj: object) => res.write('data: ' + JSON.stringify(obj) + '\n\n');
 
     let chars = 0;
-    const MAX_CHARS = 12000;
+    const MAX_CHARS = 6000;
 
     try {
       const stream = client.messages.stream({
         model: MODEL_SONNET,
-        max_tokens: 5000,
+        max_tokens: 2500,
         system: [SYSTEM_CACHED],
         messages: [{ role: 'user', content: buildPhase1Prompt(myData, targetData, relationType, result) }],
       });
