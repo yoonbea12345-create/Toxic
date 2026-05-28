@@ -1147,6 +1147,12 @@ export default function StepResult({ myData, targetData, result, relationType, o
     try {
       const { default: html2canvas } = await import('html2canvas');
       const el = resultContainerRef.current;
+
+      // 스크롤 위치 무관하게 전체 캡쳐: 엘리먼트 최상단으로 이동 후 복원
+      const savedScrollY = window.scrollY;
+      window.scrollTo({ top: el.offsetTop, behavior: 'instant' as ScrollBehavior });
+      await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
       const canvas = await html2canvas(el, {
         backgroundColor: '#0A0A0A',
         scale: 1.5,
@@ -1157,26 +1163,24 @@ export default function StepResult({ myData, targetData, result, relationType, o
         height: el.scrollHeight,
         windowWidth: window.innerWidth,
         windowHeight: el.scrollHeight,
-        scrollX: 0,
-        scrollY: -window.scrollY,
         onclone: (doc, clonedEl) => {
           clonedEl.querySelectorAll('[data-blur-wrapper="true"]').forEach(node => {
             const wrapper = node as HTMLElement;
             const locked = wrapper.querySelector('[data-blur-locked="true"]') as HTMLElement | null;
             if (locked) {
-              // 콘텐츠 유출 방지: 실제 내용 제거, 어두운 배경으로 교체
               locked.innerHTML = '';
               locked.style.filter = 'none';
               locked.style.background = '#0f0f0f';
               locked.style.minHeight = '80px';
             }
           });
-          // fixed 엘리먼트(하단 CTA, 토스트, ScrollHint 등) 캡쳐 제외
           doc.querySelectorAll('.fixed').forEach(node => {
             (node as HTMLElement).style.display = 'none';
           });
         },
       });
+
+      window.scrollTo({ top: savedScrollY, behavior: 'instant' as ScrollBehavior });
 
       // toBlob을 Promise로 래핑 — user activation 컨텍스트 유지
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
