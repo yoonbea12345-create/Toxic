@@ -1155,8 +1155,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
         logging: false,
         width: el.offsetWidth,
         height: el.scrollHeight,
-        windowWidth: el.offsetWidth,
+        windowWidth: window.innerWidth,
         windowHeight: el.scrollHeight,
+        scrollX: 0,
+        scrollY: -window.scrollY,
         onclone: (doc, clonedEl) => {
           clonedEl.querySelectorAll('[data-blur-wrapper="true"]').forEach(node => {
             const wrapper = node as HTMLElement;
