@@ -518,7 +518,7 @@ export default async function handler(req: any, res: any) {
         messages: [{ role: 'user', content: buildPhase1APrompt(myData, targetData, relationType, result) }],
       });
       const streamB = client.messages.stream({
-        model: MODEL_OPUS,
+        model: MODEL_SONNET,
         max_tokens: 8000,
         system: [SYSTEM_CACHED],
         messages: [{ role: 'user', content: buildPhase1BPrompt(myData, targetData, relationType, result) }],
