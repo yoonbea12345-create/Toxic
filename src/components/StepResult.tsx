@@ -1148,10 +1148,12 @@ export default function StepResult({ myData, targetData, result, relationType, o
       const { default: html2canvas } = await import('html2canvas');
       const el = resultContainerRef.current;
 
-      // 스크롤 위치 무관하게 전체 캡쳐: 엘리먼트 최상단으로 이동 후 복원
+      // 페이지 최상단으로 이동 후 전체 캡쳐, 복원
       const savedScrollY = window.scrollY;
-      window.scrollTo({ top: el.offsetTop, behavior: 'instant' as ScrollBehavior });
+      window.scrollTo(0, 0);
       await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+
+      const elTop = el.getBoundingClientRect().top;
 
       const canvas = await html2canvas(el, {
         backgroundColor: '#0A0A0A',
@@ -1162,7 +1164,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
         width: el.offsetWidth,
         height: el.scrollHeight,
         windowWidth: window.innerWidth,
-        windowHeight: el.scrollHeight,
+        windowHeight: elTop + el.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
         onclone: (doc, clonedEl) => {
           clonedEl.querySelectorAll('[data-blur-wrapper="true"]').forEach(node => {
             const wrapper = node as HTMLElement;
@@ -1180,7 +1184,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         },
       });
 
-      window.scrollTo({ top: savedScrollY, behavior: 'instant' as ScrollBehavior });
+      window.scrollTo(0, savedScrollY);
 
       // toBlob을 Promise로 래핑 — user activation 컨텍스트 유지
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
