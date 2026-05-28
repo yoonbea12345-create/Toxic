@@ -1151,7 +1151,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
       // 스크롤 위치 무관하게 전체 캡쳐: 엘리먼트 최상단으로 이동 후 복원
       const savedScrollY = window.scrollY;
       window.scrollTo({ top: el.offsetTop, behavior: 'instant' as ScrollBehavior });
-      await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
 
       const canvas = await html2canvas(el, {
         backgroundColor: '#0A0A0A',
