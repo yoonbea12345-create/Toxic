@@ -1155,25 +1155,45 @@ export default function StepResult({ myData, targetData, result, relationType, o
         windowWidth: el.offsetWidth,
         windowHeight: el.scrollHeight,
         onclone: (_doc, clonedEl) => {
-          // 잠긴 콘텐츠는 캡쳐에서 완전히 가림
           clonedEl.querySelectorAll('[data-blur-locked="true"]').forEach(node => {
             (node as HTMLElement).style.visibility = 'hidden';
           });
         },
       });
-      showToast('캡쳐완료!');
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const file = new File([blob], 'toxic-result.png', { type: 'image/png' });
-        if (navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'TOXIC 분석 결과' });
-        } else {
-          const link = document.createElement('a');
-          link.download = 'toxic-result.png';
-          link.href = URL.createObjectURL(blob);
-          link.click();
-        }
-      }, 'image/png');
+
+      // viewport 높이 단위로 슬라이싱 → 여러 장
+      const scale = 2;
+      const segH = window.innerHeight * scale;
+      const totalH = canvas.height;
+      const segCount = Math.ceil(totalH / segH);
+
+      const files: File[] = [];
+      for (let i = 0; i < segCount; i++) {
+        const h = Math.min(segH, totalH - i * segH);
+        const seg = document.createElement('canvas');
+        seg.width = canvas.width;
+        seg.height = h;
+        seg.getContext('2d')!.drawImage(canvas, 0, -i * segH);
+        await new Promise<void>(resolve => {
+          seg.toBlob(blob => {
+            if (blob) files.push(new File([blob], `toxic-${i + 1}.png`, { type: 'image/png' }));
+            resolve();
+          }, 'image/png');
+        });
+      }
+
+      showToast(`캡쳐완료! ${files.length}장`);
+
+      if (navigator.canShare?.({ files })) {
+        await navigator.share({ files, title: 'TOXIC 분석 결과' });
+      } else {
+        files.forEach((f, i) => {
+          const a = document.createElement('a');
+          a.download = f.name;
+          a.href = URL.createObjectURL(f);
+          setTimeout(() => a.click(), i * 300);
+        });
+      }
     } catch {
       showToast('캡쳐에 실패했습니다');
     }
