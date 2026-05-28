@@ -595,8 +595,8 @@ export default async function handler(req: any, res: any) {
 
     try {
       const stream = client.messages.stream({
-        model: MODEL_OPUS,
-        max_tokens: 7000,
+        model: MODEL_SONNET,
+        max_tokens: 5000,
         system: [SYSTEM_CACHED],
         messages: [{ role: 'user', content: buildPhase1Prompt(myData, targetData, relationType, result) }],
       });
