@@ -181,34 +181,34 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
   "toxicSummary": "20자 이내. 이 관계를 정의하는 날카로운 한마디.",
   "coreConflict": {
     "title": "12자 이내. 이 충돌의 이름.",
-    "description": "3문장. ①이 두 사람이 왜 구조적으로 안 맞는지 — 사주 에너지를 일상 행동으로. ②갈등이 시작되는 구체적 생활 장면 + 양쪽 내면 독백. ③노력해도 반복될 수밖에 없는 구조적 이유."
+    "description": "2문장. ①사주 에너지를 일상 행동으로 번역해 왜 안 맞는지. ②왜 노력해도 반복될 수밖에 없는지."
   },
   "conflictAnalysis": {
-    "chung": ${chung !== '없음' ? `"충(沖·정면충돌) 작동 방식 2문장. 일상 성향으로 번역 + 실제 대화 예시('...라고 하면 상대는 ...라고 한다' 형식)."` : 'null'},
-    "hyung": ${hyung !== '없음' ? `"형(刑·압박) 작동 방식 2문장. 말 못 할 긴장이 쌓이고 터지는 방식."` : 'null'},
-    "hae": ${hae !== '없음' ? `"해(害·소모) 작동 방식 2문장. 어떤 대화·상황 후 특히 지치는지."` : 'null'},
-    "geuk": ${geuk !== '없음' ? `"극(剋·억압) 작동 방식 3문장. 누가 누구를 억누르는지(${geuk} 방향) — 행동·체감·장기 결과."` : 'null'}
+    "chung": ${chung !== '없음' ? `"1문장. 충 에너지를 실제 대화 장면으로('...라고 하면 ...라고 한다' 형식)."` : 'null'},
+    "hyung": ${hyung !== '없음' ? `"1문장. 형의 압박이 일상에서 나타나는 방식."` : 'null'},
+    "hae": ${hae !== '없음' ? `"1문장. 해의 소모가 체감되는 구체적 순간."` : 'null'},
+    "geuk": ${geuk !== '없음' ? `"1문장. 극(${geuk} 방향)이 관계에서 작동하는 방식."` : 'null'}
   },
   "emotionalPattern": {
-    "myPattern": "3문장. 갈등 시 나의 반응 — 어떤 말에 상처받는지, 속마음, 처리 방식.",
-    "targetPattern": "3문장. 상대방의 반응 — 말투·행동·내가 느끼는 방식·왜 그러는지.",
-    "cycle": "3문장. 반복되는 갈등 사이클 — 시작·확대·반복 이유. '맞아 딱 이래' 싶게 구체적으로."
+    "myPattern": "1문장. 갈등 시 나에게 가장 날카롭게 꽂히는 상대방의 말·행동.",
+    "targetPattern": "1문장. 상대방의 갈등 반응 방식 — 가장 특징적인 것 하나.",
+    "cycle": "2문장. 두 사람이 반복하는 갈등 패턴 — 어떻게 시작해서 어떻게 굳어지는지."
   },
   "energyDynamic": {
-    "whoLoses": "1문장. 에너지를 더 많이 쓰는 쪽과 이유.",
-    "drainMechanism": "1문장. 에너지가 빠지는 메커니즘 — 어떤 상황 후 특히 지치는지.",
-    "longTermEffect": "1문장. 이 패턴이 1년 쌓이면 나에게 생기는 변화."
+    "whoLoses": "1문장. 에너지를 더 쓰는 쪽과 이유.",
+    "drainMechanism": "1문장. 가장 지치는 순간.",
+    "longTermEffect": "1문장. 1년 쌓이면 생기는 변화."
   },
-  "hiddenDynamic": "3문장. 두 사람이 인식 못하는 무의식적 패턴 — 처음 끌린 이유가 갈등 이유가 되는 아이러니, 서로 무의식적으로 하는 일, 왜 안 바뀌는지.",
+  "hiddenDynamic": "2문장. 두 사람이 모르는 무의식 패턴 — 처음 끌린 이유가 갈등 이유가 되는 아이러니.",
   "conflictScenarios": [
     {
       "situation": "25자 이내. 실제 일어날 법한 구체적 생활 장면.",
-      "whatHappens": "3문장. ①상대방 말·행동(대화체). ②그게 나에게 들리는 방식 + 속마음 독백. ③여운.",
-      "whySaju": "2문장. 사주 구조상 이 패턴이 생기는 이유."
+      "whatHappens": "2문장. 상대방 말·행동(대화체) + 그 순간 내 속마음.",
+      "whySaju": "1문장. 사주 구조적 이유."
     }
   ],
   "avoidanceGuide": {
-    "mindset": "3문장. 이 관계에서 덜 소모되기 위한 핵심 마인드셋 — 상대를 바꾸려는 것 포기하고 무엇에 집중해야 하는지, 왜 그게 현실적인지."
+    "mindset": "2문장. 이 관계에서 덜 소모되기 위한 핵심 마인드셋."
   }
 }`;
 }
@@ -286,34 +286,34 @@ function buildPhase1NameOnlyPrompt(myData: any, targetData: any, relationType: s
   "toxicSummary": "20자 이내. ${targetData.name}과의 ${relationType} 관계를 꿰뚫는 한마디.",
   "coreConflict": {
     "title": "12자 이내. 이 충돌의 이름.",
-    "description": "3문장. ①내 사주 기질이 ${targetData.name}과 왜 구조적으로 안 맞는지. ②갈등 시작 장면 + 속마음. ③왜 반복될 수밖에 없는지."
+    "description": "2문장. ①내 기질이 ${targetData.name}과 왜 구조적으로 안 맞는지. ②왜 반복될 수밖에 없는지."
   },
   "conflictAnalysis": {
-    "chung": "내 위험 지지(${result.myDangerBranches?.join(',') || '없음'})가 ${targetData.name}과의 관계에서 만드는 충돌 에너지 3문장. 대화체로('${targetData.name}이 이렇게 말하면 나는 속으로 이런 생각이 든다' 형식).",
+    "chung": "1문장. 내 위험 지지가 ${targetData.name}과 만드는 충돌 — 대화체 예시.",
     "hyung": null,
     "hae": null,
-    "geuk": ${result.myDangerOhaeng?.length > 0 ? `"내 오행이 ${targetData.name}과의 관계에서 만드는 에너지 소모 구조 3문장."` : 'null'}
+    "geuk": ${result.myDangerOhaeng?.length > 0 ? `"1문장. 내 오행이 ${targetData.name}과의 관계에서 소모하는 방식."` : 'null'}
   },
   "emotionalPattern": {
-    "myPattern": "3문장. 나의 감정 반응 방식 — 어떤 말에 상처받는지, 속마음, 처리 방식.",
-    "targetPattern": "3문장. ${targetData.name}이 보일 법한 반응 — 말투·행동·왜 그러는지.",
-    "cycle": "3문장. ${targetData.name}과 반복될 갈등 사이클. '맞아 딱 이래' 싶게."
+    "myPattern": "1문장. 갈등 시 나에게 가장 날카롭게 꽂히는 것.",
+    "targetPattern": "1문장. ${targetData.name}의 가장 특징적인 갈등 반응.",
+    "cycle": "2문장. 두 사람이 반복하는 패턴."
   },
   "energyDynamic": {
     "whoLoses": "1문장. ${targetData.name}과의 관계에서 에너지를 더 쓰는 쪽.",
-    "drainMechanism": "1문장. 에너지가 빠지는 메커니즘.",
+    "drainMechanism": "1문장. 가장 지치는 순간.",
     "longTermEffect": "1문장. 1년 쌓이면 생기는 변화."
   },
-  "hiddenDynamic": "3문장. ${targetData.name}과의 관계에서 두 사람이 인식 못하는 무의식적 패턴.",
+  "hiddenDynamic": "2문장. ${targetData.name}과의 관계에서 두 사람이 모르는 무의식 패턴.",
   "conflictScenarios": [
     {
-      "situation": "25자 이내. ${targetData.name}과의 ${relationType} 관계에서 실제 일어날 법한 장면.",
-      "whatHappens": "3문장. ①${targetData.name}의 말·행동(대화체). ②나에게 들리는 방식 + 속마음. ③여운.",
-      "whySaju": "2문장. 사주 구조적 이유."
+      "situation": "25자 이내. ${targetData.name}과의 ${relationType} 관계에서 실제 장면.",
+      "whatHappens": "2문장. ${targetData.name}의 말·행동(대화체) + 내 속마음.",
+      "whySaju": "1문장. 사주 구조적 이유."
     }
   ],
   "avoidanceGuide": {
-    "mindset": "3문장. ${targetData.name}과의 관계에서 덜 소모되기 위한 핵심 마인드셋."
+    "mindset": "2문장. ${targetData.name}과의 관계에서 덜 소모되기 위한 핵심 마인드셋."
   }
 }`;
 }
@@ -333,34 +333,34 @@ function buildPhase1NoTargetPrompt(myData: any, targetData: any, relationType: s
 {
   "toxicSummary": "20자 이내. 내 갈등 기질의 핵심을 날카롭게.",
   "myCharacter": {
-    "core": "4문장. ①내 사주 기질의 핵심 에너지를 일상 행동으로. ②인간관계에서 반복되는 패턴 — 어떤 유형과 왜 충돌하는지. ③남들 눈에 나는 어떤 사람인지. ④이 기질이 만드는 관계 패턴.",
-    "strength": "2문장. 이 기질이 빛나는 구체적 상황.",
-    "shadow": "2문장. 이 기질이 독이 되는 상황 — 어떤 말·행동이 상대를 힘들게 하는지."
+    "core": "2문장. 내 사주 기질의 핵심 에너지를 일상 행동으로 + 인간관계에서 반복되는 패턴.",
+    "strength": "1문장. 이 기질이 빛나는 순간.",
+    "shadow": "1문장. 이 기질이 독이 되는 순간."
   },
   "dangerTypes": [
     {
       "type": "위험 유형명 (예: 통제형, 감정폭발형)",
-      "years": "이 유형이 많이 나타나는 출생연대 힌트",
-      "whyDangerous": "3문장. 구조적으로 왜 안 맞는지 — 서로를 소모시키는 방식, 처음엔 끌렸다가 힘들어지는 이유.",
-      "realScenario": "3문장. 이 유형과 실제 반복되는 장면 — 대화체·감정·결말."
+      "years": "출생연대 힌트",
+      "whyDangerous": "2문장. 왜 구조적으로 소모되는지.",
+      "realScenario": "2문장. 실제 반복되는 장면 — 대화체."
     },
     {
       "type": "두 번째 위험 유형명",
       "years": "출생연대 힌트",
-      "whyDangerous": "3문장.",
-      "realScenario": "3문장."
+      "whyDangerous": "2문장.",
+      "realScenario": "2문장."
     }
   ],
-  "hiddenDynamic": "3문장. 내가 스스로 잘 모르는 무의식적 갈등 패턴 — 같은 유형과 반복적으로 문제가 생기는 이유, 내 어떤 행동이 원인인지, 알아채는 방법.",
+  "hiddenDynamic": "2문장. 내가 모르는 무의식적 갈등 패턴.",
   "conflictScenarios": [
     {
-      "situation": "25자 이내. 내가 자주 겪는 구체적 갈등 장면.",
-      "whatHappens": "4문장. 어떤 갈등이 어떻게 터지는지 — 대화체·감정·속마음·여운.",
-      "whySaju": "2문장. 사주 구조적 이유."
+      "situation": "25자 이내. 내가 자주 겪는 갈등 장면.",
+      "whatHappens": "2문장. 갈등 장면 대화체 + 내 속마음.",
+      "whySaju": "1문장. 사주 구조적 이유."
     }
   ],
   "avoidanceGuide": {
-    "mindset": "3문장. 핵심 마인드셋 — 나의 갈등 기질을 알고 어떻게 다르게 반응할 것인지."
+    "mindset": "2문장. 핵심 마인드셋."
   }
 }`;
 }
@@ -632,7 +632,7 @@ export default async function handler(req: any, res: any) {
     try {
       const stream = client.messages.stream({
         model: MODEL_SONNET,
-        max_tokens: 3500,
+        max_tokens: 1800,
         system: [SYSTEM_CACHED],
         messages: [{ role: 'user', content: buildPhase1Prompt(myData, targetData, relationType, result) }],
       });
