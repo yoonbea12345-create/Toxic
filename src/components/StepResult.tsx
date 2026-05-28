@@ -1073,9 +1073,9 @@ export default function StepResult({ myData, targetData, result, relationType, o
         r: relationType,
       });
       const encoded = btoa(unescape(encodeURIComponent(payload)));
-      return `https://toxic.kr/app?share=${encoded}`;
+      return `${window.location.origin}/app?share=${encoded}`;
     } catch {
-      return 'https://toxic.kr';
+      return window.location.origin;
     }
   };
 
@@ -1102,7 +1102,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         });
         if (saveRes.ok) {
           const { id } = await saveRes.json();
-          shareUrl = `https://toxic.kr/share/${id}`;
+          shareUrl = `${window.location.origin}/share/${id}`;
         }
       } catch {}
       setIsSharing(false);
@@ -1116,7 +1116,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         content: {
           title: `${myName} × ${targetName} — TOXIC 분석`,
           description: desc,
-          imageUrl: 'https://toxic.kr/og.png',
+          imageUrl: `${window.location.origin}/og.png`,
           link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
         },
         buttons: [{ title: '결과 바로 보기', link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
