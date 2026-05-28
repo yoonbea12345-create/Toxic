@@ -1171,23 +1171,23 @@ export default function StepResult({ myData, targetData, result, relationType, o
         },
       });
 
+      // toBlob을 Promise로 래핑 — user activation 컨텍스트 유지
+      const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) { showToast('이미지 변환 실패'); return; }
       showToast('캡쳐완료!');
-      canvas.toBlob(async (blob) => {
-        if (!blob) { showToast('이미지 변환 실패'); return; }
-        const file = new File([blob], 'toxic-result.png', { type: 'image/png' });
-        try {
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], title: 'TOXIC 분석 결과' });
-          } else {
-            const link = document.createElement('a');
-            link.download = 'toxic-result.png';
-            link.href = URL.createObjectURL(blob);
-            link.click();
-          }
-        } catch (shareErr: any) {
-          if (shareErr?.name !== 'AbortError') showToast('공유에 실패했습니다');
+      const file = new File([blob], 'toxic-result.png', { type: 'image/png' });
+      try {
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'TOXIC 분석 결과' });
+        } else {
+          const link = document.createElement('a');
+          link.download = 'toxic-result.png';
+          link.href = URL.createObjectURL(blob);
+          link.click();
         }
-      }, 'image/png');
+      } catch (shareErr: any) {
+        if (shareErr?.name !== 'AbortError') showToast('공유에 실패했습니다');
+      }
     } catch (err: any) {
       console.error('[capture]', err);
       showToast(`캡쳐 실패: ${err?.message ?? '알 수 없는 오류'}`);
