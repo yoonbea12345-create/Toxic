@@ -174,7 +174,7 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
 상생(相生): ${saengInfo}
 갈등요약: ${result.conflictSummary || ''} | 태그: ${result.tags?.join(',') || ''}
 
-[목표] 6개 섹션 노출파트(핵심 요약) 전부 + 섹션01 디테일파트(상세 분석)를 한 번에 생성. 추상적 표현 절대 금지 — 구체적 장면·대화체·감정·속마음까지.
+[목표] 6개 섹션 노출파트(핵심 요약)만 생성. 추상적 표현 절대 금지 — 구체적 장면·대화체·감정·속마음까지.
 [출력 형식] 순수 JSON만. 주석·마크다운 없이.
 
 {
@@ -209,7 +209,7 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
   ],
   "avoidanceGuide": {
     "mindset": "3문장. 이 관계에서 덜 소모되기 위한 핵심 마인드셋 — 상대를 바꾸려는 것 포기하고 무엇에 집중해야 하는지, 왜 그게 현실적인지."
-  },
+  }
 }`;
 }
 
@@ -279,7 +279,7 @@ function buildPhase1NameOnlyPrompt(myData: any, targetData: any, relationType: s
 [관계 맥락]
 상대방: ${targetData.name}(${targetData.gender}) | 관계: ${relationType} | 생년월일 미입력
 
-[목표] 6개 섹션 노출파트 + 섹션01 디테일파트 생성. "${targetData.name}"을 모든 문장에 직접 사용해 개인화. 추상적 표현 절대 금지.
+[목표] 6개 섹션 노출파트만 생성. "${targetData.name}"을 모든 문장에 직접 사용해 개인화. 추상적 표현 절대 금지.
 [출력 형식] 순수 JSON만.
 
 {
@@ -314,7 +314,7 @@ function buildPhase1NameOnlyPrompt(myData: any, targetData: any, relationType: s
   ],
   "avoidanceGuide": {
     "mindset": "3문장. ${targetData.name}과의 관계에서 덜 소모되기 위한 핵심 마인드셋."
-  },
+  }
 }`;
 }
 
@@ -327,7 +327,7 @@ function buildPhase1NoTargetPrompt(myData: any, targetData: any, relationType: s
 충 유발 지지: ${result.myDangerBranches?.join(',') || '없음'} | 극 유발 오행: ${result.myDangerOhaeng?.join(',') || '없음'}
 갈등 성향: ${result.conflictType || ''} | 독성지수: ${score}
 
-[목표] 내 사주 기질 분석 + 3개 섹션 노출파트 + 섹션01 디테일파트 생성. 추상적 표현 절대 금지.
+[목표] 내 사주 기질 분석 + 3개 섹션 노출파트만 생성. 추상적 표현 절대 금지.
 [출력 형식] 순수 JSON만.
 
 {
