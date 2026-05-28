@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import type { SajuResult, PersonData, RelationType } from '../utils/saju';
-import { fetchAIPhase1, fetchAIPhase2, fetchAIPhase3 } from '../utils/aiAnalysis';
+import { fetchAIPhase1, fetchAIPhase1b, fetchAIPhase2, fetchAIPhase3 } from '../utils/aiAnalysis';
 import { generateLocalAnalysis } from '../utils/localAnalysis';
 import { trackEvent, endSession } from '../utils/analytics';
 import { loadHistory } from '../utils/history';
@@ -864,6 +864,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const shareCardRef = useRef<HTMLDivElement>(null);
   const resultContainerRef = useRef<HTMLDivElement>(null);
   const [aiPhase1, setAiPhase1] = useState<AIAnalysis | null>(shareMode ? (preloadedPhase1 ?? null) : null);
+  const [aiS01Detail, setAiS01Detail] = useState<Partial<AIAnalysis> | null>(null);
   // On-demand detail states — loaded only after payment
   const [aiDetail23, setAiDetail23] = useState<Partial<AIAnalysis> | null>(
     shareMode ? (preloadedPhase2 as Partial<AIAnalysis> ?? null) : null
@@ -917,6 +918,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
 
   const ai: AIAnalysis = {
     ...aiPhase1,
+    ...aiS01Detail,
     ...aiDetail23,
     ...aiDetail456,
     avoidanceGuide: {
@@ -928,15 +930,15 @@ export default function StepResult({ myData, targetData, result, relationType, o
       ...(aiDetail23?.conflictScenarios ?? []),
     ],
     personalImpact: {
-      ...(aiPhase1?.personalImpact),
+      ...(aiS01Detail?.personalImpact),
       ...(aiDetail456?.personalImpact),
     } as any,
     howTheySeeMe: {
-      ...(aiPhase1?.howTheySeeMe),
+      ...(aiS01Detail?.howTheySeeMe),
       ...(aiDetail456?.howTheySeeMe),
     } as any,
     continuationAssessment: {
-      ...(aiPhase1?.continuationAssessment),
+      ...(aiS01Detail?.continuationAssessment),
       ...(aiDetail456?.continuationAssessment),
     } as any,
   };
@@ -1070,6 +1072,10 @@ export default function StepResult({ myData, targetData, result, relationType, o
           apiProgressRef.current = pct;
         });
         setAiPhase1(data);
+        // Phase 1 완료 즉시 s01 상세 백그라운드 선제 생성 (결제 전에 미리 준비)
+        fetchAIPhase1b(myData, targetData, relationType, result)
+          .then(detail => { if (detail) setAiS01Detail(detail); })
+          .catch(() => {});
       } catch {
         const localData = generateLocalAnalysis(result, relationType, hasTarget);
         setAiPhase1(localData as AIAnalysis);

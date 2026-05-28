@@ -210,6 +210,28 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
   "avoidanceGuide": {
     "mindset": "3문장. 이 관계에서 덜 소모되기 위한 핵심 마인드셋 — 상대를 바꾸려는 것 포기하고 무엇에 집중해야 하는지, 왜 그게 현실적인지."
   },
+}`;
+}
+
+// ─── Phase 1b: 섹션01 디테일파트 전용 (Phase 1 완료 후 백그라운드 생성) ───
+function buildPhase1bPrompt(myData: any, targetData: any, relationType: string, result: any): string {
+  const hasNameOnly = Boolean(targetData?.name && !targetData?.birthdate);
+  if (hasNameOnly) return buildPhase1bNameOnlyPrompt(myData, targetData, relationType, result);
+
+  const chung = result.conflicts.chung.map((c: any) => c.name).join(', ') || '없음';
+  const geuk  = result.conflicts.geuk?.exists ? result.conflicts.geuk.direction : '없음';
+  const conflictRef = chung !== '없음' ? chung : geuk !== '없음' ? '극:'+geuk : '오행 불일치';
+  const myPillar = `${result.myYear?.stem}${result.myYear?.branch}년 ${result.myDay ? result.myDay.stem+result.myDay.branch+'일' : ''}`.trim();
+  const tgPillar = `${result.targetYear?.stem}${result.targetYear?.branch}년 ${result.targetDay ? result.targetDay.stem+result.targetDay.branch+'일' : ''}`.trim();
+
+  return `[사주 데이터]
+나(${myData.gender}): ${myPillar} | 상대(${targetData.gender}): ${tgPillar}
+관계: ${relationType} | 독성지수: ${result.toxicScore}점 | 충: ${chung} | 극: ${geuk}
+
+[목표] 섹션01 디테일파트 3개 필드만 생성. 추상적 표현 절대 금지.
+[출력 형식] 순수 JSON만.
+
+{
   "personalImpact": {
     "onMe": "4문장. 이 관계가 지금 나에게 주는 실제 영향. ①에너지·체력 — 이 사람 만난 날 vs 안 만난 날. ②감정·자존감 — 이 관계 안에서 나는 어떤 버전의 나인지. ③일상 영향 — 다른 것들에 어떤 영향이 가는지. ④내가 의식하지 못했던 것."
   },
@@ -218,6 +240,29 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
   },
   "continuationAssessment": {
     "verdict": "3문장. 사주 구조 기반 최종 판정 — 솔직하고 단호하되 잔인하지 않게. 이 관계가 나에게 어떤 의미인지, 계속 가야 한다면 어떤 전제가 필요한지, 읽는 사람에게 전하는 마지막 한마디."
+  }
+}`;
+}
+
+function buildPhase1bNameOnlyPrompt(myData: any, targetData: any, relationType: string, result: any): string {
+  const myPillar = `${result.myYear?.stem}${result.myYear?.branch}년 ${result.myDay ? result.myDay.stem+result.myDay.branch+'일' : ''}`.trim();
+
+  return `[사주 데이터]
+나(${myData.gender}): ${myPillar} | 상대: ${targetData.name}(${targetData.gender}, 생년월일 미입력)
+관계: ${relationType} | 독성지수: ${result.toxicScore}점
+
+[목표] 섹션01 디테일파트 3개 필드만 생성. "${targetData.name}"을 직접 사용해 개인화. 추상적 표현 절대 금지.
+[출력 형식] 순수 JSON만.
+
+{
+  "personalImpact": {
+    "onMe": "4문장. ${targetData.name}과의 관계가 나에게 주는 실제 영향 — 에너지·감정·일상·무의식."
+  },
+  "howTheySeeMe": {
+    "energyReading": "4문장. 내 사주 기질이 ${targetData.name} 눈에 어떻게 읽히는지 — 처음 인상·자극하는 것·유형 분류·굳어진 인식."
+  },
+  "continuationAssessment": {
+    "verdict": "3문장. ${targetData.name}과의 ${relationType} 관계 최종 판정 — 솔직하고 단호하게."
   }
 }`;
 }
@@ -270,15 +315,6 @@ function buildPhase1NameOnlyPrompt(myData: any, targetData: any, relationType: s
   "avoidanceGuide": {
     "mindset": "3문장. ${targetData.name}과의 관계에서 덜 소모되기 위한 핵심 마인드셋."
   },
-  "personalImpact": {
-    "onMe": "4문장. ${targetData.name}과의 관계가 나에게 주는 실제 영향 — 에너지·감정·일상·무의식."
-  },
-  "howTheySeeMe": {
-    "energyReading": "4문장. 내 사주 기질이 ${targetData.name} 눈에 어떻게 읽히는지 — 처음 인상·자극하는 것·유형 분류·굳어진 인식."
-  },
-  "continuationAssessment": {
-    "verdict": "3문장. ${targetData.name}과의 ${relationType} 관계 최종 판정 — 솔직하고 단호하게."
-  }
 }`;
 }
 
@@ -591,12 +627,12 @@ export default async function handler(req: any, res: any) {
     const send = (obj: object) => res.write('data: ' + JSON.stringify(obj) + '\n\n');
 
     let chars = 0;
-    const MAX_CHARS = 6000;
+    const MAX_CHARS = 8000;
 
     try {
       const stream = client.messages.stream({
         model: MODEL_SONNET,
-        max_tokens: 2500,
+        max_tokens: 3500,
         system: [SYSTEM_CACHED],
         messages: [{ role: 'user', content: buildPhase1Prompt(myData, targetData, relationType, result) }],
       });
@@ -629,6 +665,22 @@ export default async function handler(req: any, res: any) {
     }
     res.end();
     return;
+  }
+
+  // ── Phase 1b: 섹션01 디테일파트 전용 (백그라운드 선제 생성) ──────────
+  if (phase === '1b') {
+    const hasTarget = Boolean(targetData?.birthdate);
+    if (!hasTarget && !targetData?.name) {
+      return res.status(200).json({ data: null });
+    }
+    try {
+      const prompt = buildPhase1bPrompt(myData, targetData, relationType, result);
+      const text = await callOpusNonStream(prompt, 1200, 'Phase1b-S01Detail', 50000);
+      return res.status(200).json({ data: extractJson(text) });
+    } catch (err) {
+      console.error('[TOXIC API] phase 1b', err);
+      return res.status(500).json({ error: 'Phase1b failed' });
+    }
   }
 
   // ── Phase 2: 디테일파트<2,3> (on-demand) ──────────────────────────
