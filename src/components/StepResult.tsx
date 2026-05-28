@@ -505,14 +505,6 @@ function BlurredPreview({ children, unlocked, onUnlock, teaser }: {
   );
 }
 
-function Phase2Skeleton() {
-  return (
-    <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D] animate-pulse">
-      <div className="h-3 bg-[#1a1a1a] rounded w-3/4 mb-3" />
-      <div className="h-3 bg-[#1a1a1a] rounded w-1/2" />
-    </div>
-  );
-}
 
 function DetailLoadingBanner({ name }: { name: string }) {
   const [elapsed, setElapsed] = useState(0);
@@ -853,8 +845,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
   );
   const [detail23Loading, setDetail23Loading] = useState(false);
   const [detail456Loading, setDetail456Loading] = useState(false);
-  const [detail23Error, setDetail23Error] = useState(false);
-  const [detail456Error, setDetail456Error] = useState(false);
   const detail23LoadingRef = useRef(false);
   const detail456LoadingRef = useRef(false);
   const [, setApiDone] = useState(false);
@@ -951,12 +941,11 @@ export default function StepResult({ myData, targetData, result, relationType, o
     if (detail23LoadingRef.current || aiDetail23) return;
     detail23LoadingRef.current = true;
     setDetail23Loading(true);
-    setDetail23Error(false);
     try {
       const data = await fetchAIPhase2(myData, targetData, relationType, result);
       setAiDetail23(data);
     } catch {
-      setDetail23Error(true);
+      // silent — placeholder remains visible
     } finally {
       detail23LoadingRef.current = false;
       setDetail23Loading(false);
@@ -967,12 +956,11 @@ export default function StepResult({ myData, targetData, result, relationType, o
     if (detail456LoadingRef.current || aiDetail456 || !hasTarget) return;
     detail456LoadingRef.current = true;
     setDetail456Loading(true);
-    setDetail456Error(false);
     try {
       const data = await fetchAIPhase3(myData, targetData, relationType, result);
       setAiDetail456(data);
     } catch {
-      setDetail456Error(true);
+      // silent — placeholder remains visible
     } finally {
       detail456LoadingRef.current = false;
       setDetail456Loading(false);
