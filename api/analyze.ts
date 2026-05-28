@@ -675,7 +675,7 @@ export default async function handler(req: any, res: any) {
     }
     try {
       const prompt = buildPhase1bPrompt(myData, targetData, relationType, result);
-      const text = await callOpusNonStream(prompt, 1200, 'Phase1b-S01Detail', 50000);
+      const text = await callSonnetNonStream(prompt, 1200, 'Phase1b-S01Detail', 50000);
       return res.status(200).json({ data: extractJson(text) });
     } catch (err) {
       console.error('[TOXIC API] phase 1b', err);
