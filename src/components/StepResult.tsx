@@ -438,7 +438,7 @@ function BlurredPreview({ children, unlocked, onUnlock, teaser }: {
       {teaser && (
         <p className="text-[#cfcfcf] text-[13px] leading-snug pb-2 font-sans-kr border-l-2 border-[#FF2D55]/70 pl-3 ml-1 mb-1 font-medium">{teaser}</p>
       )}
-      <div className="relative min-h-[140px]">
+      <div className="relative min-h-[140px]" data-blur-wrapper="true">
       <div className="select-none pointer-events-none" data-blur-locked="true"
         style={{ filter: 'blur(3px)', opacity: 0.82 }}>
         {children}
@@ -1155,8 +1155,11 @@ export default function StepResult({ myData, targetData, result, relationType, o
         windowWidth: el.offsetWidth,
         windowHeight: el.scrollHeight,
         onclone: (_doc, clonedEl) => {
-          clonedEl.querySelectorAll('[data-blur-locked="true"]').forEach(node => {
-            (node as HTMLElement).style.visibility = 'hidden';
+          clonedEl.querySelectorAll('[data-blur-wrapper="true"]').forEach(node => {
+            const el = node as HTMLElement;
+            el.style.minHeight = '0';
+            el.style.height = 'auto';
+            el.innerHTML = '<div style="padding:10px 16px;border:1px solid #2a2a2a;text-align:center;color:#444;font-size:11px;letter-spacing:0.1em;">— 잠금 콘텐츠 —</div>';
           });
         },
       });
