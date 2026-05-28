@@ -20,7 +20,8 @@ const SYSTEM_CACHED: Anthropic.TextBlockParam & { cache_control: { type: 'epheme
 4. 사주 에너지 설명은 반드시 일상 행동으로 번역. "화(火) 기운" X → "감정이 즉각 표면으로 올라와 참지 못하고 말해버리는 성향" O
 5. 한 문장 안에 구체적 상황·감정·결과가 다 들어가도록. 단정적으로, 반복 표현 없이.
 6. 완전한 JSON만 출력. 주석 없이. 마크다운 없이. 설명 없이.
-7. 한국어 전용. 전문 용어는 괄호 안에 쉬운 설명 필수.`,
+7. 한국어 전용. 전문 용어는 괄호 안에 쉬운 설명 필수.
+8. JSON 문자열 안에서 대화 예시를 쓸 때 큰따옴표(" ") 절대 사용 금지 — 반드시 작은따옴표(' ')로 대체. 큰따옴표가 필요하면 「 」 사용.`,
   cache_control: { type: 'ephemeral' },
 };
 
@@ -105,9 +106,36 @@ async function callSonnetFallback(
 }
 
 function extractJson(text: string) {
-  const match = text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('No JSON');
-  return JSON.parse(match[0]);
+  // Strip markdown code fences if present
+  text = text.replace(/^```(?:json)?\s*/m, '').replace(/```\s*$/m, '');
+
+  const start = text.indexOf('{');
+  if (start === -1) throw new Error('No JSON found');
+
+  // Brace-balanced extraction — handles nested objects and escaped chars
+  let depth = 0, inStr = false, esc = false, end = -1;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (esc) { esc = false; continue; }
+    if (inStr) {
+      if (c === '\\') esc = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') { inStr = true; continue; }
+    if (c === '{') depth++;
+    else if (c === '}' && --depth === 0) { end = i; break; }
+  }
+
+  if (end === -1) throw new Error('Incomplete JSON');
+  try {
+    return JSON.parse(text.slice(start, end + 1));
+  } catch {
+    // Last resort: greedy regex (may work if AI added trailing text)
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('No JSON');
+    return JSON.parse(m[0]);
+  }
 }
 
 // ─── Phase 1: 노출파트<1~6> + 디테일파트<1> ──────────────────────────
@@ -590,7 +618,8 @@ export default async function handler(req: any, res: any) {
         try {
           const data = extractJson(c.text);
           send({ type: 'done', data });
-        } catch {
+        } catch (parseErr) {
+          console.error('[TOXIC API] phase 1 parse_error:', (parseErr as any).message);
           send({ type: 'error', message: 'parse_error' });
         }
       }
