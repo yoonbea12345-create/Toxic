@@ -191,8 +191,8 @@ function buildPhase1APrompt(myData: any, targetData: any, relationType: string, 
   },
   "conflictAnalysis": {
     "chung": ${chung !== '없음' ? `"충(沖·정면충돌 에너지)이 이 관계에서 어떻게 작동하는지 4문장. ①이 충 이름(${chung})이 어떤 에너지 충돌인지 — 물/불/나무/쇠 등 기운을 실제 성향으로 번역. ②일상에서 어떤 상황으로 터지는지 — 실제 대화 예시('...라고 하면 상대는 ...라고 한다' 형식). ③그 순간 양쪽이 각각 느끼는 감정과 속마음. ④왜 이 충돌이 해결되지 않고 반복되는지."` : 'null'},
-    "hyung": ${hyung !== '없음' ? `"형(刑·압박 에너지)이 이 관계에서 어떻게 작동하는지 3문장. 충처럼 폭발하지 않지만 관계를 서서히 압박하는 방식 — 어떤 상황에서 말못할 긴장이 생기는지, 그 긴장이 어떻게 쌓이는지, 결국 어떻게 터지는지."` : 'null'},
-    "hae": ${hae !== '없음' ? `"해(害·에너지 소모 구조)가 어떻게 작동하는지 3문장. 겉으로는 문제없어 보이지만 함께 있을수록 에너지가 빠지는 구체적인 방식 — 어떤 대화·상황에서 이유없이 지치는지."` : 'null'},
+    "hyung": ${hyung !== '없음' ? `"형(刑·압박 에너지)이 이 관계에서 어떻게 작동하는지 2문장. 충처럼 폭발하지 않지만 관계를 서서히 압박하는 방식 — 어떤 상황에서 말못할 긴장이 쌓이는지, 결국 어떻게 터지는지."` : 'null'},
+    "hae": ${hae !== '없음' ? `"해(害·에너지 소모 구조)가 어떻게 작동하는지 2문장. 함께 있을수록 에너지가 빠지는 구체적인 방식 — 어떤 대화·상황에서 이유없이 지치는지."` : 'null'},
     "geuk": ${geuk !== '없음' ? `"극(剋·억압 구조)이 어떻게 작동하는지 3문장. 누가 누구를 억누르는지(${geuk} 방향) — 억누르는 쪽은 어떤 행동으로 나타나는지, 눌리는 쪽은 어떻게 체감하는지, 장기적으로 어떻게 되는지."` : 'null'}
   },
   "emotionalPattern": {
@@ -324,9 +324,9 @@ function buildPhase1BPrompt(myData: any, targetData: any, relationType: string, 
   "relationSpecific": "3문장. ${relationType} 관계이기 때문에 특히 더 아픈 갈등 — 다른 관계 유형이었다면 넘어갈 수 있는 것이 왜 이 관계에서는 더 크게 느껴지는지, 이 관계 특유의 긴장 구조.",
   "realisticOutlook": "3문장. 솔직한 전망 — 이 갈등 구조를 인식하지 못한 채 계속 가면 어떻게 되는지, 인식한다면 어떤 가능성이 있는지, 어떤 것은 노력으로 변할 수 없는지.",
   "energyDynamic": {
-    "whoLoses": "2문장. 이 관계에서 에너지를 더 많이 쓰는 쪽과 그 이유 — 어떤 방식으로 소모되는지 구체적으로.",
-    "drainMechanism": "2문장. 에너지가 빠져나가는 정확한 메커니즘 — 어떤 대화 직후, 어떤 상황 이후에 특히 지치는지.",
-    "longTermEffect": "2문장. 이 패턴이 6개월, 1년 쌓이면 나에게 어떤 변화가 생기는지 — 구체적인 변화."
+    "whoLoses": "1문장. 이 관계에서 에너지를 더 많이 쓰는 쪽과 그 이유.",
+    "drainMechanism": "1문장. 에너지가 빠져나가는 메커니즘 — 어떤 상황 이후 특히 지치는지.",
+    "longTermEffect": "1문장. 이 패턴이 1년 쌓이면 나에게 생기는 변화."
   },
   "avoidanceGuide": {
     "mindset": "3문장. 이 관계에서 덜 소모되기 위한 핵심 마인드셋 — 상대를 바꾸려는 것을 포기하고 무엇에 집중해야 하는지, 왜 그게 현실적인지.",
@@ -420,9 +420,7 @@ function buildPhase2Prompt(myData: any, targetData: any, relationType: string, r
     "warningSignals": [
       "이 관계가 나를 갉아먹고 있다는 신호 — 신체 반응으로 나타나는 것 (예: 연락 오면 몸이 먼저 반응하는 것)",
       "감정 측면에서 나타나는 신호 — 이전과 달라진 나의 감정 패턴",
-      "행동 측면에서 나타나는 신호 — 내가 이 관계 때문에 하게 된 행동 변화",
-      "생각 측면에서 나타나는 신호 — 이 사람에 대해 반복되는 생각 패턴",
-      "관계 외부에서 나타나는 신호 — 다른 관계나 일에 생기는 영향"
+      "행동 측면에서 나타나는 신호 — 내가 이 관계 때문에 하게 된 행동 변화"
     ],
     "whatYouLose": "3문장. 이 관계를 유지하면서 내가 서서히 포기하거나 잃어가는 것들 — ①내 에너지의 어느 부분. ②내 어떤 모습이나 능력. ③내가 원래 가지고 싶었던 어떤 것."
   },
@@ -435,7 +433,7 @@ function buildPhase2Prompt(myData: any, targetData: any, relationType: string, r
   },
   "continuationAssessment": {
     "structuralAnalysis": "4문장. 이 관계의 구조적 분석. ①사주 구조상 이 갈등의 뿌리 — 두 사람의 에너지가 어떤 식으로 충돌하는지. ②노력으로 바꿀 수 있는 것 vs 구조적으로 변하지 않는 것을 명확히 구분. ③지금까지 어떤 패턴이 반복됐을지 — 이미 경험했을 법한 것. ④이 구조를 알고 관계를 이어간다는 것이 어떤 의미인지.",
-    "whatItTakes": "3문장. 이 관계를 계속 이어가기로 결심했다면 — ①두 사람 모두에게 현실적으로 필요한 변화. ②어느 한쪽만 노력하는 구조가 왜 지속되기 어려운지. ③이게 가능하려면 어떤 조건이 충족되어야 하는지.",
+    "whatItTakes": "2문장. 이 관계를 계속 이어가기로 결심했다면 — ①두 사람 모두에게 현실적으로 필요한 변화. ②이게 가능하려면 어떤 조건이 충족되어야 하는지.",
     "redLine": "3문장. 이 신호가 보이면 관계를 반드시 재고해야 하는 레드라인 — ①이 행동·패턴이 반복될 때. ②나에게 이런 변화가 생겼을 때. ③관계 안에서 이것이 느껴질 때. 모두 추상적이지 않고 구체적으로.",
     "verdict": "3문장. 사주 구조 기반 최종 판정 — 솔직하고 단호하되 잔인하지 않게. 이 관계가 나에게 어떤 의미인지, 계속 가야 한다면 어떤 전제가 필요한지, 이 판정을 읽는 사람에게 전하는 마지막 한마디."
   }
@@ -464,9 +462,7 @@ function buildPhase2NameOnlyPrompt(myData: any, targetData: any, relationType: s
     "warningSignals": [
       "${targetData.name}에게 연락 오면 몸이 먼저 반응하는 방식 — 신체 감각으로",
       "${targetData.name}을 만난 날 감정 상태 변화 — 이전과 달라진 것",
-      "${targetData.name} 때문에 바뀐 내 행동 패턴",
-      "${targetData.name}에 대해 반복되는 생각 패턴",
-      "${targetData.name}과의 관계가 다른 관계나 일에 미치는 영향"
+      "${targetData.name} 때문에 바뀐 내 행동 패턴"
     ],
     "whatYouLose": "3문장. ${targetData.name}과의 관계를 유지하면서 서서히 잃어가는 것들 — 에너지, 내 어떤 모습, 원래 원했던 것."
   },
@@ -479,7 +475,7 @@ function buildPhase2NameOnlyPrompt(myData: any, targetData: any, relationType: s
   },
   "continuationAssessment": {
     "structuralAnalysis": "4문장. ${targetData.name}과의 관계 구조 분석 — 충돌 뿌리, 노력으로 바꿀 수 있는 것 vs 바꿀 수 없는 것, 지금까지 반복됐을 패턴, 구조를 알고 이어간다는 것의 의미.",
-    "whatItTakes": "3문장. ${targetData.name}과 계속하기로 결심했다면 현실적으로 필요한 변화.",
+    "whatItTakes": "2문장. ${targetData.name}과 계속하기로 결심했다면 현실적으로 필요한 변화.",
     "redLine": "3문장. ${targetData.name}과의 관계에서 재고해야 할 레드라인 — 구체적 행동·패턴·신호로.",
     "verdict": "3문장. ${targetData.name}과의 ${relationType} 관계에 대한 사주 구조 기반 최종 판정 — 솔직하고 단호하되 잔인하지 않게."
   }
@@ -589,7 +585,7 @@ export default async function handler(req: any, res: any) {
     const prompt = hasNameOnly
       ? buildPhase2NameOnlyPrompt(myData, targetData, relationType, result)
       : buildPhase2Prompt(myData, targetData, relationType, result);
-    const text = await callOpus(prompt, 5000, 90000);
+    const text = await callOpus(prompt, 7000, 90000);
     return res.status(200).json({ data: extractJson(text) });
   } catch (err) {
     console.error('[TOXIC API] phase', phase, err);
