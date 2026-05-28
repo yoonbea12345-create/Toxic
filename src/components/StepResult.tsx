@@ -439,7 +439,7 @@ function BlurredPreview({ children, unlocked, onUnlock, teaser }: {
         <p className="text-[#cfcfcf] text-[13px] leading-snug pb-2 font-sans-kr border-l-2 border-[#FF2D55]/70 pl-3 ml-1 mb-1 font-medium">{teaser}</p>
       )}
       <div className="relative min-h-[140px]">
-      <div className="select-none pointer-events-none"
+      <div className="select-none pointer-events-none" data-blur-locked="true"
         style={{ filter: 'blur(3px)', opacity: 0.82 }}>
         {children}
       </div>
@@ -1148,6 +1148,12 @@ export default function StepResult({ myData, targetData, result, relationType, o
         height: el.scrollHeight,
         windowWidth: el.offsetWidth,
         windowHeight: el.scrollHeight,
+        onclone: (_doc, clonedEl) => {
+          // 잠긴 콘텐츠는 캡쳐에서 완전히 가림
+          clonedEl.querySelectorAll('[data-blur-locked="true"]').forEach(node => {
+            (node as HTMLElement).style.visibility = 'hidden';
+          });
+        },
       });
       showToast('캡쳐완료!');
       canvas.toBlob(async (blob) => {
@@ -1309,15 +1315,16 @@ export default function StepResult({ myData, targetData, result, relationType, o
       {/* ── 상단 액션 버튼 3개 ── */}
       <div className="grid grid-cols-3 gap-2">
         <button onClick={handleKakaoImageShare}
-          className="py-2 border border-[#1e1e1e] text-[#888] text-[10px] font-sans-kr hover:border-[#FF2D55]/40 hover:text-white transition-colors leading-tight text-center">
+          className="py-2 text-[#3C1E1E] text-[10px] font-bold font-sans-kr hover:opacity-90 active:scale-[0.98] transition-all leading-tight text-center"
+          style={{ background: '#FEE500' }}>
           카톡으로<br />결과 공유
         </button>
         <button onClick={handleInstallApp}
-          className="py-2 border border-[#1e1e1e] text-[#888] text-[10px] font-sans-kr hover:border-[#FF2D55]/40 hover:text-white transition-colors leading-tight text-center">
+          className="py-2 border border-[#0A84FF]/40 text-[#0A84FF] text-[10px] font-sans-kr hover:border-[#0A84FF]/80 hover:bg-[#0A84FF]/10 transition-colors leading-tight text-center">
           앱으로<br />설치
         </button>
         <button onClick={() => setShowShareCard(true)}
-          className="py-2 border border-[#FF2D55]/30 text-[#FF2D55] text-[10px] font-sans-kr hover:border-[#FF2D55]/70 transition-colors leading-tight text-center">
+          className="py-2 border border-[#FF2D55]/40 text-[#FF2D55] text-[10px] font-sans-kr hover:border-[#FF2D55]/80 hover:bg-[#FF2D55]/10 transition-colors leading-tight text-center">
           Toxic<br />총정리
         </button>
       </div>

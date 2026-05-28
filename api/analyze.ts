@@ -211,13 +211,13 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
     "mindset": "3문장. 이 관계에서 덜 소모되기 위한 핵심 마인드셋 — 상대를 바꾸려는 것 포기하고 무엇에 집중해야 하는지, 왜 그게 현실적인지."
   },
   "personalImpact": {
-    "onMe": "2문장. 이 관계가 에너지·감정에 주는 실제 영향 — 만난 날과 안 만난 날의 차이, 내가 의식 못했던 것."
+    "onMe": "4문장. 이 관계가 지금 나에게 주는 실제 영향. ①에너지·체력 — 이 사람 만난 날 vs 안 만난 날. ②감정·자존감 — 이 관계 안에서 나는 어떤 버전의 나인지. ③일상 영향 — 다른 것들에 어떤 영향이 가는지. ④내가 의식하지 못했던 것."
   },
   "howTheySeeMe": {
-    "energyReading": "2문장. 상대방이 나를 어떻게 읽는지 — 처음 인상과 충·극 구조(${conflictRef})가 굳어진 방식."
+    "energyReading": "4문장. 상대방 사주 기운이 나를 어떻게 읽는지. ①처음 느꼈을 때 — 끌렸는지 경계했는지 구체적으로. ②충·극 구조(${conflictRef})가 상대 감각에 어떻게 체감되는지. ③상대방이 나를 어떤 '유형'으로 분류했는지. ④시간이 지나면서 그 인식이 굳어진 방식."
   },
   "continuationAssessment": {
-    "verdict": "2문장. 사주 구조 기반 최종 판정 — 솔직하고 단호하게. 이 관계에 대한 마지막 한마디."
+    "verdict": "3문장. 사주 구조 기반 최종 판정 — 솔직하고 단호하되 잔인하지 않게. 이 관계가 나에게 어떤 의미인지, 계속 가야 한다면 어떤 전제가 필요한지, 읽는 사람에게 전하는 마지막 한마디."
   }
 }`;
 }
@@ -271,13 +271,13 @@ function buildPhase1NameOnlyPrompt(myData: any, targetData: any, relationType: s
     "mindset": "3문장. ${targetData.name}과의 관계에서 덜 소모되기 위한 핵심 마인드셋."
   },
   "personalImpact": {
-    "onMe": "2문장. ${targetData.name}과의 관계가 에너지·감정에 주는 실제 영향."
+    "onMe": "4문장. ${targetData.name}과의 관계가 나에게 주는 실제 영향 — 에너지·감정·일상·무의식."
   },
   "howTheySeeMe": {
-    "energyReading": "2문장. 내 기질이 ${targetData.name} 눈에 읽히는 방식 — 처음 인상과 굳어진 인식."
+    "energyReading": "4문장. 내 사주 기질이 ${targetData.name} 눈에 어떻게 읽히는지 — 처음 인상·자극하는 것·유형 분류·굳어진 인식."
   },
   "continuationAssessment": {
-    "verdict": "2문장. ${targetData.name}과의 ${relationType} 관계 최종 판정 — 솔직하고 단호하게."
+    "verdict": "3문장. ${targetData.name}과의 ${relationType} 관계 최종 판정 — 솔직하고 단호하게."
   }
 }`;
 }
