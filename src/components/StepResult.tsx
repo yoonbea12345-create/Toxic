@@ -898,6 +898,7 @@ function FreeSuccessOverlay({ visible, myName, onClose }: { visible: boolean; my
 // ───────────────────────────────────────────
 export default function StepResult({ myData, targetData, result, relationType, onReset, onResetTarget, shareMode, preloadedPhase1, preloadedPhase2 }: StepResultProps) {
   const shareCardRef = useRef<HTMLDivElement>(null);
+  const resultContainerRef = useRef<HTMLDivElement>(null);
   const [aiPhase1, setAiPhase1] = useState<AIAnalysis | null>(shareMode ? (preloadedPhase1 ?? null) : null);
   // On-demand detail states — loaded only after payment
   const [aiDetail23, setAiDetail23] = useState<Partial<AIAnalysis> | null>(
@@ -951,6 +952,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [paywallMode, setPaywallMode] = useState<'all' | 'section'>('all');
   const [showFreeSuccess, setShowFreeSuccess] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   const ai: AIAnalysis = {
     ...aiPhase1,
@@ -1173,15 +1175,36 @@ export default function StepResult({ myData, targetData, result, relationType, o
     return <AILoadingScreen hasTarget={hasTarget} hasDateData={hasDateData} score={result.toxicScore} result={result} progress={displayProgress} />;
   }
 
-  const handleSaveImage = async () => {
-    if (!shareCardRef.current) return;
-    trackEvent('share', { method: 'image' });
-    const { default: html2canvas } = await import('html2canvas');
-    const canvas = await html2canvas(shareCardRef.current, { backgroundColor: '#0A0A0A', scale: 2 });
-    const link = document.createElement('a');
-    link.download = 'toxic-result.png';
-    link.href = canvas.toDataURL();
-    link.click();
+  const handleKakaoImageShare = async () => {
+    if (!resultContainerRef.current) return;
+    trackEvent('share', { method: 'kakao_image' });
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const el = resultContainerRef.current;
+      const canvas = await html2canvas(el, {
+        backgroundColor: '#0A0A0A',
+        scale: 2,
+        width: el.offsetWidth,
+        height: el.scrollHeight,
+        windowWidth: el.offsetWidth,
+        windowHeight: el.scrollHeight,
+      });
+      showToast('캡쳐완료!');
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], 'toxic-result.png', { type: 'image/png' });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'TOXIC 분석 결과' });
+        } else {
+          const link = document.createElement('a');
+          link.download = 'toxic-result.png';
+          link.href = URL.createObjectURL(blob);
+          link.click();
+        }
+      }, 'image/png');
+    } catch {
+      showToast('캡쳐에 실패했습니다');
+    }
   };
 
   const handleInstallApp = async () => {
@@ -1329,7 +1352,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         </div>
       </div>
     )}
-    <div className="animate-fade-in max-w-lg mx-auto px-4 pt-3 pb-24 space-y-4">
+    <div ref={resultContainerRef} className="animate-fade-in max-w-lg mx-auto px-4 pt-3 pb-24 space-y-4">
 
       {/* 결제 팝업 모달 */}
       {showPaywall && (
@@ -1393,99 +1416,42 @@ export default function StepResult({ myData, targetData, result, relationType, o
       {/* 스크롤 유도 화살표 — 좌측 floating */}
       <ScrollHint />
 
-      {/* ── 사주 충돌 구조 + 점수·공유 통합 박스 ── */}
-      {(() => {
-        const hasConflicts = hasDateData && (result.conflicts.chung.length > 0 || result.conflicts.hyung.length > 0 ||
-          result.conflicts.hae.length > 0 || result.conflicts.pa.length > 0 || result.conflicts.hap.length > 0);
-        return (
-        <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-4">
-          {/* 헤더: 라벨 + 점수 막대바 */}
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <p className="text-[#888] text-[10px] uppercase tracking-[0.25em] font-semibold whitespace-nowrap flex-shrink-0">
-              {hasConflicts ? '사주 충돌 구조' : '독성 분석'}
-              {hasConflicts && <span className="text-[#555] normal-case tracking-normal ml-1">— 탭</span>}
-            </p>
-            <div className="flex-1 min-w-0 max-w-[200px]">
-              <ScoreGauge score={result.toxicScore} compact />
+      {/* ── 상단 액션 버튼 3개 ── */}
+      <div className="grid grid-cols-3 gap-2">
+        <button onClick={handleKakaoImageShare}
+          className="py-2 border border-[#1e1e1e] text-[#888] text-[10px] font-sans-kr hover:border-[#FF2D55]/40 hover:text-white transition-colors leading-tight text-center">
+          카톡으로<br />결과 공유
+        </button>
+        <button onClick={handleInstallApp}
+          className="py-2 border border-[#1e1e1e] text-[#888] text-[10px] font-sans-kr hover:border-[#FF2D55]/40 hover:text-white transition-colors leading-tight text-center">
+          앱으로<br />설치
+        </button>
+        <button onClick={() => setShowShareCard(true)}
+          className="py-2 border border-[#FF2D55]/30 text-[#FF2D55] text-[10px] font-sans-kr hover:border-[#FF2D55]/70 transition-colors leading-tight text-center">
+          Toxic<br />총정리
+        </button>
+      </div>
+
+      {/* Toxic 총정리 팝업 */}
+      {showShareCard && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center animate-fade-in"
+          style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setShowShareCard(false)}>
+          <div className="w-full max-w-sm relative max-h-[90vh] overflow-y-auto"
+            style={{ background: '#0a0a0a' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
+            <button onClick={() => setShowShareCard(false)}
+              className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center text-[#666] hover:text-white text-xl transition-colors z-10">
+              ✕
+            </button>
+            <div className="px-4 pt-5 pb-6">
+              <p className="text-[#555] text-[10px] uppercase tracking-[0.25em] mb-4 font-sans-kr">Toxic 총정리</p>
+              <ShareCard ref={shareCardRef} myName={myData.name} result={result} />
             </div>
           </div>
-
-          {hasConflicts && (
-          <div className="space-y-2.5 pt-3 border-t border-[#161616]">
-            {(() => {
-              const groups: { key: string; label: string; hanja: string; color: string; items: { name: string; tooltipKey: string }[]; isGroup?: boolean }[] = [];
-              if (result.conflicts.chung.length > 0)
-                groups.push({ key: 'chung', label: '충', hanja: '沖', color: '#FF2D55',
-                  items: result.conflicts.chung.map(c => ({ name: c.name, tooltipKey: `chung-${c.name}` })) });
-              if (result.conflicts.hyung.length > 0)
-                groups.push({ key: 'hyung', label: '형', hanja: '刑', color: '#BF5AF2',
-                  items: result.conflicts.hyung.map(h => ({ name: h.name, tooltipKey: `hyung-${h.name}` })) });
-              if (result.conflicts.hae.length > 0)
-                groups.push({ key: 'hae', label: '해', hanja: '害', color: '#F59E0B',
-                  items: result.conflicts.hae.map(h => ({ name: h.name, tooltipKey: `hae-${h.name}` })) });
-              if (result.conflicts.pa.length > 0)
-                groups.push({ key: 'pa', label: '파', hanja: '破', color: '#F59E0B',
-                  items: result.conflicts.pa.map(p => ({ name: p.name, tooltipKey: `pa-${p.name}` })) });
-              if (result.conflicts.hap.length > 0)
-                groups.push({ key: 'hap', label: '합', hanja: '合', color: '#BF5AF2',
-                  items: [{ name: '요소 있음', tooltipKey: 'hap' }], isGroup: true });
-              return groups.map(g => (
-                <div key={g.key} className="flex items-center gap-3">
-                  <div className="flex items-baseline gap-1 w-12 flex-shrink-0">
-                    <span className="font-display text-base" style={{ color: g.color }}>{g.label}</span>
-                    <span className="text-[10px]" style={{ color: `${g.color}80` }}>{g.hanja}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 flex-1">
-                    {g.items.map(it => {
-                      const active = conflictTooltip === it.tooltipKey;
-                      return (
-                        <button key={it.tooltipKey}
-                          onClick={() => setConflictTooltip(active ? null : it.tooltipKey)}
-                          className="text-[11px] px-2.5 py-1 border transition-all"
-                          style={{
-                            borderColor: active ? g.color : `${g.color}40`,
-                            background: active ? `${g.color}20` : `${g.color}10`,
-                            color: active ? '#fff' : g.color,
-                          }}>
-                          {it.name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ));
-            })()}
-          </div>
-          )}
-
-          {/* 인라인 tooltip 설명 — 다크모드 대비 강화 */}
-          {conflictTooltip && (() => {
-            const type = conflictTooltip.split('-')[0];
-            const name = conflictTooltip.includes('-') ? conflictTooltip.split('-').slice(1).join('-') : '';
-            const COLOR: Record<string, string> = { chung: '#FF2D55', hyung: '#BF5AF2', hae: '#F59E0B', pa: '#F59E0B', hap: '#BF5AF2' };
-            const TITLE: Record<string, string> = { chung: '충 (沖)', hyung: '형 (刑)', hae: '해 (害)', pa: '파 (破)', hap: '합 (合)' };
-            const DESC: Record<string, string> = {
-              chung: `충(沖)은 두 기운이 정반대 방향으로 부딪히는 관계입니다. ${name ? `${name}은` : ''} 서로의 에너지가 충돌해 다툼이 잦고, 예상치 못한 변화가 갑자기 터질 수 있습니다.`,
-              hyung: `형(刑)은 서로를 압박하고 자극하는 관계입니다. ${name ? `${name}은` : ''} 말하지 못한 긴장이 쌓이고, 관계가 점점 답답하게 짓눌리는 느낌이 납니다.`,
-              hae: `해(害)는 서로의 기운을 갉아먹는 관계입니다. ${name ? `${name}은` : ''} 함께 있을수록 서로 지치고 약해지며, 눈에 띄지 않게 서서히 소모됩니다.`,
-              pa: `파(破)는 서로 균열을 만드는 관계입니다. ${name ? `${name}은` : ''} 함께 세운 계획이나 약속이 자꾸 어긋나고, 안정감을 유지하기 어렵습니다.`,
-              hap: '합(合) 요소가 있다는 건 서로 끌어당기는 기운이 있다는 뜻입니다. 매력과 친밀감이 생기지만, 합쳐질수록 오히려 독이 되는 관계일 수 있습니다.',
-            };
-            const c = COLOR[type] ?? '#888';
-            return (
-              <div className="mt-3 px-4 py-3 border-l-2 animate-fade-in"
-                style={{ borderColor: c, background: '#161616' }}>
-                <p className="text-[11px] font-bold mb-1.5 tracking-wider uppercase" style={{ color: c }}>{TITLE[type] ?? ''}</p>
-                <p className="text-[13px] leading-relaxed text-[#e8e8e8]">
-                  {DESC[type] ?? ''}
-                </p>
-              </div>
-            );
-          })()}
-
         </div>
-        );
-      })()}
+      )}
 
       {/* AI 실패 알림 */}
       {aiError && (
@@ -2044,38 +2010,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
         ))}
       </div>
 
-      {/* 공유 */}
-      <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-4">
-        <p className="text-[#555] text-[10px] uppercase tracking-[0.25em] mb-3">결과 공유하기</p>
-        <div className="grid grid-cols-3 gap-2">
-          <button onClick={handleKakaoShare}
-            disabled={isSharing}
-            className="py-2.5 bg-[#FEE500] text-[#3C1E1E] text-[11px] font-bold hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-1">
-            {isSharing ? (
-              <>
-                <span className="inline-block w-3 h-3 border-2 border-[#3C1E1E]/30 border-t-[#3C1E1E] rounded-full animate-spin" />
-                <span>준비 중</span>
-              </>
-            ) : '카카오톡'}
-          </button>
-          <button onClick={handleSaveImage}
-            className="py-2.5 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
-            이미지 저장
-          </button>
-          <button onClick={handleInstallApp}
-            className="py-2.5 border border-[#1e1e1e] text-[#888] text-[11px] hover:border-[#FF2D55]/40 hover:text-white transition-colors">
-            앱으로 저장
-          </button>
-        </div>
-      </div>
-
-      {/* 공유 이미지 카드 */}
-      <div className="border border-[#1e1e1e] p-5 bg-[#0D0D0D]">
-        <p className="text-[#555] text-[10px] uppercase tracking-[0.25em] mb-4">공유 카드</p>
-        <div className="flex justify-center">
-          <ShareCard ref={shareCardRef} myName={myData.name} result={result} />
-        </div>
-      </div>
 
       {/* 리뷰 */}
       {!reviewSubmitted ? (
