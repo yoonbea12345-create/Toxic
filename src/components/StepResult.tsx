@@ -914,7 +914,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [paywallMode, setPaywallMode] = useState<'all' | 'section'>('all');
   const [showFreeSuccess, setShowFreeSuccess] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
   const [showShareCard, setShowShareCard] = useState(false);
 
   const ai: AIAnalysis = {
@@ -1190,20 +1189,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
     }
   };
 
-  const generateShareUrl = () => {
-    try {
-      // 상대방 생년월일/시간 제외 — 개인정보 보호
-      const payload = JSON.stringify({
-        m: { n: myData.name, b: myData.birthdate, bt: myData.birthtime, g: myData.gender },
-        t: { n: targetData.name, g: targetData.gender },
-        r: relationType,
-      });
-      const encoded = btoa(unescape(encodeURIComponent(payload)));
-      return `${window.location.origin}/app?share=${encoded}`;
-    } catch {
-      return window.location.origin;
-    }
-  };
 
 
   const handleSubmitReview = async (stars = reviewStars, text = reviewText) => {
