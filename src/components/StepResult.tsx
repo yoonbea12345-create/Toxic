@@ -567,142 +567,201 @@ const PRICE_SECTION = 700;
 const PRICE_ALL = 2500;
 const PRICE_ALL_ORIGINAL = 4200;
 
+const FAQ_ITEMS = [
+  {
+    q: '2,500원을 결제하면 모든 관계와의 분석이 잠금해제 되나요?',
+    a: '네 맞습니다. 결제한 기기로 24시간 동안은 모든 사용자님의 모든 관계의 분석에서 보이지 않던 부분이 잠금해제 됩니다.',
+  },
+  {
+    q: '섹션 결제랑 묶음 결제가 무엇이 다른건가요?',
+    a: '섹션 결제는 해당 개별 섹션에서 보이지 않던 부분만 잠금해제 됩니다. 묶음결제와 섹션 결제 모두 24시간 / 같은 기기 접속이라는 조건에서 유지됩니다.',
+  },
+  {
+    q: '24시간이 지나면 어떻게 되나요?',
+    a: '24시간이 지나면 잠금이 다시 설정됩니다. 재결제 시 동일하게 24시간 이용 가능합니다.',
+  },
+  {
+    q: '결제 취소나 환불이 가능한가요?',
+    a: '콘텐츠 특성상 잠금 해제 즉시 이용이 시작되므로 결제 완료 후 환불은 어렵습니다. 결제 전 신중하게 확인해 주세요.',
+  },
+];
+
 // ── 결제 팝업 모달 ───────────────────────────────────────────────────
-function PaywallModal({ mode, onClose, onPaySection, onPayAll }: {
+function PaywallModal({ mode, targetName, onClose, onPaySection, onPayAll }: {
   conflictType: string;
   mode: 'all' | 'section';
+  targetName: string;
   onClose: () => void;
   onPaySection: () => void;
   onPayAll: () => void;
 }) {
   const isSection = mode === 'section';
+  const [showFAQ, setShowFAQ] = useState(false);
+  const nameLabel = targetName?.trim() ? `${targetName.trim()}님과의 관계를` : '당신의 관계를';
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center animate-fade-in"
-      style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(4px)' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div className="w-full max-w-sm relative max-h-[94vh] overflow-y-auto"
-        style={{ background: '#0a0a0a', boxShadow: '0 -20px 60px rgba(255,45,85,0.18)' }}
-        onClick={e => e.stopPropagation()}>
-
-        {/* 상단 액센트 라인 */}
-        <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
-
-        {/* 닫기 */}
-        <button onClick={onClose}
-          className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center text-[#666] hover:text-white text-xl transition-colors z-20">
-          ✕
+    <>
+      <div
+        className="fixed inset-0 z-50 flex flex-col items-center justify-end sm:justify-center animate-fade-in"
+        style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(4px)' }}
+        onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      >
+        {/* FAQ 버튼 — 모달 상단 중앙 */}
+        <button
+          onClick={e => { e.stopPropagation(); setShowFAQ(true); }}
+          className="mb-3 text-[#555] text-[11px] font-sans-kr hover:text-[#888] transition-colors underline underline-offset-2">
+          자주 묻는 질문
         </button>
 
-        {/* ════════════════════════════════════════════════════
-            ALL MODE — 전체 결제 단일
-        ════════════════════════════════════════════════════ */}
-        {!isSection && (
-          <div className="px-6 pt-5 pb-5">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#FF2D55]/35 rounded-full mb-3"
-              style={{ background: 'rgba(255,45,85,0.06)' }}>
-              <LockIcon size={11} />
-              <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
+        <div className="w-full max-w-sm relative max-h-[94vh] overflow-y-auto"
+          style={{ background: '#0a0a0a', boxShadow: '0 -20px 60px rgba(255,45,85,0.18)' }}
+          onClick={e => e.stopPropagation()}>
+
+          {/* 상단 액센트 라인 */}
+          <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
+
+          {/* 닫기 */}
+          <button onClick={onClose}
+            className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center text-[#666] hover:text-white text-xl transition-colors z-20">
+            ✕
+          </button>
+
+          {/* ════════════════════════════════════════════════════
+              ALL MODE — 전체 결제 단일
+          ════════════════════════════════════════════════════ */}
+          {!isSection && (
+            <div className="px-6 pt-5 pb-5">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#FF2D55]/35 rounded-full mb-3"
+                style={{ background: 'rgba(255,45,85,0.06)' }}>
+                <LockIcon size={11} />
+                <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
+              </div>
+
+              <p className="text-[#999] text-[11px] font-bold tracking-[0.15em] uppercase font-sans-kr mb-3">24시간 무료 분석</p>
+
+              <p className="font-display text-white leading-[1.05] mb-2"
+                style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
+                {nameLabel}
+              </p>
+              <p className="font-display leading-[1.05] mb-5"
+                style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
+                <span className="text-[#FF2D55]">완벽히 분석하세요</span>
+              </p>
+
+              <button onClick={onPayAll}
+                className="w-full py-4 px-4 text-white font-sans-kr flex items-center justify-between hover:opacity-95 active:scale-[0.99] transition-all"
+                style={{
+                  background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)',
+                  boxShadow: '0 0 32px rgba(255,45,85,0.4)',
+                }}>
+                <div className="text-left">
+                  <p className="text-white text-[13px] font-bold">6개 전체 해제</p>
+                  <p className="text-white/75 text-[10px] mt-0.5">24시간 · 모든 관계 무제한</p>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-white/55 text-xs line-through">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
+                  <span className="font-display text-2xl font-bold">₩{PRICE_ALL.toLocaleString()}</span>
+                </div>
+              </button>
+
+              <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-3">
+                <span>즉시 해제</span>
+                <span className="text-[#333]">·</span>
+                <span>안전 결제</span>
+                <span className="text-[#333]">·</span>
+                <span>24시간 유효</span>
+              </div>
             </div>
+          )}
 
-            <p className="text-[#999] text-[11px] font-bold tracking-[0.15em] uppercase font-sans-kr mb-3">24시간 무료 분석</p>
-
-            <p className="font-display text-white leading-[1.05] mb-2"
-              style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
-              당신의 관계를
-            </p>
-            <p className="font-display leading-[1.05] mb-5"
-              style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
-              <span className="text-[#FF2D55]">온전히 분석하세요</span>
-            </p>
-
-            <button onClick={onPayAll}
-              className="w-full py-4 px-4 text-white font-sans-kr flex items-center justify-between hover:opacity-95 active:scale-[0.99] transition-all"
-              style={{
-                background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)',
-                boxShadow: '0 0 32px rgba(255,45,85,0.4)',
-              }}>
-              <div className="text-left">
-                <p className="text-white text-[13px] font-bold">6개 전체 해제</p>
-                <p className="text-white/75 text-[10px] mt-0.5">24시간 · 모든 관계 무제한</p>
+          {/* ════════════════════════════════════════════════════
+              SECTION MODE — CTA 2개
+          ════════════════════════════════════════════════════ */}
+          {isSection && (
+            <div className="px-6 pt-5 pb-5">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#FF2D55]/35 rounded-full mb-3"
+                style={{ background: 'rgba(255,45,85,0.06)' }}>
+                <LockIcon size={11} />
+                <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
               </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-white/55 text-xs line-through">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
-                <span className="font-display text-2xl font-bold">₩{PRICE_ALL.toLocaleString()}</span>
-              </div>
-            </button>
 
-            <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-3">
-              <span>🔒 즉시 해제</span>
-              <span className="text-[#333]">·</span>
-              <span>안전 결제</span>
-              <span className="text-[#333]">·</span>
-              <span>24시간 유효</span>
+              <p className="text-[#999] text-[11px] font-bold tracking-[0.15em] uppercase font-sans-kr mb-3">24시간 무료 분석</p>
+
+              <p className="font-display text-white leading-[1.05] mb-2"
+                style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
+                지금 보면
+              </p>
+              <p className="font-display leading-[1.05] mb-5"
+                style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
+                <span className="text-[#FF2D55]">관계의 본질이 보입니다</span>
+              </p>
+
+              <button onClick={onPaySection}
+                className="w-full py-3 px-4 mb-2 border border-[#FF2D55]/25 hover:border-[#FF2D55]/60 transition-colors font-sans-kr flex items-center justify-between"
+                style={{ background: 'rgba(255,45,85,0.05)' }}>
+                <div className="text-left">
+                  <p className="text-white text-[13px] font-bold">이 섹션만 보기</p>
+                  <p className="text-[#666] text-[10px] mt-0.5">24시간 · 이 영역 1개</p>
+                </div>
+                <span className="font-display text-white text-xl font-bold">₩{PRICE_SECTION.toLocaleString()}</span>
+              </button>
+
+              <button onClick={onPayAll}
+                className="w-full py-3 px-4 text-white font-sans-kr flex items-center justify-between hover:opacity-95 active:scale-[0.99] transition-all"
+                style={{
+                  background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)',
+                  boxShadow: '0 0 28px rgba(255,45,85,0.35)',
+                }}>
+                <div className="text-left">
+                  <p className="text-white text-[13px] font-bold">6개 전체 해제</p>
+                  <p className="text-white/75 text-[10px] mt-0.5">24시간 · 모든 관계 무제한</p>
+                </div>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-white/55 text-xs line-through">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
+                  <span className="font-display text-xl font-bold">₩{PRICE_ALL.toLocaleString()}</span>
+                </div>
+              </button>
+
+              <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-3">
+                <span>즉시 해제</span>
+                <span className="text-[#333]">·</span>
+                <span>안전 결제</span>
+                <span className="text-[#333]">·</span>
+                <span>24시간 유효</span>
+              </div>
             </div>
-          </div>
-        )}
-
-        {/* ════════════════════════════════════════════════════
-            SECTION MODE — CTA 2개
-        ════════════════════════════════════════════════════ */}
-        {isSection && (
-          <div className="px-6 pt-5 pb-5">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-[#FF2D55]/35 rounded-full mb-3"
-              style={{ background: 'rgba(255,45,85,0.06)' }}>
-              <LockIcon size={11} />
-              <span className="text-[10px] font-bold tracking-[0.15em] text-[#FF2D55] font-sans-kr">상세 분석 잠금</span>
-            </div>
-
-            <p className="text-[#999] text-[11px] font-bold tracking-[0.15em] uppercase font-sans-kr mb-3">24시간 무료 분석</p>
-
-            <p className="font-display text-white leading-[1.05] mb-2"
-              style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
-              지금 보면
-            </p>
-            <p className="font-display leading-[1.05] mb-5"
-              style={{ fontSize: 'clamp(1.6rem, 7vw, 2rem)' }}>
-              <span className="text-[#FF2D55]">관계의 본질이 보입니다</span>
-            </p>
-
-            <button onClick={onPaySection}
-              className="w-full py-3 px-4 mb-2 border border-[#FF2D55]/25 hover:border-[#FF2D55]/60 transition-colors font-sans-kr flex items-center justify-between"
-              style={{ background: 'rgba(255,45,85,0.05)' }}>
-              <div className="text-left">
-                <p className="text-white text-[13px] font-bold">이 섹션만 보기</p>
-                <p className="text-[#666] text-[10px] mt-0.5">24시간 · 이 영역 1개</p>
-              </div>
-              <span className="font-display text-white text-xl font-bold">₩{PRICE_SECTION.toLocaleString()}</span>
-            </button>
-
-            <button onClick={onPayAll}
-              className="w-full py-3 px-4 text-white font-sans-kr flex items-center justify-between hover:opacity-95 active:scale-[0.99] transition-all"
-              style={{
-                background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)',
-                boxShadow: '0 0 28px rgba(255,45,85,0.35)',
-              }}>
-              <div className="text-left">
-                <p className="text-white text-[13px] font-bold">6개 전체 해제</p>
-                <p className="text-white/75 text-[10px] mt-0.5">24시간 · 모든 관계 무제한</p>
-              </div>
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-white/55 text-xs line-through">₩{PRICE_ALL_ORIGINAL.toLocaleString()}</span>
-                <span className="font-display text-xl font-bold">₩{PRICE_ALL.toLocaleString()}</span>
-              </div>
-            </button>
-
-            <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-3">
-              <span>🔒 즉시 해제</span>
-              <span className="text-[#333]">·</span>
-              <span>안전 결제</span>
-              <span className="text-[#333]">·</span>
-              <span>24시간 유효</span>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* FAQ 팝업 */}
+      {showFAQ && (
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center animate-fade-in"
+          style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(4px)' }}
+          onClick={() => setShowFAQ(false)}>
+          <div className="w-full max-w-sm relative max-h-[85vh] overflow-y-auto"
+            style={{ background: '#0a0a0a', boxShadow: '0 -20px 60px rgba(255,45,85,0.15)' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="h-[3px]" style={{ background: 'linear-gradient(90deg, #FF2D55 0%, #BF5AF2 100%)' }} />
+            <button onClick={() => setShowFAQ(false)}
+              className="absolute top-3 right-3 w-9 h-9 flex items-center justify-center text-[#666] hover:text-white text-xl transition-colors">
+              ✕
+            </button>
+            <div className="px-6 pt-5 pb-7">
+              <p className="text-[#999] text-[10px] uppercase tracking-widest mb-6 font-sans-kr">자주 묻는 질문</p>
+              <div className="space-y-6">
+                {FAQ_ITEMS.map((item, i) => (
+                  <div key={i}>
+                    <p className="text-white text-[13px] font-bold font-sans-kr mb-2">Q. {item.q}</p>
+                    <p className="text-[#777] text-[13px] leading-relaxed font-sans-kr">A. {item.a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -1273,6 +1332,7 @@ export default function StepResult({ myData, targetData, result, relationType, o
         <PaywallModal
           conflictType={result.conflictType}
           mode={paywallMode}
+          targetName={targetData?.name || ''}
           onClose={() => setShowPaywall(false)}
           onPaySection={handleUnlockSection}
           onPayAll={handleUnlockAll}
