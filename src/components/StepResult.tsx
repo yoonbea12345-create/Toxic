@@ -292,7 +292,7 @@ function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
             ))}
           </span>
           <span className="text-xs tracking-[0.2em] uppercase font-semibold" style={{ color: `${color}cc` }}>
-            분석 진행 중
+            분석 진행 중{elapsed > 0 ? ` · ${elapsed}초` : ''}
           </span>
         </div>
       )}
