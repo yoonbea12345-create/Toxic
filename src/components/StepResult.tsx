@@ -354,42 +354,6 @@ function AILoadingScreen({ hasTarget, hasDateData, score, result, progress }: {
   );
 }
 
-function ScoreGauge({ score, compact = false }: { score: number; compact?: boolean }) {
-  const color = score >= 80 ? '#FF2D55' : score >= 60 ? '#BF5AF2' : '#F59E0B';
-  const label = score >= 80 ? '강한 충돌' : score >= 60 ? '중간 충돌' : '경미한 충돌';
-  if (compact) {
-    return (
-      <div className="flex items-center gap-2 w-full">
-        <span className="text-[9px] uppercase tracking-widest whitespace-nowrap font-semibold" style={{ color: `${color}cc` }}>{label}</span>
-        <div className="flex-1 h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden min-w-[40px]">
-          <div className="h-full rounded-full"
-            style={{ width: `${score}%`, background: color, transition: 'width 1.2s ease' }} />
-        </div>
-        <span className="font-sans font-bold text-sm whitespace-nowrap" style={{ color }}>
-          {score}<span className="text-[#555] text-[10px] font-normal">/100</span>
-        </span>
-      </div>
-    );
-  }
-  return (
-    <div className="w-full">
-      <div className="flex items-baseline justify-between mb-1.5">
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-[#888] text-[10px] uppercase tracking-[0.2em]">독성 지수</span>
-          <span className="text-xs font-semibold" style={{ color }}>{label}</span>
-        </div>
-        <div className="flex items-baseline gap-0.5">
-          <span className="font-sans font-bold text-base" style={{ color }}>{score}</span>
-          <span className="text-[#555] text-[10px]">/100</span>
-        </div>
-      </div>
-      <div className="w-full h-1.5 bg-[#1a1a1a] rounded-full overflow-hidden">
-        <div className="h-full rounded-full"
-          style={{ width: `${score}%`, background: color, transition: 'width 1.2s ease' }} />
-      </div>
-    </div>
-  );
-}
 
 function SectionHeader({ number, title, subtitle }: { number: string; title: string; subtitle?: string }) {
   return (
@@ -920,7 +884,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
   const [showLoading, setShowLoading] = useState(!shareMode);
   const [aiError, setAiError] = useState(false);
   const [toast, setToast] = useState('');
-  const [conflictTooltip, setConflictTooltip] = useState<string | null>(null);
   const [reviewStars, setReviewStars] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
@@ -1242,62 +1205,6 @@ export default function StepResult({ myData, targetData, result, relationType, o
     }
   };
 
-  const handleKakaoShare = async () => {
-    if (isSharing) return;
-    trackEvent('share', { method: 'kakao' });
-    let shareUrl: string;
-    if (shareMode) {
-      shareUrl = window.location.href;
-    } else {
-      setIsSharing(true);
-      shareUrl = generateShareUrl(); // fallback: 최소한 결과 페이지로 이동
-      try {
-        const combinedDetail = {
-          ...(aiDetail23 ?? {}),
-          ...(aiDetail456 ?? {}),
-          conflictScenarios: [...(aiDetail23?.conflictScenarios ?? [])],
-          avoidanceGuide: aiDetail23?.avoidanceGuide ? { ...aiDetail23.avoidanceGuide } : undefined,
-          personalImpact: aiDetail456?.personalImpact ? { ...aiDetail456.personalImpact } : undefined,
-          howTheySeeMe: aiDetail456?.howTheySeeMe ? { ...aiDetail456.howTheySeeMe } : undefined,
-          continuationAssessment: aiDetail456?.continuationAssessment ? { ...aiDetail456.continuationAssessment } : undefined,
-        };
-        const saveRes = await fetch('/api/share-save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            my_name: myData.name, my_gender: myData.gender,
-            target_name: targetData.name, target_gender: targetData.gender,
-            has_target: hasTarget, has_date_data: hasDateData,
-            relation_type: relationType,
-            saju_result: result, ai_phase1: aiPhase1, ai_phase2: combinedDetail,
-          }),
-        });
-        if (saveRes.ok) {
-          const { id } = await saveRes.json();
-          shareUrl = `${window.location.origin}/share/${id}`;
-        }
-      } catch {}
-      setIsSharing(false);
-    }
-    const myName = myData.name || '나';
-    const targetName = targetData.name || '상대방';
-    const desc = ai.toxicSummary || result.conflictSummary || `${myName}과 ${targetName}의 사주 충돌 분석`;
-    if (window.Kakao?.isInitialized()) {
-      window.Kakao.Share.sendDefault({
-        objectType: 'feed',
-        content: {
-          title: `${myName} × ${targetName} — TOXIC 분석`,
-          description: desc,
-          imageUrl: `${window.location.origin}/og.png`,
-          link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
-        },
-        buttons: [{ title: '결과 바로 보기', link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
-      });
-    } else {
-      navigator.clipboard.writeText(shareUrl).catch(() => {});
-      showToast('결과 링크를 복사했어요');
-    }
-  };
 
   const handleSubmitReview = async (stars = reviewStars, text = reviewText) => {
     if (stars === 0) return;
