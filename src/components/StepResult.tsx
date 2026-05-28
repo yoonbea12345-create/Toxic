@@ -1159,10 +1159,15 @@ export default function StepResult({ myData, targetData, result, relationType, o
         windowHeight: el.scrollHeight,
         onclone: (doc, clonedEl) => {
           clonedEl.querySelectorAll('[data-blur-wrapper="true"]').forEach(node => {
-            const el = node as HTMLElement;
-            el.style.minHeight = '0';
-            el.style.height = 'auto';
-            el.innerHTML = '<div style="padding:10px 16px;border:1px solid #2a2a2a;text-align:center;color:#444;font-size:11px;letter-spacing:0.1em;">— 잠금 콘텐츠 —</div>';
+            const wrapper = node as HTMLElement;
+            const locked = wrapper.querySelector('[data-blur-locked="true"]') as HTMLElement | null;
+            if (locked) {
+              // 콘텐츠 유출 방지: 실제 내용 제거, 어두운 배경으로 교체
+              locked.innerHTML = '';
+              locked.style.filter = 'none';
+              locked.style.background = '#0f0f0f';
+              locked.style.minHeight = '80px';
+            }
           });
           // fixed 엘리먼트(하단 CTA, 토스트, ScrollHint 등) 캡쳐 제외
           doc.querySelectorAll('.fixed').forEach(node => {
