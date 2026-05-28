@@ -563,9 +563,9 @@ function LockIcon({ size = 20, color = '#FF2D55' }: { size?: number; color?: str
 }
 
 // ── 가격 상수 ─────────────────────────────────────────────────────────
-const PRICE_SECTION = 500;
-const PRICE_ALL = 1900;
-const PRICE_ALL_ORIGINAL = 3000;
+const PRICE_SECTION = 700;
+const PRICE_ALL = 2500;
+const PRICE_ALL_ORIGINAL = 4200;
 
 // ── 결제 팝업 모달 ───────────────────────────────────────────────────
 function PaywallModal({ mode, onClose, onPaySection, onPayAll }: {
