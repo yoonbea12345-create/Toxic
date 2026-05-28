@@ -567,7 +567,7 @@ const PRICE_SECTION = 700;
 const PRICE_ALL = 2500;
 const PRICE_ALL_ORIGINAL = 4200;
 
-const FAQ_ITEMS = [
+const FAQ_ITEMS: { q: string; a: React.ReactNode }[] = [
   {
     q: '2,500원을 결제하면 모든 관계와의 분석이 잠금해제 되나요?',
     a: '네 맞습니다. 결제한 기기로 24시간 동안은 모든 사용자님의 모든 관계의 분석에서 보이지 않던 부분이 잠금해제 됩니다.',
@@ -581,8 +581,12 @@ const FAQ_ITEMS = [
     a: '24시간이 지나면 잠금이 다시 설정됩니다. 재결제 시 동일하게 24시간 이용 가능합니다.',
   },
   {
-    q: '결제 취소나 환불이 가능한가요?',
-    a: '콘텐츠 특성상 잠금 해제 즉시 이용이 시작되므로 결제 완료 후 환불은 어렵습니다. 결제 전 신중하게 확인해 주세요.',
+    q: '결제 취소나 환불 문의는 어디서 하나요?',
+    a: <>결제 취소 및 환불 관련 문의는{' '}
+      <a href="https://open.kakao.com/o/swegKZwi" target="_blank" rel="noopener noreferrer"
+        className="text-[#FF2D55] underline underline-offset-2">카카오톡 오픈채팅</a>
+      에서 해주세요.
+    </>,
   },
 ];
 
