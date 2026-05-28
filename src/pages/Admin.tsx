@@ -133,13 +133,11 @@ function computeStats(events: EventRecord[]): Stats {
 }
 
 function StatCard({ label, value, sub, color = '#FF2D55' }: { label: string; value: string | number; sub?: string; color?: string }) {
-  const str = String(value);
-  const fontSize = str.length > 9 ? 'text-lg' : str.length > 6 ? 'text-2xl' : 'text-3xl';
   return (
-    <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-5 overflow-hidden">
-      <p className="text-[#444] text-[10px] uppercase tracking-widest mb-2 truncate">{label}</p>
-      <p className={`${fontSize} font-bold leading-tight break-all`} style={{ color }}>{value}</p>
-      {sub && <p className="text-[#444] text-xs mt-1 truncate">{sub}</p>}
+    <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-5">
+      <p className="text-[#444] text-[10px] uppercase tracking-widest mb-2">{label}</p>
+      <p className="text-3xl font-bold" style={{ color }}>{value}</p>
+      {sub && <p className="text-[#444] text-xs mt-1">{sub}</p>}
     </div>
   );
 }
@@ -354,8 +352,10 @@ export default function AdminPage() {
               <StatCard label="개별 결제 · ₩700" value={`${stats.sectionPays}회`} sub={`₩${stats.sectionRevenue.toLocaleString()}`} color="#FF2D55" />
               <StatCard label="전체 결제 · ₩2,500" value={`${stats.allPays}회`} sub={`₩${stats.allRevenue.toLocaleString()}`} color="#BF5AF2" />
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="mb-3">
               <StatCard label="총 매출" value={`₩${stats.totalRevenue.toLocaleString()}`} sub="개별+전체 합산" color="#FF2D55" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               <StatCard label="CTR" value={`${stats.paywallCTR}%`} sub="노출→클릭" color="#BF5AF2" />
               <StatCard label="전환율" value={`${stats.paywallConversion}%`} sub="클릭→결제" color="#F59E0B" />
             </div>
