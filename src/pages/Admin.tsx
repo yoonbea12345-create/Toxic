@@ -64,10 +64,12 @@ function computeStats(events: EventRecord[]): Stats {
   const shares = count('share');
   const paywallImpressions = count('paywall_impression');
   const paywallClicks = count('paywall_click');
-  const sectionPays = events.filter(e => e.event === 'paywall_pay' && (e.props?.type === 'section' || (!e.props?.type && e.props?.price === 500))).length;
-  const allPays = events.filter(e => e.event === 'paywall_pay' && (e.props?.type === 'all' || (!e.props?.type && e.props?.price === 1900))).length;
-  const sectionRevenue = sectionPays * 500;
-  const allRevenue = allPays * 1900;
+  const sectionPayEvents = events.filter(e => e.event === 'paywall_pay' && (e.props?.type === 'section' || (!e.props?.type && e.props?.price === 500)));
+  const allPayEvents = events.filter(e => e.event === 'paywall_pay' && (e.props?.type === 'all' || (!e.props?.type && (e.props?.price === 1900 || e.props?.price === 2500))));
+  const sectionPays = sectionPayEvents.length;
+  const allPays = allPayEvents.length;
+  const sectionRevenue = sectionPayEvents.reduce((sum, e) => sum + (Number(e.props?.price) || 700), 0);
+  const allRevenue = allPayEvents.reduce((sum, e) => sum + (Number(e.props?.price) || 2500), 0);
   const totalRevenue = sectionRevenue + allRevenue;
   const paywallPays = sectionPays + allPays;
 
