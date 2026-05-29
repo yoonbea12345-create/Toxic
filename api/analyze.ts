@@ -5,7 +5,7 @@ const client = new Anthropic({
   defaultHeaders: { 'anthropic-beta': 'prompt-caching-2024-07-31' },
 });
 
-const MODEL_OPUS   = 'claude-opus-4-7';
+const MODEL_OPUS   = 'claude-opus-4-8';
 const MODEL_SONNET = 'claude-sonnet-4-6';
 const MODEL_HAIKU  = 'claude-haiku-4-5-20251001';
 
@@ -675,7 +675,7 @@ export default async function handler(req: any, res: any) {
     }
     try {
       const prompt = buildPhase1bPrompt(myData, targetData, relationType, result);
-      const text = await callSonnetNonStream(prompt, 1200, 'Phase1b-S01Detail', 50000);
+      const text = await callSonnetFallback(prompt, 1200, 'Phase1b-S01Detail', 50000);
       return res.status(200).json({ data: extractJson(text) });
     } catch (err) {
       console.error('[TOXIC API] phase 1b', err);
@@ -687,7 +687,7 @@ export default async function handler(req: any, res: any) {
   if (phase === 2) {
     try {
       const prompt = buildPhase2DetailPrompt(myData, targetData, relationType, result);
-      const text = await callSonnetNonStream(prompt, 5000, 'Phase2Detail', 90000);
+      const text = await callSonnetFallback(prompt, 5000, 'Phase2Detail', 90000);
       return res.status(200).json({ data: extractJson(text) });
     } catch (err) {
       console.error('[TOXIC API] phase 2', err);
