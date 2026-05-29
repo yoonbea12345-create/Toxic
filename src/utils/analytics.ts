@@ -15,7 +15,7 @@ function postToBackend(body: object, keepalive = false) {
 }
 
 function postPaywallToBackend(body: object) {
-  postToBackend(body, true);
+  postToBackend(body, false);
 }
 
 export function trackEvent(event: string, props?: Record<string, unknown>) {

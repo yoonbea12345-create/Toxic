@@ -7,8 +7,17 @@ const LOADING_STATES = { idle: 'idle', loading: 'loading', error: 'error' } as c
 
 interface EventRecord {
   event: string;
-  props?: Record<string, unknown>;
+  props?: unknown;
   ts: number;
+}
+
+function safeProps(props: unknown): Record<string, unknown> {
+  if (!props) return {};
+  if (typeof props === 'string') {
+    try { return JSON.parse(props) as Record<string, unknown>; } catch { return {}; }
+  }
+  if (typeof props === 'object') return props as Record<string, unknown>;
+  return {};
 }
 
 interface ReviewRecord {
@@ -50,7 +59,7 @@ function computeStats(events: EventRecord[]): Stats {
   const count = (name: string) => events.filter(e => e.event === name).length;
   const reviewSubmits = count('review_submit');
   const avgReviewStars = (() => {
-    const rs = events.filter(e => e.event === 'review_submit').map(e => Number(e.props?.stars)).filter(n => n > 0);
+    const rs = events.filter(e => e.event === 'review_submit').map(e => Number(safeProps(e.props).stars)).filter(n => n > 0);
     return rs.length ? (rs.reduce((a, b) => a + b, 0) / rs.length).toFixed(1) : '—';
   })();
 
@@ -66,18 +75,26 @@ function computeStats(events: EventRecord[]): Stats {
   const paywallClicks = count('paywall_click');
   const SECTION_PRICE = 700;
   const ALL_PRICE = 2500;
-  const sectionPayEvents = events.filter(e => e.event === 'paywall_pay' && (e.props?.type === 'section' || (!e.props?.type && (e.props?.price === 500 || e.props?.price === 700))));
-  const allPayEvents = events.filter(e => e.event === 'paywall_pay' && (e.props?.type === 'all' || (!e.props?.type && (e.props?.price === 1900 || e.props?.price === 2500))));
+  const sectionPayEvents = events.filter(e => {
+    if (e.event !== 'paywall_pay') return false;
+    const p = safeProps(e.props);
+    return p.type === 'section' || (!p.type && (Number(p.price) === 500 || Number(p.price) === 700));
+  });
+  const allPayEvents = events.filter(e => {
+    if (e.event !== 'paywall_pay') return false;
+    const p = safeProps(e.props);
+    return p.type === 'all' || (!p.type && (Number(p.price) === 1900 || Number(p.price) === 2500));
+  });
   const sectionPays = sectionPayEvents.length;
   const allPays = allPayEvents.length;
   // 구가격(500원) → 신가격(700원)으로 정규화
   const sectionRevenue = sectionPayEvents.reduce((sum, e) => {
-    const p = Number(e.props?.price) || SECTION_PRICE;
+    const p = Number(safeProps(e.props).price) || SECTION_PRICE;
     return sum + (p === 500 ? SECTION_PRICE : p);
   }, 0);
   // 구가격(1900원) → 신가격(2500원)으로 정규화
   const allRevenue = allPayEvents.reduce((sum, e) => {
-    const p = Number(e.props?.price) || ALL_PRICE;
+    const p = Number(safeProps(e.props).price) || ALL_PRICE;
     return sum + (p === 1900 ? ALL_PRICE : p);
   }, 0);
   const totalRevenue = sectionRevenue + allRevenue;
@@ -85,7 +102,7 @@ function computeStats(events: EventRecord[]): Stats {
 
   const scores = events
     .filter(e => e.event === 'step_complete_target-info' || e.event === 'step_complete_skip-target')
-    .map(e => Number(e.props?.toxicScore))
+    .map(e => Number(safeProps(e.props).toxicScore))
     .filter(n => !isNaN(n) && n > 0);
   const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
@@ -93,7 +110,7 @@ function computeStats(events: EventRecord[]): Stats {
   events
     .filter(e => e.event === 'step_complete_relation')
     .forEach(e => {
-      const r = String(e.props?.relationType || '기타');
+      const r = String(safeProps(e.props).relationType || '기타');
       relationBreakdown[r] = (relationBreakdown[r] || 0) + 1;
     });
 
@@ -423,6 +440,29 @@ export default function AdminPage() {
             })()}
           </div>
 
+          {/* 결제 이벤트 원본 */}
+          {(() => {
+            const payEvents = events.filter(e => e.event === 'paywall_pay');
+            return (
+              <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-5">
+                <p className="text-[#333] text-[10px] uppercase tracking-widest mb-1">결제 이벤트 원본</p>
+                <p className="text-[#444] text-[10px] mb-3">전체 {payEvents.length}건 — props 포맷 이상 시 여기서 확인</p>
+                {payEvents.length === 0 ? (
+                  <p className="text-[#222] text-xs">결제 이벤트 없음</p>
+                ) : (
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                    {[...payEvents].reverse().map((e, i) => (
+                      <div key={i} className="text-[10px] border-b border-[#111] pb-1.5 last:border-0">
+                        <span className="text-[#555] mr-2">{new Date(e.ts).toLocaleString('ko-KR')}</span>
+                        <span className="text-[#FF2D55] font-mono break-all">{JSON.stringify(safeProps(e.props))}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* 최근 이벤트 로그 */}
           <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-5">
             <p className="text-[#333] text-[10px] uppercase tracking-widest mb-4">최근 이벤트 (최신순)</p>
@@ -431,7 +471,7 @@ export default function AdminPage() {
                 <div key={i} className="flex items-center gap-3 text-xs border-b border-[#111] pb-2 last:border-0">
                   <span className="text-[#333] flex-shrink-0">{new Date(e.ts).toLocaleTimeString('ko-KR')}</span>
                   <span className="text-[#FF2D55] flex-shrink-0">{e.event}</span>
-                  {e.props && <span className="text-[#444] truncate">{JSON.stringify(e.props)}</span>}
+                  {e.props && <span className="text-[#444] truncate">{JSON.stringify(safeProps(e.props))}</span>}
                 </div>
               ))}
             </div>
