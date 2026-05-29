@@ -162,7 +162,6 @@ function buildPhase1Prompt(myData: any, targetData: any, relationType: string, r
   const tgYinYang = result.targetDayYin != null ? (result.targetDayYin ? '음간 — 감추고 내면화' : '양간 — 드러내고 직접') : '';
   const myDayPillar = result.myDay ? `${result.myDay.stem}${result.myDay.branch}` : `${result.myYear?.stem}${result.myYear?.branch}(년주대체)`;
   const tgDayPillar = result.targetDay ? `${result.targetDay.stem}${result.targetDay.branch}` : result.targetYear ? `${result.targetYear.stem}${result.targetYear.branch}(년주대체)` : '';
-  const conflictRef = chung !== '없음' ? chung : geuk !== '없음' ? '극:'+geuk : '오행 불일치';
 
   return `[사주 데이터 — 일주(日柱)가 핵심]
 나(${myData.gender}, ${myYinYang}): ${myPillar}
@@ -318,7 +317,7 @@ function buildPhase1NameOnlyPrompt(myData: any, targetData: any, relationType: s
 }`;
 }
 
-function buildPhase1NoTargetPrompt(myData: any, targetData: any, relationType: string, result: any): string {
+function buildPhase1NoTargetPrompt(myData: any, _targetData: any, _relationType: string, result: any): string {
   const score = result.toxicScore;
   const myPillar = `${result.myYear?.stem}${result.myYear?.branch}년 ${result.myMonth ? result.myMonth.stem+result.myMonth.branch+'월' : ''} ${result.myDay ? result.myDay.stem+result.myDay.branch+'일' : ''}`.trim();
 
@@ -469,7 +468,7 @@ function buildPhase2DetailNameOnlyPrompt(myData: any, targetData: any, relationT
 }`;
 }
 
-function buildPhase2DetailNoTargetPrompt(myData: any, targetData: any, relationType: string, result: any): string {
+function buildPhase2DetailNoTargetPrompt(myData: any, _targetData: any, _relationType: string, result: any): string {
   const score = result.toxicScore;
   const myYr = `${result.myYear?.stem}${result.myYear?.branch}`;
 

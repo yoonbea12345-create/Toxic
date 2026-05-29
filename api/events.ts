@@ -27,8 +27,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       sbSelect('toxic_session_times', 'select=duration&order=id.desc&limit=10000'),
     ]);
 
-    const events = await eventsRes.json();
-    const timesRaw: { duration: number }[] = await timesRes.json();
+    const events = await eventsRes.json() as unknown[];
+    const timesRaw = await timesRes.json() as { duration: number }[];
 
     return res.status(200).json({
       events: Array.isArray(events) ? events : [],

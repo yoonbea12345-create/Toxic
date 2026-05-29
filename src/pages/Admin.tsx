@@ -471,7 +471,7 @@ export default function AdminPage() {
                 <div key={i} className="flex items-center gap-3 text-xs border-b border-[#111] pb-2 last:border-0">
                   <span className="text-[#333] flex-shrink-0">{new Date(e.ts).toLocaleTimeString('ko-KR')}</span>
                   <span className="text-[#FF2D55] flex-shrink-0">{e.event}</span>
-                  {e.props && <span className="text-[#444] truncate">{JSON.stringify(safeProps(e.props))}</span>}
+                  {e.props != null && <span className="text-[#444] truncate">{JSON.stringify(safeProps(e.props))}</span>}
                 </div>
               ))}
             </div>

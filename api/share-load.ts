@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     );
     if (!r.ok) throw new Error(`Supabase ${r.status}`);
-    const rows = await r.json();
+    const rows = await r.json() as unknown[];
     if (!rows || rows.length === 0) return res.status(404).json({ error: 'not found' });
     return res.status(200).json({ share: rows[0] });
   } catch (err: unknown) {
