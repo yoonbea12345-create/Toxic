@@ -184,6 +184,9 @@ export default function AdminPage() {
   const [directPayCount, setDirectPayCount] = useState<number | null>(null);
   const [directSectionCount, setDirectSectionCount] = useState<number | null>(null);
   const [directAllCount, setDirectAllCount] = useState<number | null>(null);
+  const [directSectionRevenue, setDirectSectionRevenue] = useState<number | null>(null);
+  const [directAllRevenue, setDirectAllRevenue] = useState<number | null>(null);
+  const [directTotalRevenue, setDirectTotalRevenue] = useState<number | null>(null);
 
   useEffect(() => {
     if (sessionStorage.getItem('toxic_admin_auth') === '1') setAuthed(true);
@@ -193,10 +196,13 @@ export default function AdminPage() {
     if (!authed) return;
     fetch('/api/count')
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then((d: { payCount?: number; sectionCount?: number; allCount?: number }) => {
+      .then((d: { payCount?: number; sectionCount?: number; allCount?: number; sectionRevenue?: number; allRevenue?: number; totalRevenue?: number }) => {
         setDirectPayCount(d.payCount ?? 0);
         setDirectSectionCount(d.sectionCount ?? 0);
         setDirectAllCount(d.allCount ?? 0);
+        setDirectSectionRevenue(d.sectionRevenue ?? 0);
+        setDirectAllRevenue(d.allRevenue ?? 0);
+        setDirectTotalRevenue(d.totalRevenue ?? 0);
       })
       .catch(() => {});
   }, [authed]);
@@ -390,11 +396,11 @@ export default function AdminPage() {
               <StatCard label="페이월 클릭" value={stats.paywallClicks} sub="잠금 해제 버튼" color="#F59E0B" />
             </div>
             <div className="grid grid-cols-2 gap-3 mb-3">
-              <StatCard label="개별 결제 · ₩700" value={directSectionCount === null ? '…' : `${directSectionCount}회`} sub={`₩${((directSectionCount ?? 0) * 700).toLocaleString()}`} color="#FF2D55" />
-              <StatCard label="전체 결제 · ₩2,500" value={directAllCount === null ? '…' : `${directAllCount}회`} sub={`₩${((directAllCount ?? 0) * 2500).toLocaleString()}`} color="#BF5AF2" />
+              <StatCard label="개별 결제" value={directSectionCount === null ? '…' : `${directSectionCount}회`} sub={directSectionRevenue === null ? '' : `₩${directSectionRevenue.toLocaleString()}`} color="#FF2D55" />
+              <StatCard label="전체 결제" value={directAllCount === null ? '…' : `${directAllCount}회`} sub={directAllRevenue === null ? '' : `₩${directAllRevenue.toLocaleString()}`} color="#BF5AF2" />
             </div>
             <div className="mb-3">
-              <StatCard label="총 매출 (추정)" value={`₩${(((directSectionCount ?? 0) * 700) + ((directAllCount ?? 0) * 2500)).toLocaleString()}`} sub="개별×₩700 + 전체×₩2,500" color="#FF2D55" />
+              <StatCard label="총 매출" value={directTotalRevenue === null ? '…' : `₩${directTotalRevenue.toLocaleString()}`} sub="실제 결제 금액 합산 · 서버 직접" color="#FF2D55" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <StatCard label="CTR" value={`${stats.paywallCTR}%`} sub="노출→클릭" color="#BF5AF2" />
