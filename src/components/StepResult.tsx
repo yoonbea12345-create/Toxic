@@ -565,7 +565,15 @@ function PaywallModal({ mode, targetName, onClose, onPaySection, onPayAll }: {
 }) {
   const isSection = mode === 'section';
   const [showFAQ, setShowFAQ] = useState(false);
+  const [payCount, setPayCount] = useState<number | null>(null);
   const nameLabel = targetName?.trim() ? `${targetName.trim()}님과의 관계를` : '당신의 관계를';
+
+  useEffect(() => {
+    fetch('/api/count')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((data: { payCount?: number }) => { if ((data.payCount ?? 0) > 0) setPayCount(data.payCount!); })
+      .catch(() => {});
+  }, []);
 
   return (
     <>
@@ -632,7 +640,12 @@ function PaywallModal({ mode, targetName, onClose, onPaySection, onPayAll }: {
                 </div>
               </button>
 
-              <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-3">
+              {payCount && (
+                <p className="text-center text-[#555] text-[11px] font-sans-kr mt-3 mb-1">
+                  지금까지 총 <span className="text-[#FF2D55] font-bold">{payCount.toLocaleString()}명</span>이 결제를 완료했어요
+                </p>
+              )}
+              <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-2">
                 <span>즉시 해제</span>
                 <span className="text-[#333]">·</span>
                 <span>안전 결제</span>
@@ -690,7 +703,12 @@ function PaywallModal({ mode, targetName, onClose, onPaySection, onPayAll }: {
                 </div>
               </button>
 
-              <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-3">
+              {payCount && (
+                <p className="text-center text-[#555] text-[11px] font-sans-kr mt-3 mb-1">
+                  지금까지 총 <span className="text-[#FF2D55] font-bold">{payCount.toLocaleString()}명</span>이 결제를 완료했어요
+                </p>
+              )}
+              <div className="flex items-center justify-center gap-2.5 text-[#666] text-[10px] font-sans-kr mt-2">
                 <span>즉시 해제</span>
                 <span className="text-[#333]">·</span>
                 <span>안전 결제</span>
