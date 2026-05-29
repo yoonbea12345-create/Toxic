@@ -181,10 +181,19 @@ export default function AdminPage() {
   const [sessionTimes, setSessionTimes] = useState<number[]>([]);
   const [reviews, setReviews] = useState<ReviewRecord[]>([]);
   const [fetchState, setFetchState] = useState<keyof typeof LOADING_STATES>('idle');
+  const [directPayCount, setDirectPayCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (sessionStorage.getItem('toxic_admin_auth') === '1') setAuthed(true);
   }, []);
+
+  useEffect(() => {
+    if (!authed) return;
+    fetch('/api/count')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then((d: { payCount?: number }) => setDirectPayCount(d.payCount ?? 0))
+      .catch(() => {});
+  }, [authed]);
 
   useEffect(() => {
     if (!authed) return;
@@ -361,6 +370,15 @@ export default function AdminPage() {
           {/* 유료 전환 검증 */}
           <div>
             <p className="text-[#333] text-[10px] uppercase tracking-widest mb-3">유료 전환 검증</p>
+            {/* 서버 직접 조회 — events 로딩 경로와 무관하게 항상 정확 */}
+            <div className="mb-3">
+              <StatCard
+                label="총 결제 (서버 직접)"
+                value={directPayCount === null ? '…' : `${directPayCount}회`}
+                sub="paywall_pay 이벤트 전체 · Supabase 서버 직접 조회"
+                color="#FF2D55"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-3 mb-3">
               <StatCard label="페이월 노출" value={stats.paywallImpressions} sub="결과 화면 진입 수" color="#fff" />
               <StatCard label="페이월 클릭" value={stats.paywallClicks} sub="잠금 해제 버튼" color="#F59E0B" />
@@ -370,7 +388,7 @@ export default function AdminPage() {
               <StatCard label="전체 결제 · ₩2,500" value={`${stats.allPays}회`} sub={`₩${stats.allRevenue.toLocaleString()}`} color="#BF5AF2" />
             </div>
             <div className="mb-3">
-              <StatCard label="총 매출" value={`₩${stats.totalRevenue.toLocaleString()}`} sub="개별+전체 합산" color="#FF2D55" />
+              <StatCard label="총 매출" value={`₩${stats.totalRevenue.toLocaleString()}`} sub="개별+전체 합산 (이벤트 기반)" color="#FF2D55" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <StatCard label="CTR" value={`${stats.paywallCTR}%`} sub="노출→클릭" color="#BF5AF2" />
