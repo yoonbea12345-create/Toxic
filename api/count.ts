@@ -31,31 +31,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const payEvents = await payEventsRes.json() as { props: unknown }[];
 
     let sectionCount = 0, allCount = 0, sectionRevenue = 0, allRevenue = 0;
+    const sectionByPrice: Record<string, number> = {};
+    const allByPrice: Record<string, number> = {};
 
     for (const e of payEvents) {
       const p = safeProps(e.props);
       const type = String(p.type ?? '');
       const price = Number(p.price) || 0;
+      const key = String(price);
 
       if (type === 'section' || (!type && (price === 500 || price === 700))) {
         sectionCount++;
         sectionRevenue += price;
+        sectionByPrice[key] = (sectionByPrice[key] || 0) + 1;
       } else if (type === 'all' || (!type && (price === 1900 || price === 2500))) {
         allCount++;
         allRevenue += price;
+        allByPrice[key] = (allByPrice[key] || 0) + 1;
       }
     }
 
     return res.status(200).json({
       count: landingCount,
       payCount: payEvents.length,
-      sectionCount,
-      allCount,
-      sectionRevenue,
-      allRevenue,
+      sectionCount, allCount,
+      sectionRevenue, allRevenue,
       totalRevenue: sectionRevenue + allRevenue,
+      sectionByPrice, allByPrice,
     });
   } catch {
-    return res.status(200).json({ count: 0, payCount: 0, sectionCount: 0, allCount: 0, sectionRevenue: 0, allRevenue: 0, totalRevenue: 0 });
+    return res.status(200).json({
+      count: 0, payCount: 0, sectionCount: 0, allCount: 0,
+      sectionRevenue: 0, allRevenue: 0, totalRevenue: 0,
+      sectionByPrice: {}, allByPrice: {},
+    });
   }
 }

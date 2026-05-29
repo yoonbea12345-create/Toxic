@@ -149,12 +149,13 @@ function computeStats(events: EventRecord[]): Stats {
   };
 }
 
-function StatCard({ label, value, sub, color = '#FF2D55' }: { label: string; value: string | number; sub?: string; color?: string }) {
+function StatCard({ label, value, sub, note, color = '#FF2D55' }: { label: string; value: string | number; sub?: string; note?: string; color?: string }) {
   return (
     <div className="border border-[#1e1e1e] bg-[#0D0D0D] p-5">
       <p className="text-[#444] text-[10px] uppercase tracking-widest mb-2">{label}</p>
       <p className="text-3xl font-bold" style={{ color }}>{value}</p>
       {sub && <p className="text-[#444] text-xs mt-1">{sub}</p>}
+      {note && <p className="text-[#333] text-[10px] mt-1.5 font-mono leading-relaxed">{note}</p>}
     </div>
   );
 }
@@ -187,6 +188,8 @@ export default function AdminPage() {
   const [directSectionRevenue, setDirectSectionRevenue] = useState<number | null>(null);
   const [directAllRevenue, setDirectAllRevenue] = useState<number | null>(null);
   const [directTotalRevenue, setDirectTotalRevenue] = useState<number | null>(null);
+  const [directSectionByPrice, setDirectSectionByPrice] = useState<Record<string, number>>({});
+  const [directAllByPrice, setDirectAllByPrice] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (sessionStorage.getItem('toxic_admin_auth') === '1') setAuthed(true);
@@ -196,13 +199,15 @@ export default function AdminPage() {
     if (!authed) return;
     fetch('/api/count')
       .then(r => r.ok ? r.json() : Promise.reject())
-      .then((d: { payCount?: number; sectionCount?: number; allCount?: number; sectionRevenue?: number; allRevenue?: number; totalRevenue?: number }) => {
+      .then((d: { payCount?: number; sectionCount?: number; allCount?: number; sectionRevenue?: number; allRevenue?: number; totalRevenue?: number; sectionByPrice?: Record<string, number>; allByPrice?: Record<string, number> }) => {
         setDirectPayCount(d.payCount ?? 0);
         setDirectSectionCount(d.sectionCount ?? 0);
         setDirectAllCount(d.allCount ?? 0);
         setDirectSectionRevenue(d.sectionRevenue ?? 0);
         setDirectAllRevenue(d.allRevenue ?? 0);
         setDirectTotalRevenue(d.totalRevenue ?? 0);
+        setDirectSectionByPrice(d.sectionByPrice ?? {});
+        setDirectAllByPrice(d.allByPrice ?? {});
       })
       .catch(() => {});
   }, [authed]);
@@ -396,8 +401,20 @@ export default function AdminPage() {
               <StatCard label="페이월 클릭" value={stats.paywallClicks} sub="잠금 해제 버튼" color="#F59E0B" />
             </div>
             <div className="grid grid-cols-2 gap-3 mb-3">
-              <StatCard label="개별 결제" value={directSectionCount === null ? '…' : `${directSectionCount}회`} sub={directSectionRevenue === null ? '' : `₩${directSectionRevenue.toLocaleString()}`} color="#FF2D55" />
-              <StatCard label="전체 결제" value={directAllCount === null ? '…' : `${directAllCount}회`} sub={directAllRevenue === null ? '' : `₩${directAllRevenue.toLocaleString()}`} color="#BF5AF2" />
+              <StatCard
+                label="개별 결제"
+                value={directSectionCount === null ? '…' : `${directSectionCount}회`}
+                sub={directSectionRevenue === null ? '' : `₩${directSectionRevenue.toLocaleString()}`}
+                note={Object.entries(directSectionByPrice).sort(([a],[b]) => Number(a)-Number(b)).map(([p,c]) => `₩${Number(p).toLocaleString()} × ${c}건`).join('\n') || undefined}
+                color="#FF2D55"
+              />
+              <StatCard
+                label="전체 결제"
+                value={directAllCount === null ? '…' : `${directAllCount}회`}
+                sub={directAllRevenue === null ? '' : `₩${directAllRevenue.toLocaleString()}`}
+                note={Object.entries(directAllByPrice).sort(([a],[b]) => Number(a)-Number(b)).map(([p,c]) => `₩${Number(p).toLocaleString()} × ${c}건`).join('\n') || undefined}
+                color="#BF5AF2"
+              />
             </div>
             <div className="mb-3">
               <StatCard label="총 매출" value={directTotalRevenue === null ? '…' : `₩${directTotalRevenue.toLocaleString()}`} sub="실제 결제 금액 합산 · 서버 직접" color="#FF2D55" />
